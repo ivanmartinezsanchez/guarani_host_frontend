@@ -1,16 +1,32 @@
 import axios from 'axios'
 
-const API_URL = 'http://localhost:4000/api'
+const API_URL = 'http://localhost:4000/api/auth'  // Backend URL for authentication
 
-// Helper for auth headers
+// Helper to get auth headers with JWT token
 const authHeaders = () => ({
   Authorization: `Bearer ${localStorage.getItem('token')}`
 })
 
 /**
- * Registers a new user
- * @param userData User registration fields
- * @returns Created user object
+ * Logs in the user and stores token and user data in localStorage.
+ * @param credentials Object containing email and password.
+ * @returns User object after successful login.
+ */
+export async function loginUser(credentials: { email: string; password: string }) {
+  const response = await axios.post(`${API_URL}/login`, credentials)
+  const { token, user } = response.data
+
+  // Store the token and user data in localStorage
+  localStorage.setItem('token', token)
+  localStorage.setItem('user', JSON.stringify(user))
+
+  return user
+}
+
+/**
+ * Registers a new user and stores user data.
+ * @param userData Object containing user details (email, password, etc.)
+ * @returns Created user object.
  */
 export async function registerUser(userData: {
   firstName: string
@@ -20,40 +36,23 @@ export async function registerUser(userData: {
   phone?: string
   address?: string
 }) {
-  const res = await axios.post(`${API_URL}/auth/register`, userData)
-  return res.data
+  const response = await axios.post(`${API_URL}/register`, userData)
+  return response.data
 }
 
 /**
- * Logs in the user and stores token and user data in localStorage
- * @param credentials Object with email and password
- * @returns Authenticated user object
- */
-export async function loginUser(credentials: { email: string; password: string }) {
-  const res = await axios.post(`${API_URL}/auth/login`, credentials)
-  const { token, user } = res.data
-
-  localStorage.setItem('token', token)
-  localStorage.setItem('user', JSON.stringify(user))
-
-  return user
-}
-
-/**
- * Retrieves the authenticated user's profile
- * @returns User profile data
+ * Retrieves the authenticated user's profile.
+ * @returns User profile data.
  */
 export async function getUserProfile() {
-  const res = await axios.get(`${API_URL}/auth/profile`, {
-    headers: authHeaders()
-  })
-  return res.data
+  const response = await axios.get(`${API_URL}/profile`, { headers: authHeaders() })
+  return response.data
 }
 
 /**
- * Updates the profile of the authenticated user
- * @param updatedData Fields to update
- * @returns Updated user profile
+ * Updates the profile of the authenticated user.
+ * @param updatedData Fields to update in the user's profile.
+ * @returns Updated user profile.
  */
 export async function updateUserProfile(updatedData: {
   firstName?: string
@@ -61,8 +60,6 @@ export async function updateUserProfile(updatedData: {
   phone?: string
   address?: string
 }) {
-  const res = await axios.put(`${API_URL}/auth/profile`, updatedData, {
-    headers: authHeaders()
-  })
-  return res.data
+  const response = await axios.put(`${API_URL}/profile`, updatedData, { headers: authHeaders() })
+  return response.data
 }

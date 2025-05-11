@@ -8,26 +8,27 @@ export type User = {
   password?: string  
   phone?: string
   address?: string
-   role: 'admin' | 'host' | 'user'
+  role: 'admin' | 'host' | 'user'
 }
 
-// Recuperar del localStorage al iniciar
+// Define user state using reactive references
 const stored = localStorage.getItem('user')
 const user = ref<User | null>(stored ? JSON.parse(stored) : null)
 
 export function useAuth() {
-  // Simular login
+  // Log in function to store user in localStorage
   function login(userData: User) {
     user.value = userData
     localStorage.setItem('user', JSON.stringify(userData))
   }
 
-  // Simular registro
+  // Register function (just a mock, you'd use an API call)
   function register(userData: User) {
     user.value = userData
     localStorage.setItem('user', JSON.stringify(userData))
   }
 
+  // Log out function to remove user from localStorage
   function logout() {
     user.value = null
     localStorage.removeItem('user')

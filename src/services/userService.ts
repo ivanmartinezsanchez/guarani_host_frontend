@@ -3,7 +3,7 @@ import axios from 'axios'
 const API_URL = `${import.meta.env.VITE_API_BASE_URL}/admin/users`
 
 /**
- * User interface aligned with backend model
+ * User type definition aligned with backend model.
  */
 export interface User {
   _id: string
@@ -14,18 +14,19 @@ export interface User {
   role: 'admin' | 'host' | 'user'
   phone?: string
   address?: string
-  accountStatus: 'ACTIVE' | 'SUSPENDED' | 'DELETED' | 'PENDING_VERIFICATION' 
+  accountStatus: 'ACTIVE' | 'SUSPENDED' | 'DELETED' | 'PENDING_VERIFICATION'
 }
 
 /**
- * Auth headers with Bearer token
+ * Auth headers with Bearer token for protected routes.
  */
 const authHeaders = () => ({
   Authorization: `Bearer ${localStorage.getItem('token')}`
 })
 
 /**
- * Get all users (admin only)
+ * Get all users (admin only).
+ * @returns List of all users.
  */
 export const getAllUsers = async (): Promise<User[]> => {
   const response = await axios.get(API_URL, { headers: authHeaders() })
@@ -33,7 +34,9 @@ export const getAllUsers = async (): Promise<User[]> => {
 }
 
 /**
- * Create a new user (admin only)
+ * Create a new user (admin only).
+ * @param userData Object with user details.
+ * @returns Created user object.
  */
 export const createUser = async (userData: {
   firstName: string
@@ -49,7 +52,10 @@ export const createUser = async (userData: {
 }
 
 /**
- * Update a user by ID (admin only)
+ * Update a user by ID (admin only).
+ * @param userId User ID.
+ * @param updatedData Fields to update in the user's profile.
+ * @returns Updated user object.
  */
 export const updateUserById = async (
   userId: string,
@@ -60,7 +66,8 @@ export const updateUserById = async (
 }
 
 /**
- * Delete a user by ID (admin only)
+ * Delete a user by ID (admin only).
+ * @param userId User ID.
  */
 export const deleteUserById = async (userId: string): Promise<void> => {
   await axios.delete(`${API_URL}/${userId}`, { headers: authHeaders() })
