@@ -47,6 +47,7 @@ export function useAuth() {
     password: string
     phone?: string
     address?: string
+    role?: 'user' | 'host' | 'admin'
   }): Promise<User> {
     const newUser = await registerUser(userData)
     user.value = newUser

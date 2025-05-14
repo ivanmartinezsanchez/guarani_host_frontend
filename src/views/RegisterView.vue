@@ -172,6 +172,7 @@ async function handleRegister() {
         password: password.value,
         phone: phone.value,
         address: address.value,
+        role: 'user' 
       })
 
       Swal.fire({
@@ -195,7 +196,7 @@ async function handleRegister() {
   } else {
     Swal.fire({
       icon: 'error',
-      title: 'Invalid form',
+      title: 'Formulario inválido',
       text: 'Por favor, introduce todos los campos correctamente.',
     })
   }
