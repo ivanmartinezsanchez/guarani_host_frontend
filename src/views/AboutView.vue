@@ -14,7 +14,7 @@
       </p>
 
       <p>
-        Tanto si eres un viajero europeo en busca de una aventura auténtica como si eres un residente local explorando tu propio país, <strong>GuaraníHost</strong> simplifica la planificación de tu viaje. Nuestra interfaz intuitiva y segura te permite reservar alojamientos y actividades de forma rápida y sencilla, todo en un solo lugar.
+        Tanto si eres un viajero del mundo en busca de una aventura auténtica como si eres un residente local explorando tu propio país, <strong>GuaraníHost</strong> simplifica la planificación de tu viaje. Nuestra interfaz intuitiva y segura te permite reservar alojamientos y actividades de forma rápida y sencilla, todo en un solo lugar.
       </p>
 
       <p>
