@@ -19,7 +19,7 @@
               <th class="px-4 py-2">Title</th>
               <th class="px-4 py-2">Description</th>
               <th class="px-4 py-2">Price</th>
-              <th class="px-4 py-2">Available</th>
+              <th class="px-4 py-2">Status</th>
               <th class="px-4 py-2">Actions</th>
             </tr>
           </thead>
@@ -32,7 +32,7 @@
               <td class="px-4 py-2">{{ tour.title }}</td>
               <td class="px-4 py-2">{{ tour.description }}</td>
               <td class="px-4 py-2">${{ tour.price }}</td>
-              <td class="px-4 py-2">{{ tour.available ? 'Yes' : 'No' }}</td>
+              <td class="px-4 py-2 capitalize">{{ tour.status }}</td>
               <td class="px-4 py-2 flex gap-2">
                 <button @click="editTour(tour)" class="text-blue-500 hover:text-blue-700">Edit</button>
                 <button @click="confirmDelete(tour._id!)" class="text-red-500 hover:text-red-700">Delete</button>
@@ -50,9 +50,12 @@
         <input v-model="form.title" type="text" placeholder="Title" class="input" required />
         <textarea v-model="form.description" placeholder="Description" class="input" rows="3" required />
         <input v-model.number="form.price" type="number" placeholder="Price" class="input" required />
-        <label class="flex items-center gap-2">
-          <input type="checkbox" v-model="form.available" class="accent-primary" /> Available
-        </label>
+        <select v-model="form.status" class="input" required>
+          <option value="available">Available</option>
+          <option value="upcoming">Upcoming</option>
+          <option value="sold out">Sold Out</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
         <div class="flex justify-end gap-3">
           <button type="button" @click="resetForm" class="text-gray-600 dark:text-white hover:underline">Cancel</button>
           <button type="submit" class="bg-primary hover:bg-hover text-white px-6 py-2 rounded transition">
@@ -75,71 +78,76 @@ import {
   type Tour
 } from '@/services/tourService'
 
-// UI state
 const showForm = ref(false)
 const editId = ref<string | null>(null)
 const allTours = ref<Tour[]>([])
 const user = JSON.parse(localStorage.getItem('user') || '{}')
 
-// Form state
+// Default form
 const form = ref<Partial<Tour>>({
   title: '',
   description: '',
   price: 0,
-  available: true,
-  images: [],
-  property: '',
+  status: 'available',
+  imageUrls: [],
+  host: user._id
 })
 
-// Computed: Filtered tours by current host
-const myTours = computed(() => allTours.value.filter(t => t.property === undefined || t.createdBy === user._id))
+// Filtered by host
+const myTours = computed(() => allTours.value.filter(t => t.host === user._id))
 
-// Fetch all tours on mount
-onMounted(() => refreshTours())
+// Load on mount
+onMounted(async () => {
+  await refreshTours()
+})
 
-// Load all tours from backend
+// Load from backend
 async function refreshTours() {
   allTours.value = await getTours()
 }
 
-// Toggle form visibility
+// Toggle form
 function toggleForm() {
   showForm.value = !showForm.value
   if (!showForm.value) resetForm()
 }
 
-// Submit form handler
+// Submit tour
 async function submitForm() {
   const data: Tour = {
     title: form.value.title ?? '',
     description: form.value.description ?? '',
     price: form.value.price ?? 0,
-    available: form.value.available ?? true,
-    images: form.value.images ?? [],
-    property: '',
-    createdBy: user._id
+    status: form.value.status ?? 'available',
+    imageUrls: form.value.imageUrls ?? [],
+    host: user._id,
+    paymentStatus: 'pending'
   }
 
-  if (!editId.value) {
-    await createTour(data)
-    Swal.fire('Created', 'Tour created successfully', 'success')
-  } else {
-    await updateTour(editId.value, data)
-    Swal.fire('Updated', 'Tour updated successfully', 'success')
+  try {
+    if (!editId.value) {
+      await createTour(data)
+      Swal.fire('Created', 'Tour created successfully', 'success')
+    } else {
+      await updateTour(editId.value, data)
+      Swal.fire('Updated', 'Tour updated successfully', 'success')
+    }
+    await refreshTours()
+    resetForm()
+  } catch (error) {
+    console.error('❌ Tour error:', error)
+    Swal.fire('Error', 'Something went wrong', 'error')
   }
-
-  refreshTours()
-  resetForm()
 }
 
-// Load tour into form for edit
+// Edit
 function editTour(tour: Tour) {
   form.value = { ...tour }
   editId.value = tour._id ?? null
   showForm.value = true
 }
 
-// Confirm and delete a tour
+// Delete
 async function confirmDelete(id: string) {
   const result = await Swal.fire({
     title: 'Delete this tour?',
@@ -153,12 +161,12 @@ async function confirmDelete(id: string) {
 
   if (result.isConfirmed) {
     await deleteTour(id)
-    refreshTours()
+    await refreshTours()
     Swal.fire('Deleted', 'Tour deleted successfully', 'success')
   }
 }
 
-// Reset form fields
+// Reset form
 function resetForm() {
   showForm.value = false
   editId.value = null
@@ -166,9 +174,9 @@ function resetForm() {
     title: '',
     description: '',
     price: 0,
-    available: true,
-    images: [],
-    property: ''
+    status: 'available',
+    imageUrls: [],
+    host: user._id
   }
 }
 </script>
