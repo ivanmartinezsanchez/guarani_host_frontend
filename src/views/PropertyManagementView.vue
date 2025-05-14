@@ -1,9 +1,10 @@
 <template>
   <div class="max-w-7xl mx-auto p-6">
-    <h1 class="text-3xl font-bold text-primary mb-6">Gestión de Propiedades</h1>
+    <!-- Page title -->
+    <h1 class="text-3xl font-bold text-primary mb-6 text-center">Gestión de Propiedades</h1>
 
     <div class="grid gap-6 lg:grid-cols-2">
-      <!-- Lista de propiedades -->
+      <!-- Property list section -->
       <section class="col-span-full">
         <h2 class="text-xl font-semibold mb-4 flex items-center gap-2 justify-between">
           <div class="flex items-center gap-2">
@@ -14,16 +15,13 @@
           </button>
         </h2>
 
+        <!-- Filters and Table -->
         <div class="bg-white dark:bg-gray-800 p-4 rounded shadow-md transition">
           <div class="flex flex-wrap justify-between items-center mb-4 gap-4">
             <h3 class="text-lg font-semibold">Filtrar</h3>
             <div class="flex items-center gap-2">
               <label for="filterType" class="text-sm font-medium">Selecciona:</label>
-              <select
-                id="filterType"
-                v-model="selectedFilter"
-                class="p-2 border rounded dark:bg-gray-900 dark:text-white"
-              >
+              <select id="filterType" v-model="selectedFilter" class="input">
                 <option value="">Todos</option>
                 <option value="priceAsc">Precio: menor a mayor</option>
                 <option value="priceDesc">Precio: mayor a menor</option>
@@ -33,26 +31,23 @@
             </div>
           </div>
 
+          <!-- Properties Table -->
           <table class="min-w-full table-auto text-sm">
             <thead>
               <tr class="text-left bg-gray-100 dark:bg-gray-700">
                 <th class="px-4 py-2">Casa</th>
                 <th class="px-4 py-2">Ciudad</th>
                 <th class="px-4 py-2">Precio</th>
-                <th class="px-4 py-2">Disponible</th>
+                <th class="px-4 py-2">Estado</th>
                 <th class="px-4 py-2">Acciones</th>
               </tr>
             </thead>
             <tbody>
-              <tr
-                v-for="(home, index) in filteredHomes"
-                :key="home._id"
-                class="border-b dark:border-gray-600"
-              >
+              <tr v-for="(home, index) in filteredHomes" :key="home._id" class="border-b dark:border-gray-600">
                 <td class="px-4 py-2">{{ home.title }}</td>
                 <td class="px-4 py-2">{{ home.city }}</td>
                 <td class="px-4 py-2">${{ home.pricePerNight }}</td>
-                <td class="px-4 py-2">{{ home.available ? 'Sí' : 'No' }}</td>
+                <td class="px-4 py-2 capitalize">{{ home.status }}</td>
                 <td class="px-4 py-2 flex gap-3">
                   <button @click="editHome(index)" class="text-blue-500 hover:text-blue-700">
                     <PencilIcon class="w-5 h-5" />
@@ -67,7 +62,7 @@
         </div>
       </section>
 
-      <!-- Formulario -->
+      <!-- Form section -->
       <section v-if="showForm">
         <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
           <HomeIcon class="w-5 h-5" /> {{ modalTitle }}
@@ -79,14 +74,12 @@
             <input v-model="form.city" type="text" placeholder="Ciudad" class="input" required />
             <input v-model="form.address" type="text" placeholder="Dirección" class="input" required />
             <input v-model.number="form.pricePerNight" type="number" placeholder="Precio por noche" class="input" required />
-            <label class="flex items-center gap-2">
-              <input v-model="form.available" type="checkbox" class="accent-primary" /> Disponible
-            </label>
+            <input v-model="form.status" type="text" placeholder="Estado" class="input" required />
             <div>
               <label class="block text-sm font-medium mb-1">Imágenes (puedes seleccionar varias)</label>
               <input @change="handleFileUpload" type="file" multiple class="input bg-white dark:bg-gray-900 file:mr-4 file:py-2 file:px-4 file:border file:rounded file:border-gray-300 file:text-sm file:bg-primary file:text-white hover:file:bg-hover" />
-              <div v-if="form.images?.length" class="flex flex-wrap mt-2 gap-2">
-                <div v-for="(img, i) in form.images" :key="i" class="relative w-24 h-24">
+              <div v-if="form.imageUrls?.length" class="flex flex-wrap mt-2 gap-2">
+                <div v-for="(img, i) in form.imageUrls" :key="i" class="relative w-24 h-24">
                   <img :src="img" alt="Imagen subida" class="object-cover w-full h-full rounded" />
                   <button @click.prevent="removeImage(i)" class="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1 text-xs">
                     <XIcon class="w-4 h-4" />
@@ -105,6 +98,7 @@
       </section>
     </div>
 
+    <!-- Return to dashboard -->
     <div class="mt-10 text-center">
       <RouterLink to="/admin/dashboard" class="inline-flex items-center gap-2 text-primary underline hover:text-hover">
         <ArrowLeftIcon class="w-4 h-4" /> Ir al Dashboard
@@ -119,27 +113,27 @@ import { HomeIcon, PencilIcon, Trash2Icon, PlusIcon, ArrowLeftIcon, XIcon } from
 import Swal from 'sweetalert2'
 import { RouterLink } from 'vue-router'
 import { uploadImagesToCloudinary } from '@/services/cloudinaryService'
-import { getProperties, createProperty, updateProperty, deleteProperty, Property as ProperyType } from '@/services/propertyService'
+import { getProperties, createProperty, updateProperty, deleteProperty, type Property } from '@/services/propertyService'
 
 const showForm = ref(false)
 const modalTitle = ref('Crear propiedad')
 const editIndex = ref<number | null>(null)
 const selectedFilter = ref('')
-const properties = ref<ProperyType[]>([])
-const form = ref<ProperyType>({
+const properties = ref<Property[]>([])
+const form = ref<Partial<Property>>({
   title: '',
   city: '',
   address: '',
   pricePerNight: 0,
-  available: true,
-  images: []
+  status: 'available',
+  imageUrls: []
 })
 
 onMounted(async () => {
-  await fetchHomes()
+  await fetchProperties()
 })
 
-async function fetchHomes() {
+async function fetchProperties() {
   try {
     properties.value = await getProperties()
   } catch (error) {
@@ -160,7 +154,7 @@ const filteredHomes = computed(() => {
       result.sort((a, b) => a.city.localeCompare(b.city))
       break
     case 'availability':
-      result.sort((a, b) => Number(b.available) - Number(a.available))
+      result.sort((a, b) => a.status.localeCompare(b.status))
       break
   }
   return result
@@ -171,12 +165,12 @@ async function handleFileUpload(event: Event) {
   const files = input.files
   if (files && files.length > 0) {
     const urls = await uploadImagesToCloudinary(Array.from(files))
-    form.value.images = urls
+    form.value.imageUrls = urls
   }
 }
 
 function removeImage(index: number) {
-  form.value.images?.splice(index, 1)
+  form.value.imageUrls?.splice(index, 1)
 }
 
 function editHome(index: number) {
@@ -201,7 +195,7 @@ async function confirmDelete(index: number) {
   if (result.isConfirmed && home._id) {
     try {
       await deleteProperty(home._id)
-      await fetchHomes()
+      await fetchProperties()
       Swal.fire('Eliminado', 'La propiedad ha sido eliminada', 'success')
     } catch (error) {
       console.error('Error al eliminar propiedad:', error)
@@ -212,11 +206,11 @@ async function confirmDelete(index: number) {
 async function handleFormSubmit() {
   try {
     if (editIndex.value === null) {
-      await createProperty(form.value)
+      await createProperty(form.value as Property)
       Swal.fire({ title: 'Éxito', text: 'Propiedad creada', icon: 'success', timer: 2000, showConfirmButton: false })
     } else {
       if (form.value._id) {
-        await updateProperty(form.value._id, form.value)
+        await updateProperty(form.value._id, form.value as Property)
         Swal.fire({ title: 'Actualizado', text: 'Propiedad actualizada', icon: 'success', timer: 2000, showConfirmButton: false })
       }
     }
@@ -235,8 +229,8 @@ function cancelForm() {
     city: '',
     address: '',
     pricePerNight: 0,
-    available: true,
-    images: []
+    status: 'available',
+    imageUrls: []
   }
   editIndex.value = null
 }
@@ -246,15 +240,12 @@ function cancelForm() {
 .input {
   @apply w-full px-4 py-2 rounded border border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-900 dark:text-white;
 }
-
 .bg-primary {
   background-color: #3F51B5;
 }
-
 .text-primary {
   color: #3F51B5;
 }
-
 .hover\:bg-hover:hover {
   background-color: #303F9F;
 }
