@@ -1,90 +1,132 @@
 <template>
-  <section class="min-h-screen flex items-center justify-center px-4 bg-gray-50 dark:bg-[#1a1a1a] transition-colors duration-300">
+  <section
+    class="min-h-screen flex items-center justify-center px-4 bg-gray-50 dark:bg-gray-950 transition-colors duration-300"
+  >
     <form
       @submit.prevent="handleRegister"
-      class="w-full max-w-lg bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-md space-y-5"
+      v-show="mounted"
+      class="w-full max-w-lg bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-md space-y-5 transition duration-500 ease-out transform scale-95 opacity-0"
+      :class="{ 'scale-100 opacity-100': mounted }"
     >
       <!-- Page Title -->
       <h2 class="text-2xl font-bold text-center text-gray-800 dark:text-white tracking-tight">
-        Crear una cuenta
+        Crear Cuenta
       </h2>
 
-      <!-- Name Inputs (First and Last Name) -->
+      <!-- First and Last Name -->
       <div class="grid md:grid-cols-2 gap-4">
-        <input
+        <FloatingInput
           v-model="firstName"
+          id="firstName"
+          label="Nombre"
           type="text"
-          placeholder="Nombre"
           required
-          class="w-full px-4 py-2 rounded-md border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-900 dark:text-white"
         />
-
-        <input
+        <FloatingInput
           v-model="lastName"
+          id="lastName"
+          label="Apellido"
           type="text"
-          placeholder="Apellido"
           required
-          class="w-full px-4 py-2 rounded-md border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-900 dark:text-white"
         />
       </div>
 
-      <!-- Email and Phone Inputs -->
-      <input
+      <!-- Email -->
+      <FloatingInput
         v-model="email"
+        id="email"
+        label="Correo Electrónico"
         type="email"
-        placeholder="Correo Electrónico"
         required
-        :class="inputClass"
-        :style="{ borderColor: emailValid ? '' : 'red' }"
+        :error="!emailValid"
       />
+      <p v-if="!emailValid" class="text-sm text-red-600">
+        Por favor, introduce un correo electrónico válido.
+      </p>
 
-      <input
+      <!-- Phone -->
+      <FloatingInput
         v-model="phone"
+        id="phone"
+        label="Teléfono"
         type="tel"
-        placeholder="Teléfono"
         required
-        :class="inputClass"
       />
 
-      <!-- Address Input -->
-      <input
+      <!-- Address -->
+      <FloatingInput
         v-model="address"
+        id="address"
+        label="Dirección"
         type="text"
-        placeholder="Dirección"
-        class="w-full px-4 py-2 rounded-md border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-900 dark:text-white"
+        required
       />
 
-      <!-- Password Input -->
-      <input
+      <!-- Password -->
+      <FloatingInput
         v-model="password"
+        id="password"
+        label="Contraseña"
         type="password"
-        placeholder="Contraseña (min. 8 caracteres)"
         required
-        minlength="8"
-        :class="inputClass"
-        :style="{ borderColor: passwordValid ? '' : 'red' }"
+        :error="!passwordValid"
       />
+      <p v-if="!passwordValid" class="text-sm text-red-600">
+        La contraseña debe contener una mayúscula, una minúscula y un número.
+      </p>
 
       <!-- Submit Button -->
       <button
         type="submit"
-        class="w-full bg-primary hover:bg-hover text-white font-semibold py-2 px-4 rounded-md transition-colors"
+        :disabled="isLoading"
+        class="w-full bg-primary hover:bg-hover text-white font-semibold py-2 px-4 rounded-md transition-colors relative"
       >
-        Registrarse
+        <span v-if="!isLoading">Registrarse</span>
+        <svg
+          v-else
+          class="w-5 h-5 animate-spin text-white absolute inset-0 m-auto"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+          ></circle>
+          <path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+          ></path>
+        </svg>
       </button>
+
+      <!-- Redirect to login -->
+      <p class="text-center text-sm text-gray-600 dark:text-gray-300 mt-2">
+        ¿Ya tienes una cuenta?
+        <RouterLink to="/login" class="text-primary hover:underline">
+          Inicia Sesión Aquí
+        </RouterLink>
+      </p>
     </form>
   </section>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useAuth } from '@/composables/useAuth'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuth } from '@/composables/useAuth'
+import Swal from 'sweetalert2'
+import FloatingInput from '@/components/ui/FloatingInput.vue'
 
+// Auth composable and router
 const { register } = useAuth()
 const router = useRouter()
 
-// User model fields
+// Form fields
 const firstName = ref('')
 const lastName = ref('')
 const email = ref('')
@@ -92,67 +134,82 @@ const password = ref('')
 const phone = ref('')
 const address = ref('')
 
-// Validation states
+// UI state
 const emailValid = ref(true)
 const passwordValid = ref(true)
+const isLoading = ref(false)
+const mounted = ref(false)
 
-// Input class definition (shared for all inputs)
-const inputClass = "w-full px-4 py-2 rounded-md border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-900 dark:text-white"
-
-// Regular expressions for validations
+// Regex for validation
 const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/
-const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/
 
-// Handle form submission
-function handleRegister() {
-  // Validate email
+onMounted(() => {
+  mounted.value = true
+})
+
+/**
+ * Handle user registration with validation and SweetAlert feedback
+ */
+async function handleRegister() {
   emailValid.value = emailRegex.test(email.value)
-  
-  // Validate password
   passwordValid.value = passwordRegex.test(password.value)
 
-  // Check if all required fields are valid
   if (
     firstName.value.trim() &&
     lastName.value.trim() &&
     emailValid.value &&
-    passwordValid.value
+    passwordValid.value &&
+    phone.value.trim() &&
+    address.value.trim()
   ) {
-    register({
-      firstName: firstName.value,
-      lastName: lastName.value,
-      email: email.value,
-      role: 'user',
-      phone: phone.value,
-      address: address.value
-    })
-    alert('Registro exitoso. Bienvenido!')
-    router.push('/login')
+    isLoading.value = true
+    try {
+      await register({
+        firstName: firstName.value,
+        lastName: lastName.value,
+        email: email.value,
+        password: password.value,
+        phone: phone.value,
+        address: address.value,
+      })
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Registro exitoso!',
+        text: 'Puedes iniciar sesión.',
+        timer: 2000,
+        showConfirmButton: false,
+      })
+
+      router.push('/login')
+    } catch (error) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Registro fallido',
+        text: 'Por favor, inténtalo de nuevo.',
+      })
+    } finally {
+      isLoading.value = false
+    }
   } else {
-    alert('Por favor, rellene todos los campos correctamente.')
+    Swal.fire({
+      icon: 'error',
+      title: 'Invalid form',
+      text: 'Por favor, introduce todos los campos correctamente.',
+    })
   }
 }
 </script>
 
 <style scoped>
-/* Custom input class with Tailwind CSS */
-.input {
-  @apply w-full px-4 py-2 rounded border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-900 dark:text-white;
-}
-
-/* Primary background color */
 .bg-primary {
-  background-color: #3F51B5;
+  background-color: #3f51b5;
 }
-
-/* Primary text color */
-.text-primary {
-  color: #3F51B5;
-}
-
-/* Hover effect for primary elements */
 .hover\:bg-hover:hover {
-  background-color: #303F9F;
+  background-color: #303f9f;
+}
+.text-primary {
+  color: #3f51b5;
 }
 </style>
-

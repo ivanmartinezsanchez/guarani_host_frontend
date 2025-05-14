@@ -1,104 +1,95 @@
 <template>
-  <div class="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900 px-4">
-    <div class="w-full max-w-md bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md">
-      <!-- Page title -->
-      <h1 class="text-2xl font-bold text-center text-gray-800 dark:text-white mb-6">
-        Inicia sesión
-      </h1>
+  <section class="min-h-screen flex items-center justify-center px-4 bg-gray-50 dark:bg-gray-950 transition-colors duration-300">
+    <form
+      @submit.prevent="handleLogin"
+      v-show="mounted"
+      class="w-full max-w-md bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-md space-y-6 transition duration-500 ease-out transform scale-95 opacity-0"
+      :class="{ 'scale-100 opacity-100': mounted }"
+    >
+      <h2 class="text-2xl font-bold text-center text-gray-800 dark:text-white tracking-tight">
+        Iniciar Sesión
+      </h2>
 
-      <!-- Login form -->
-      <form @submit.prevent="handleLogin" class="space-y-4">
-        <div>
-          <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Correo Electrónico</label>
-          <input
-            id="email"
-            v-model="email"
-            :class="[inputClass, !emailValid ? 'border-red-500' : '']"
-            type="email"
-            placeholder="you@example.com"
-            required
-          />
-        </div>
+      <!-- Email -->
+      <FloatingInput v-model="email" id="email" label="Email" type="email" required :error="!emailValid" />
+      <p v-if="!emailValid" class="text-sm text-red-600">Por favor, introduce un correo electrónico válido</p>
 
-        <div>
-          <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Contaseña</label>
-          <input
-            id="password"
-            v-model="password"
-            :class="[inputClass, !passwordValid ? 'border-red-500' : '']"
-            type="password"
-            placeholder="••••••••"
-            required
-          />
-        </div>
+      <!-- Password -->
+      <FloatingInput v-model="password" id="password" label="Password" type="password" required :error="!passwordValid" />
+      <p v-if="!passwordValid" class="text-sm text-red-600">
+        La contraseña debe contener una mayúscula, una minúscula y un número
+      </p>
 
-        <!-- Error message -->
-        <p v-if="loginError" class="text-sm text-red-600 text-center">
-          ❗ Credenciales inválidas o cuenta inactiva
-        </p>
-
-        <!-- Submit button -->
-        <button type="submit" class="w-full bg-primary hover:bg-hover text-white py-2 px-4 rounded transition">
-          Iniciar Sesión
-        </button>
-      </form>
+      <!-- Submit button -->
+      <button
+        type="submit"
+        :disabled="isLoading"
+        class="w-full bg-primary hover:bg-hover text-white font-semibold py-2 px-4 rounded-md transition-colors relative"
+      >
+        <span v-if="!isLoading">Iniciar Sesión</span>
+        <svg v-else class="w-5 h-5 animate-spin text-white absolute inset-0 m-auto" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+          <path class="opacity-75" fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+        </svg>
+      </button>
 
       <!-- Redirect to register -->
-      <p class="text-center text-sm text-gray-600 dark:text-gray-300 mt-4">
+      <p class="text-center text-sm text-gray-600 dark:text-gray-300 mt-2">
         ¿Aún no tienes una cuenta?
         <RouterLink to="/register" class="text-primary hover:underline">Regístrate Aquí</RouterLink>
       </p>
-    </div>
-  </div>
+    </form>
+  </section>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
 import Swal from 'sweetalert2'
+import FloatingInput from '@/components/ui/FloatingInput.vue'
 
-// Access login method and router instance
-const { login } = useAuth()
 const router = useRouter()
+const { login } = useAuth()
 
 // Form fields
 const email = ref('')
 const password = ref('')
 
-// Validation states
+// UI states
 const emailValid = ref(true)
 const passwordValid = ref(true)
 const loginError = ref(false)
+const isLoading = ref(false)
+const mounted = ref(false)
 
-// Input field class (reusable)
-const inputClass =
-  'w-full px-4 py-2 rounded-md border border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-900 dark:text-white'
-
-// Regex validation rules
+// Regex rules
 const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/
+
+onMounted(() => {
+  mounted.value = true
+})
 
 /**
  * Handle login form submission
  */
 async function handleLogin() {
-  // Reset validation
   emailValid.value = emailRegex.test(email.value)
   passwordValid.value = passwordRegex.test(password.value)
   loginError.value = false
 
   if (emailValid.value && passwordValid.value) {
+    isLoading.value = true
     try {
-      // Perform login using composable
       const user = await login({ email: email.value, password: password.value })
 
-      // Optional: Check account status
       if (user.accountStatus !== 'active') {
         Swal.fire({
           icon: 'warning',
-          title: 'Account Not Active',
-          text: `Your account is currently "${user.accountStatus?.replace('_', ' ')}". Please contact support or wait for approval.`,
+          title: 'Cuenta no activa',
+          text: `Tu cuenta actualmente está "${user.accountStatus?.replace('_', ' ')}". Por favor, contacta con soporte.`,
         })
         return
       }
@@ -113,6 +104,13 @@ async function handleLogin() {
       }
     } catch (error) {
       loginError.value = true
+      Swal.fire({
+    icon: 'error',
+    title: 'Inicio de Sesión Fallido',
+    text: 'Correo electrónico o contraseña invaálido. Por favor, intente nuevamente.',
+  })
+    } finally {
+      isLoading.value = false
     }
   } else {
     loginError.value = true
@@ -121,7 +119,6 @@ async function handleLogin() {
 </script>
 
 <style scoped>
-/* Primary button and hover */
 .bg-primary {
   background-color: #3F51B5;
 }
@@ -132,3 +129,4 @@ async function handleLogin() {
   color: #3F51B5;
 }
 </style>
+
