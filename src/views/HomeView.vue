@@ -140,17 +140,17 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
-import { getHomes, type Home } from '@/services/propertyService'
+import { getProperties, type Property } from '@/services/propertyService'
 import { getTours, type Tour } from '@/services/tourService'
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import 'swiper/css'
 
-const homes = ref<Home[]>([])
+const properties = ref<Property[]>([])
 const tours = ref<Tour[]>([])
 
 onMounted(async () => {
   try {
-    homes.value = await getHomes()
+    properties.value = await getProperties()
     tours.value = await getTours()
   } catch (error) {
     console.error('Error al cargar datos:', error)

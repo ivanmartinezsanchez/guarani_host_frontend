@@ -1,43 +1,71 @@
 import { ref } from 'vue'
+import { loginUser, registerUser } from '@/services/authService'
 
-// User type definition
+/**
+ * User type aligned with backend model
+ */
 export type User = {
   firstName: string
   lastName: string
   email: string
-  password?: string  
   phone?: string
   address?: string
   role: 'admin' | 'host' | 'user'
+  accountStatus?: 'active' | 'suspended' | 'deleted' | 'pending_verification'
 }
 
-// Define user state using reactive references
-const stored = localStorage.getItem('user')
-const user = ref<User | null>(stored ? JSON.parse(stored) : null)
+/**
+ * Reactive user state initialized from localStorage
+ */
+const storedUser = localStorage.getItem('user')
+const user = ref<User | null>(storedUser ? JSON.parse(storedUser) : null)
 
+/**
+ * Composable to manage authentication state
+ */
 export function useAuth() {
-  // Log in function to store user in localStorage
-  function login(userData: User) {
-    user.value = userData
-    localStorage.setItem('user', JSON.stringify(userData))
+  /**
+   * Log in using email and password credentials
+   * @param credentials Object with email and password
+   * @returns Logged-in user object
+   */
+  async function login(credentials: { email: string; password: string }): Promise<User> {
+    const loggedInUser = await loginUser(credentials)
+    user.value = loggedInUser
+    return loggedInUser
   }
 
-  // Register function (just a mock, you'd use an API call)
-  function register(userData: User) {
-    user.value = userData
-    localStorage.setItem('user', JSON.stringify(userData))
+  /**
+   * Register a new user
+   * @param userData Full user data with password
+   * @returns Registered user object
+   */
+  async function register(userData: {
+    firstName: string
+    lastName: string
+    email: string
+    password: string
+    phone?: string
+    address?: string
+  }): Promise<User> {
+    const newUser = await registerUser(userData)
+    user.value = newUser
+    return newUser
   }
 
-  // Log out function to remove user from localStorage
+  /**
+   * Log out and clear local storage
+   */
   function logout() {
     user.value = null
     localStorage.removeItem('user')
+    localStorage.removeItem('token')
   }
 
   return {
     user,
     login,
     register,
-    logout
+    logout,
   }
 }

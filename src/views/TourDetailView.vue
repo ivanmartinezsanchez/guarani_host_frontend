@@ -163,7 +163,7 @@ async function handleReservation() {
 }
 </script>
 
-<style scoped>
+<style lang="postcss" scoped>
 .text-primary {
   color: #3f51b5;
 }

@@ -11,7 +11,7 @@ import TourDetailView from '@/views/TourDetailView.vue'
 
 // Admin routes - These are only accessible to admins
 import AdminDashboardView from '@/views/AdminDashboardView.vue'
-import UserManagementView from '@/views/UserManagementView.vue'
+import AdminUserManagementView from '@/views/AdminUserManagementView.vue'
 import HomeManagementView from '@/views/HomeManagementView.vue'
 import BookingManagementView from '@/views/BookingManagementView.vue'
 import TourManagementView from '@/views/TourManagementView.vue'
@@ -34,7 +34,7 @@ const routes = [
 
   // Admin routes (accessible only by admins)
   { path: '/admin/dashboard', name: 'admin-dashboard', component: AdminDashboardView, meta: { role: 'admin', showFooter: false } },  
-  { path: '/admin/users', name: 'admin-users', component: UserManagementView, meta: { role: 'admin', showFooter: false } },
+  { path: '/admin/users', name: 'admin-users', component: AdminUserManagementView, meta: { role: 'admin', showFooter: false } },
   { path: '/admin/homes', name: 'admin-homes', component: HomeManagementView, meta: { role: 'admin', showFooter: false } },
   { path: '/admin/bookings', name: 'admin-bookings', component: BookingManagementView, meta: { role: 'admin', showFooter: false } },
   { path: '/admin/tours', name: 'admin-tours', component: TourManagementView, meta: { role: 'admin', showFooter: false } },

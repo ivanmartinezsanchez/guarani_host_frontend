@@ -119,14 +119,14 @@ import { HomeIcon, PencilIcon, Trash2Icon, PlusIcon, ArrowLeftIcon, XIcon } from
 import Swal from 'sweetalert2'
 import { RouterLink } from 'vue-router'
 import { uploadImagesToCloudinary } from '@/services/cloudinaryService'
-import { getHomes, createHome, updateHome, deleteHome, Home as HomeType } from '@/services/propertyService'
+import { getProperties, createProperty, updateProperty, deleteProperty, Property as ProperyType } from '@/services/propertyService'
 
 const showForm = ref(false)
 const modalTitle = ref('Crear propiedad')
 const editIndex = ref<number | null>(null)
 const selectedFilter = ref('')
-const homes = ref<HomeType[]>([])
-const form = ref<HomeType>({
+const properties = ref<ProperyType[]>([])
+const form = ref<ProperyType>({
   title: '',
   city: '',
   address: '',
@@ -141,14 +141,14 @@ onMounted(async () => {
 
 async function fetchHomes() {
   try {
-    homes.value = await getHomes()
+    properties.value = await getProperties()
   } catch (error) {
     console.error('Error al cargar propiedades:', error)
   }
 }
 
 const filteredHomes = computed(() => {
-  let result = [...homes.value]
+  let result = [...properties.value]
   switch (selectedFilter.value) {
     case 'priceAsc':
       result.sort((a, b) => a.pricePerNight - b.pricePerNight)
@@ -200,7 +200,7 @@ async function confirmDelete(index: number) {
   })
   if (result.isConfirmed && home._id) {
     try {
-      await deleteHome(home._id)
+      await deleteProperty(home._id)
       await fetchHomes()
       Swal.fire('Eliminado', 'La propiedad ha sido eliminada', 'success')
     } catch (error) {
@@ -212,15 +212,15 @@ async function confirmDelete(index: number) {
 async function handleFormSubmit() {
   try {
     if (editIndex.value === null) {
-      await createHome(form.value)
+      await createProperty(form.value)
       Swal.fire({ title: 'Éxito', text: 'Propiedad creada', icon: 'success', timer: 2000, showConfirmButton: false })
     } else {
       if (form.value._id) {
-        await updateHome(form.value._id, form.value)
+        await updateProperty(form.value._id, form.value)
         Swal.fire({ title: 'Actualizado', text: 'Propiedad actualizada', icon: 'success', timer: 2000, showConfirmButton: false })
       }
     }
-    await fetchHomes()
+    await fetchProperties()
     cancelForm()
   } catch (error) {
     console.error('Error al guardar propiedad:', error)

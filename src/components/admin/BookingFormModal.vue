@@ -22,7 +22,7 @@
           </select>
   
           <!-- Select Property -->
-          <select v-model="form.home" class="input" required>
+          <select v-model="form.property" class="input" required>
             <option value="" disabled>Selecciona una propiedad</option>
             <option v-for="h in homes" :key="h._id" :value="h._id">
               {{ h.title }} - {{ h.city }}
@@ -57,14 +57,14 @@
   import { ref, watch, defineProps, defineEmits } from 'vue'
   import { createBooking, updateBooking, type Booking } from '@/services/bookingService'
   import type { User } from '@/services/userService'
-  import type { Home } from '@/services/propertyService'
+  import type { Property } from '@/services/propertyService'
   import Swal from 'sweetalert2'
   
   // Props
   const props = defineProps<{
     booking: Partial<Booking>,
     users: User[],
-    homes: Home[],
+    properties: Property[],
   }>()
   
   // Emits
@@ -74,7 +74,7 @@
   const form = ref<Booking>({
     _id: props.booking._id,
     user: props.booking.user || '',
-    home: props.booking.home || '',
+    home: props.booking.property || '',
     checkIn: props.booking.checkIn || '',
     checkOut: props.booking.checkOut || '',
     guests: props.booking.guests || 1,
