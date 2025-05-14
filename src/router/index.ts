@@ -28,6 +28,7 @@ const routes = [
   { path: '/', name: 'home', component: HomeView, meta: { showFooter: true } },  
   { path: '/about', name: 'about', component: AboutView, meta: { showFooter: true } }, 
   { path: '/login', name: 'login', component: LoginView, meta: { showFooter: true } }, 
+  { path: '/register', name: 'register', component: RegisterView, meta: { showFooter: true } },
   { path: '/profile', name: 'profile', component: ProfileView, meta: { showFooter: true } }, 
   { path: '/home/:id', name: 'property-detail', component: PropertyDetailView, meta: { showFooter: true } },   
   { path: '/tour/:id', name: 'tour-detail', component: TourDetailView, meta: { showFooter: true } },

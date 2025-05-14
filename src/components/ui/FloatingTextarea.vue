@@ -2,6 +2,7 @@
   <div class="relative">
     <textarea
       :id="id"
+      :name="id"
       :placeholder="label"
       :required="required"
       :aria-invalid="error ? 'true' : 'false'"
