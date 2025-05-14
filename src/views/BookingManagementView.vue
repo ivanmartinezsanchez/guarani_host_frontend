@@ -21,15 +21,11 @@
       </div>
     </div>
 
-    <!-- Mobile cards -->
+    <!-- Mobile view -->
     <div class="grid gap-4 sm:hidden">
-      <div
-        v-for="booking in filteredBookings"
-        :key="booking._id"
-        class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md space-y-2"
-      >
+      <div v-for="booking in filteredBookings" :key="booking._id" class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md space-y-2">
         <div class="font-semibold">{{ resolveUserName(booking.user) }}</div>
-        <div class="text-sm text-gray-500 dark:text-gray-300">{{ resolveHomeTitle(booking.home) }}</div>
+        <div class="text-sm text-gray-500 dark:text-gray-300">{{ resolvePropertyTitle(booking.property) }}</div>
         <div class="text-sm">Check-in: {{ formatDate(booking.checkIn) }}</div>
         <div class="text-sm">Check-out: {{ formatDate(booking.checkOut) }}</div>
         <div>
@@ -44,7 +40,7 @@
       </div>
     </div>
 
-    <!-- Table view -->
+    <!-- Desktop table view -->
     <div class="hidden sm:block bg-white dark:bg-gray-800 p-4 rounded shadow-md">
       <table class="min-w-full table-auto text-sm">
         <thead class="bg-gray-100 dark:bg-gray-700">
@@ -60,7 +56,7 @@
         <tbody>
           <tr v-for="booking in filteredBookings" :key="booking._id" class="border-b dark:border-gray-600">
             <td class="px-4 py-2">{{ resolveUserName(booking.user) }}</td>
-            <td class="px-4 py-2">{{ resolveHomeTitle(booking.home) }}</td>
+            <td class="px-4 py-2">{{ resolvePropertyTitle(booking.property) }}</td>
             <td class="px-4 py-2">{{ formatDate(booking.checkIn) }}</td>
             <td class="px-4 py-2">{{ formatDate(booking.checkOut) }}</td>
             <td class="px-4 py-2">
@@ -77,12 +73,12 @@
       </table>
     </div>
 
-    <!-- Modal for create/edit -->
+    <!-- Booking Modal -->
     <BookingFormModal
       v-if="showModal"
       :booking="selectedBooking || {}"
       :users="users"
-      :homes="homes"
+      :properties="properties"
       @saved="handleSave"
       @close="showModal = false"
     />
@@ -94,58 +90,65 @@ import { ref, computed, onMounted } from 'vue'
 import { CalendarCheckIcon, PencilIcon, Trash2Icon, PlusIcon } from 'lucide-vue-next'
 import Swal from 'sweetalert2'
 import { format } from 'date-fns'
+
 import { getBookings, deleteBooking, type Booking } from '@/services/bookingService'
 import { getAllUsers, type User } from '@/services/userService'
-import { getHomes, type Home } from '@/services/propertyService'
+import { getProperties, type Property } from '@/services/propertyService'
 import BookingFormModal from '@/components/admin/BookingFormModal.vue'
 
+// Reactive state
 const bookings = ref<Booking[]>([])
 const users = ref<User[]>([])
-const homes = ref<Home[]>([])
-const selectedStatus = ref('')
+const properties = ref<Property[]>([])
 const selectedBooking = ref<Partial<Booking>>({})
+const selectedStatus = ref('')
 const showModal = ref(false)
 
+// Lifecycle
 onMounted(async () => {
-  await Promise.all([
-    loadBookings(),
-    loadUsers(),
-    loadHomes()
-  ])
+  await Promise.all([loadBookings(), loadUsers(), loadProperties()])
 })
 
+// Loaders
 const loadBookings = async () => bookings.value = await getBookings()
 const loadUsers = async () => users.value = await getAllUsers()
-const loadHomes = async () => homes.value = await getHomes()
+const loadProperties = async () => properties.value = await getProperties()
 
+// Filters
 const filteredBookings = computed(() =>
   selectedStatus.value
     ? bookings.value.filter(b => b.status === selectedStatus.value)
     : bookings.value
 )
 
-const resolveUserName = (id: string | undefined): string => {
-  if (!id) return 'Desconocido'
-  const user = users.value.find(u => u._id === id)
-  return user ? `${user.firstName} ${user.lastName}` : 'Desconocido'
+// Formatters
+const resolveUserName = (user: string | User | undefined): string => {
+  if (!user) return 'Desconocido'
+  if (typeof user === 'string') {
+    const match = users.value.find(u => u._id === user)
+    return match ? `${match.firstName} ${match.lastName}` : 'Desconocido'
+  }
+  return `${user.firstName} ${user.lastName}`
 }
 
-const resolveHomeTitle = (id: string | undefined): string => {
-  if (!id) return 'Desconocido'
-  const home = homes.value.find(h => h._id === id)
-  return home ? `${home.title} - ${home.city}` : 'Desconocido'
+const resolvePropertyTitle = (property: string | Property | undefined): string => {
+  if (!property) return 'Desconocido'
+  if (typeof property === 'string') {
+    const match = properties.value.find(p => p._id === property)
+    return match ? `${match.title} - ${match.city}` : 'Desconocido'
+  }
+  return `${property.title} - ${property.city}`
 }
 
-const formatDate = (dateStr: string) => format(new Date(dateStr), 'dd MMM yyyy')
+const formatDate = (date: Date | string) => format(new Date(date), 'dd MMM yyyy')
 
-const statusBadge = (status: string) => {
-  return {
-    pending: 'bg-yellow-200 text-yellow-800',
-    confirmed: 'bg-green-200 text-green-800',
-    cancelled: 'bg-red-200 text-red-800'
-  }[status] || 'bg-gray-200 text-gray-800'
-}
+const statusBadge = (status: string) => ({
+  pending: 'bg-yellow-200 text-yellow-800',
+  confirmed: 'bg-green-200 text-green-800',
+  cancelled: 'bg-red-200 text-red-800'
+}[status] || 'bg-gray-200 text-gray-800')
 
+// Modal handlers
 const editBooking = (booking: Booking) => {
   selectedBooking.value = { ...booking }
   showModal.value = true
