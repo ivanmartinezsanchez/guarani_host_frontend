@@ -1,23 +1,22 @@
 <template>
   <div class="max-w-7xl mx-auto p-6">
-    <!-- Header -->
-    <h1 class="text-3xl font-bold text-primary mb-6 text-center">My Tour Packages</h1>
+    <!-- Page Title -->
+    <h1 class="text-3xl font-bold text-primary text-center mb-8">My Tour Packages</h1>
 
-    <!-- Tour List Section -->
+    <!-- Tour List -->
     <section class="mb-10">
-      <div class="flex justify-between items-center flex-wrap gap-4 mb-4">
+      <div class="flex justify-between items-center mb-4">
         <h2 class="text-xl font-semibold">Published Packages</h2>
-        <button @click="toggleForm" class="bg-primary hover:bg-hover text-white px-4 py-2 rounded transition">
-          {{ showForm ? 'Close Form' : 'New Package' }}
+        <button @click="toggleForm" class="bg-primary hover:bg-hover text-white px-4 py-2 rounded">
+          {{ showForm ? 'Close' : 'New Package' }}
         </button>
       </div>
 
-      <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md overflow-x-auto">
+      <div class="bg-white dark:bg-gray-800 p-4 rounded shadow-md overflow-x-auto">
         <table class="min-w-full table-auto text-sm">
-          <thead class="bg-gray-100 dark:bg-gray-700 text-left">
-            <tr>
+          <thead class="bg-gray-100 dark:bg-gray-700">
+            <tr class="text-left">
               <th class="px-4 py-2">Title</th>
-              <th class="px-4 py-2">Description</th>
               <th class="px-4 py-2">Price</th>
               <th class="px-4 py-2">Status</th>
               <th class="px-4 py-2">Actions</th>
@@ -27,15 +26,14 @@
             <tr
               v-for="tour in myTours"
               :key="tour._id"
-              class="border-b dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+              class="border-b dark:border-gray-600"
             >
               <td class="px-4 py-2">{{ tour.title }}</td>
-              <td class="px-4 py-2">{{ tour.description }}</td>
               <td class="px-4 py-2">${{ tour.price }}</td>
               <td class="px-4 py-2 capitalize">{{ tour.status }}</td>
               <td class="px-4 py-2 flex gap-2">
                 <button @click="editTour(tour)" class="text-blue-500 hover:text-blue-700">Edit</button>
-                <button @click="confirmDelete(tour._id!)" class="text-red-500 hover:text-red-700">Delete</button>
+                <button @click="handleDeleteTour(tour._id!)" class="text-red-500 hover:text-red-700">Delete</button>
               </td>
             </tr>
           </tbody>
@@ -43,22 +41,22 @@
       </div>
     </section>
 
-    <!-- Tour Form Section -->
-    <section v-if="showForm" class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
+    <!-- Form Section -->
+    <section v-if="showForm" class="bg-white dark:bg-gray-800 p-6 rounded shadow-md">
       <h2 class="text-xl font-semibold mb-4">{{ editId ? 'Edit' : 'New' }} Package</h2>
       <form @submit.prevent="submitForm" class="space-y-4">
         <input v-model="form.title" type="text" placeholder="Title" class="input" required />
-        <textarea v-model="form.description" placeholder="Description" class="input" rows="3" required />
         <input v-model.number="form.price" type="number" placeholder="Price" class="input" required />
-        <select v-model="form.status" class="input" required>
+        <textarea v-model="form.description" placeholder="Description" class="input" rows="3" required />
+        <select v-model="form.status" class="input">
           <option value="available">Available</option>
           <option value="upcoming">Upcoming</option>
-          <option value="sold out">Sold Out</option>
           <option value="cancelled">Cancelled</option>
+          <option value="sold out">Sold Out</option>
         </select>
-        <div class="flex justify-end gap-3">
-          <button type="button" @click="resetForm" class="text-gray-600 dark:text-white hover:underline">Cancel</button>
-          <button type="submit" class="bg-primary hover:bg-hover text-white px-6 py-2 rounded transition">
+        <div class="flex justify-end gap-2">
+          <button type="button" @click="resetForm" class="text-gray-500">Cancel</button>
+          <button type="submit" class="bg-primary hover:bg-hover text-white px-4 py-2 rounded">
             {{ editId ? 'Update' : 'Create' }}
           </button>
         </div>
@@ -68,7 +66,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import Swal from 'sweetalert2'
 import {
   getTours,
@@ -81,103 +79,110 @@ import {
 const showForm = ref(false)
 const editId = ref<string | null>(null)
 const allTours = ref<Tour[]>([])
+
 const user = JSON.parse(localStorage.getItem('user') || '{}')
 
-// Default form
+// Default form state
 const form = ref<Partial<Tour>>({
   title: '',
   description: '',
   price: 0,
   status: 'available',
-  imageUrls: [],
-  host: user._id
+  host: user._id,
+  imageUrls: []
 })
 
-// Filtered by host
-const myTours = computed(() => allTours.value.filter(t => t.host === user._id))
+// Filter tours for current host
+const myTours = computed(() =>
+  allTours.value.filter(t => t.host === user._id)
+)
 
-// Load on mount
+// Load tours on mount
 onMounted(async () => {
-  await refreshTours()
+  allTours.value = await getTours()
 })
 
-// Load from backend
-async function refreshTours() {
-  allTours.value = await getTours()
-}
-
-// Toggle form
-function toggleForm() {
-  showForm.value = !showForm.value
-  if (!showForm.value) resetForm()
-}
-
-// Submit tour
+/**
+ * Create or update tour
+ */
 async function submitForm() {
-  const data: Tour = {
-    title: form.value.title ?? '',
-    description: form.value.description ?? '',
-    price: form.value.price ?? 0,
-    status: form.value.status ?? 'available',
-    imageUrls: form.value.imageUrls ?? [],
+  const data = {
+    ...form.value,
     host: user._id,
-    paymentStatus: 'pending'
+    imageUrls: form.value.imageUrls || [],
   }
 
-  try {
-    if (!editId.value) {
-      await createTour(data)
-      Swal.fire('Created', 'Tour created successfully', 'success')
-    } else {
-      await updateTour(editId.value, data)
-      Swal.fire('Updated', 'Tour updated successfully', 'success')
-    }
-    await refreshTours()
-    resetForm()
-  } catch (error) {
-    console.error('❌ Tour error:', error)
-    Swal.fire('Error', 'Something went wrong', 'error')
+  if (!editId.value) {
+    await createTour(data as Tour)
+    Swal.fire('Created', 'Tour created successfully', 'success')
+  } else {
+    await updateTour(editId.value, data as Tour)
+    Swal.fire('Updated', 'Tour updated successfully', 'success')
   }
+
+  await refresh()
+  resetForm()
 }
 
-// Edit
+/**
+ * Set form values to edit a tour
+ */
 function editTour(tour: Tour) {
   form.value = { ...tour }
-  editId.value = tour._id ?? null
+  editId.value = tour._id || null
   showForm.value = true
 }
 
-// Delete
-async function confirmDelete(id: string) {
+/**
+ * Confirm and delete a tour
+ */
+async function handleDeleteTour(id: string) {
   const result = await Swal.fire({
-    title: 'Delete this tour?',
+    title: 'Delete this package?',
     text: 'This action cannot be undone',
     icon: 'warning',
     showCancelButton: true,
     confirmButtonColor: '#3F51B5',
     cancelButtonColor: '#d33',
-    confirmButtonText: 'Yes, delete'
+    confirmButtonText: 'Yes, delete it'
   })
 
   if (result.isConfirmed) {
     await deleteTour(id)
-    await refreshTours()
-    Swal.fire('Deleted', 'Tour deleted successfully', 'success')
+    await refresh()
+    Swal.fire('Deleted', 'Package deleted successfully', 'success')
   }
 }
 
-// Reset form
+/**
+ * Reset form to default state
+ */
 function resetForm() {
-  showForm.value = false
-  editId.value = null
   form.value = {
     title: '',
     description: '',
     price: 0,
     status: 'available',
-    imageUrls: [],
-    host: user._id
+    host: user._id,
+    imageUrls: []
   }
+  editId.value = null
+  showForm.value = false
+}
+
+/**
+ * Reload tours from API
+ */
+async function refresh() {
+  allTours.value = await getTours()
+}
+
+/**
+ * Toggle the form visibility
+ */
+function toggleForm() {
+  showForm.value = !showForm.value
+  if (!showForm.value) resetForm()
 }
 </script>
 
@@ -195,3 +200,4 @@ function resetForm() {
   background-color: #303F9F;
 }
 </style>
+
