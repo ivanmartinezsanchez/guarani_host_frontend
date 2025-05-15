@@ -1,7 +1,7 @@
 <template>
   <div class="max-w-7xl mx-auto p-6">
     <!-- Title -->
-    <h1 class="text-3xl font-bold text-primary text-center mb-8">User Dashboard</h1>
+    <h1 class="text-3xl font-bold text-primary text-center mb-8">Panel de Control del Uusario</h1>
 
     <!-- Cards Grid -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

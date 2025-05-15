@@ -1,12 +1,12 @@
 <template>
   <div class="max-w-7xl mx-auto p-6">
-    <h1 class="text-3xl font-bold text-primary text-center mb-8">User Management</h1>
+    <h1 class="text-3xl font-bold text-primary text-center mb-8">Panel de Gestión de Usuarios</h1>
 
     <!-- Top header with title and create button -->
     <div class="flex justify-between items-center flex-wrap gap-4 mb-6">
       <div class="flex items-center gap-2">
         <UsersIcon class="w-6 h-6 text-primary" />
-        <h2 class="text-xl font-semibold">User List</h2>
+        <h2 class="text-xl font-semibold">Lista de Usuarios</h2>
       </div>
       <button
         @click="showForm = !showForm"
@@ -20,12 +20,12 @@
     <!-- Filter and table -->
     <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md mb-6">
       <div class="flex flex-wrap justify-between items-center mb-4">
-        <label class="font-medium text-sm">Filter by role:</label>
+        <label class="font-medium text-sm">Filtrar por rol:</label>
         <select v-model="selectedRole" class="input max-w-xs">
-          <option value="">All</option>
-          <option value="user">User</option>
-          <option value="host">Host</option>
-          <option value="admin">Admin</option>
+          <option value="">Todos</option>
+          <option value="user">Usuario</option>
+          <option value="host">Anfitrión</option>
+          <option value="admin">Administrador</option>
         </select>
       </div>
 
@@ -33,9 +33,9 @@
         <table class="min-w-full text-sm table-auto">
           <thead class="bg-gray-100 dark:bg-gray-700">
             <tr>
-              <th class="px-4 py-2 text-left">Name</th>
-              <th class="px-4 py-2 text-left">Email</th>
-              <th class="px-4 py-2 text-left">Role</th>
+              <th class="px-4 py-2 text-left">Nombre</th>
+              <th class="px-4 py-2 text-left">Correo Electrónico</th>
+              <th class="px-4 py-2 text-left">Rol</th>
               <th class="px-4 py-2 text-left">Actions</th>
             </tr>
           </thead>
@@ -67,15 +67,15 @@
       <div v-if="showForm" class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md mb-10">
         <h2 class="text-xl font-semibold mb-4">{{ modalTitle }}</h2>
         <form @submit.prevent="handleFormSubmit" class="space-y-4">
-          <input v-model="form.firstName" type="text" placeholder="First Name" class="input" required />
-          <input v-model="form.lastName" type="text" placeholder="Last Name" class="input" required />
-          <input v-model="form.email" type="email" placeholder="Email" class="input" required />
-          <input v-model="form.phone" type="tel" placeholder="Phone" class="input" required />
-          <input v-model="form.address" type="text" placeholder="Address" class="input" required />
+          <input v-model="form.firstName" type="text" placeholder="Nombre" class="input" required />
+          <input v-model="form.lastName" type="text" placeholder="Apellido" class="input" required />
+          <input v-model="form.email" type="email" placeholder="Correo Electrónico" class="input" required />
+          <input v-model="form.phone" type="tel" placeholder="Teléfono" class="input" required />
+          <input v-model="form.address" type="text" placeholder="Dirección" class="input" required />
           <select v-model="form.role" class="input" required>
-            <option value="user">User</option>
-            <option value="host">Host</option>
-            <option value="admin">Admin</option>
+            <option value="user">Usuario</option>
+            <option value="host">Anfitrión</option>
+            <option value="admin">Administrador</option>
           </select>
           <input
             v-if="modalTitle === 'Create User'"
@@ -91,7 +91,7 @@
               @click="resetForm"
               class="border px-4 py-2 rounded text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition"
             >
-              Cancel
+              Cancelar
             </button>
             <button type="submit" class="bg-primary text-white px-6 py-2 rounded hover:bg-hover transition">
               {{ modalTitle === 'Create User' ? 'Create' : 'Update' }}
@@ -104,7 +104,7 @@
     <!-- Back to dashboard -->
     <div class="text-center mt-6">
       <RouterLink to="/admin/dashboard" class="inline-flex items-center gap-2 text-primary hover:text-hover underline">
-        <ArrowLeftIcon class="w-4 h-4" /> Back to Dashboard
+        <ArrowLeftIcon class="w-4 h-4" /> Ir al Panel de Control
       </RouterLink>
     </div>
   </div>

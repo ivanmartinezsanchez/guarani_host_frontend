@@ -72,7 +72,7 @@
     <!-- Back to dashboard -->
     <div class="text-center mt-10">
       <RouterLink to="/admin/dashboard" class="inline-flex items-center gap-2 text-primary underline hover:text-hover">
-        <ArrowLeftIcon class="w-4 h-4" /> Ir al Dashboard
+        <ArrowLeftIcon class="w-4 h-4" /> Ir al Panel de Control
       </RouterLink>
     </div>
   </div>
@@ -122,7 +122,7 @@ async function fetchTours() {
   try {
     tours.value = await getTours()
   } catch (err) {
-    console.error('Error al cargar tours:', err)
+    console.error('❌ Error al cargar tours:', err)
   }
 }
 

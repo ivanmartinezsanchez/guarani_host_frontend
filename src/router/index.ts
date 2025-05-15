@@ -34,7 +34,7 @@ const routes = [
   { path: '/register', name: 'register', component: RegisterView, meta: { showFooter: true } },
   { path: '/profile', name: 'profile', component: UserProfileView, meta: { showFooter: true } }, 
   { path: '/profile/edit', name: 'edit-profile', component: EditProfileView, meta: { showFooter: true, requiresAuth: true } },
-  { path: '/home/:id', name: 'property-detail', component: PropertyDetailView, meta: { showFooter: true } },   
+  { path: '/property/:id', name: 'property-detail', component: PropertyDetailView, meta: { showFooter: true } },   
   { path: '/tour/:id', name: 'tour-detail', component: TourDetailView, meta: { showFooter: true } },
 
   // Admin routes (accessible only by admins)

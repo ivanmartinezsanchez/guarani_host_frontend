@@ -1,12 +1,12 @@
 <template>
   <div class="max-w-7xl mx-auto p-6">
     <!-- Header -->
-    <h1 class="text-3xl font-bold text-primary text-center mb-8">My Properties</h1>
+    <h1 class="text-3xl font-bold text-primary text-center mb-8">Mis Propiedades</h1>
 
     <!-- Property List Section -->
     <section class="mb-8">
       <div class="flex justify-between items-center mb-4">
-        <h2 class="text-xl font-semibold">Published Properties</h2>
+        <h2 class="text-xl font-semibold">Propiedades Publicadas</h2>
         <button @click="toggleForm" class="bg-primary hover:bg-hover text-white px-4 py-2 rounded">
           {{ showForm ? 'Close' : 'New Property' }}
         </button>
@@ -17,10 +17,10 @@
         <table class="min-w-full table-auto text-sm">
           <thead class="bg-gray-100 dark:bg-gray-700">
             <tr>
-              <th class="px-4 py-2 text-left">Title</th>
-              <th class="px-4 py-2 text-left">City</th>
-              <th class="px-4 py-2 text-left">Price</th>
-              <th class="px-4 py-2 text-left">Available</th>
+              <th class="px-4 py-2 text-left">Título</th>
+              <th class="px-4 py-2 text-left">Ciudad</th>
+              <th class="px-4 py-2 text-left">Precio</th>
+              <th class="px-4 py-2 text-left">Disponibilidad</th>
               <th class="px-4 py-2 text-left">Actions</th>
             </tr>
           </thead>
@@ -31,8 +31,8 @@
               <td class="px-4 py-2">${{ home.pricePerNight }}</td>
               <td class="px-4 py-2">{{ home.status === 'available' ? 'Yes' : 'No' }}</td>
               <td class="px-4 py-2 flex gap-2">
-                <button @click="editProperty(home)" class="text-blue-500 hover:text-blue-700">Edit</button>
-                <button @click="handleDeleteProperty(home._id!)" class="text-red-500 hover:text-red-700">Delete</button>
+                <button @click="editProperty(home)" class="text-blue-500 hover:text-blue-700">Editar</button>
+                <button @click="handleDeleteProperty(home._id!)" class="text-red-500 hover:text-red-700">Eliminar</button>
               </td>
             </tr>
           </tbody>
@@ -44,16 +44,16 @@
     <section v-if="showForm" class="bg-white dark:bg-gray-800 p-6 rounded shadow-md">
       <h2 class="text-xl font-semibold mb-4">{{ editId ? 'Edit' : 'New' }} Property</h2>
       <form @submit.prevent="submitForm" class="space-y-4">
-        <input v-model="form.title" type="text" placeholder="Title" class="input" required />
-        <input v-model="form.city" type="text" placeholder="City" class="input" required />
-        <input v-model="form.address" type="text" placeholder="Address" class="input" required />
-        <input v-model.number="form.pricePerNight" type="number" placeholder="Price per night" class="input" required />
+        <input v-model="form.title" type="text" placeholder="Título" class="input" required />
+        <input v-model="form.city" type="text" placeholder="Ciudad" class="input" required />
+        <input v-model="form.address" type="text" placeholder="Dirección" class="input" required />
+        <input v-model.number="form.pricePerNight" type="number" placeholder="Precio por Noche" class="input" required />
         <label class="flex items-center gap-2">
           <input type="checkbox" v-model="form.status" true-value="available" false-value="inactive" class="accent-primary" />
-          Available
+          Disponible
         </label>
         <div class="flex justify-end gap-2">
-          <button type="button" @click="resetForm" class="text-gray-500">Cancel</button>
+          <button type="button" @click="resetForm" class="text-gray-500">Cancelar</button>
           <button type="submit" class="bg-primary hover:bg-hover text-white px-4 py-2 rounded">
             {{ editId ? 'Update' : 'Create' }}
           </button>

@@ -1,16 +1,16 @@
 <template>
   <div class="max-w-7xl mx-auto p-6">
-    <h1 class="text-3xl font-bold text-primary mb-6 text-center">Received Bookings</h1>
+    <h1 class="text-3xl font-bold text-primary mb-6 text-center">Reservas Recibidas</h1>
 
     <!-- Export and Filters -->
     <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
       <div class="flex items-center gap-2">
         <label class="text-sm">Status:</label>
         <select v-model="filter.paymentStatus" class="input text-sm">
-          <option value="">All</option>
-          <option value="pending">Pending</option>
-          <option value="paid">Paid</option>
-          <option value="refunded">Refunded</option>
+          <option value="">Todas</option>
+          <option value="pending">Pendientes</option>
+          <option value="paid">Pagado</option>
+          <option value="refunded">Reembolsado</option>
         </select>
       </div>
       <button
@@ -27,12 +27,12 @@
         <thead class="bg-gray-100 dark:bg-gray-700">
           <tr class="text-left">
             <th class="px-4 py-2">Guest</th>
-            <th class="px-4 py-2">Type</th>
-            <th class="px-4 py-2">Name</th>
-            <th class="px-4 py-2">Dates</th>
-            <th class="px-4 py-2">Guests</th>
+            <th class="px-4 py-2">Tipo</th>
+            <th class="px-4 py-2">Nombre</th>
+            <th class="px-4 py-2">Fechas</th>
+            <th class="px-4 py-2">Número de Personas</th>
             <th class="px-4 py-2">Status</th>
-            <th class="px-4 py-2">Payment</th>
+            <th class="px-4 py-2">Pago</th>
           </tr>
         </thead>
         <tbody>

@@ -1,12 +1,12 @@
 <template>
   <div class="max-w-7xl mx-auto p-6">
     <!-- Page Title -->
-    <h1 class="text-3xl font-bold text-primary text-center mb-8">My Tour Packages</h1>
+    <h1 class="text-3xl font-bold text-primary text-center mb-8">Mis Paquetes Turísticos</h1>
 
     <!-- Tour List -->
     <section class="mb-10">
       <div class="flex justify-between items-center mb-4">
-        <h2 class="text-xl font-semibold">Published Packages</h2>
+        <h2 class="text-xl font-semibold">Tours publicados</h2>
         <button @click="toggleForm" class="bg-primary hover:bg-hover text-white px-4 py-2 rounded">
           {{ showForm ? 'Close' : 'New Package' }}
         </button>
@@ -16,8 +16,8 @@
         <table class="min-w-full table-auto text-sm">
           <thead class="bg-gray-100 dark:bg-gray-700">
             <tr class="text-left">
-              <th class="px-4 py-2">Title</th>
-              <th class="px-4 py-2">Price</th>
+              <th class="px-4 py-2">Destino</th>
+              <th class="px-4 py-2">Precio</th>
               <th class="px-4 py-2">Status</th>
               <th class="px-4 py-2">Actions</th>
             </tr>
@@ -45,17 +45,17 @@
     <section v-if="showForm" class="bg-white dark:bg-gray-800 p-6 rounded shadow-md">
       <h2 class="text-xl font-semibold mb-4">{{ editId ? 'Edit' : 'New' }} Package</h2>
       <form @submit.prevent="submitForm" class="space-y-4">
-        <input v-model="form.title" type="text" placeholder="Title" class="input" required />
-        <input v-model.number="form.price" type="number" placeholder="Price" class="input" required />
-        <textarea v-model="form.description" placeholder="Description" class="input" rows="3" required />
+        <input v-model="form.title" type="text" placeholder="Destino" class="input" required />
+        <input v-model.number="form.price" type="number" placeholder="Precio" class="input" required />
+        <textarea v-model="form.description" placeholder="Descripción" class="input" rows="3" required />
         <select v-model="form.status" class="input">
-          <option value="available">Available</option>
-          <option value="upcoming">Upcoming</option>
-          <option value="cancelled">Cancelled</option>
-          <option value="sold out">Sold Out</option>
+          <option value="available">Disponible</option>
+          <option value="upcoming">Próximamente</option>
+          <option value="cancelled">Cancelado</option>
+          <option value="sold out">Agotado</option>
         </select>
         <div class="flex justify-end gap-2">
-          <button type="button" @click="resetForm" class="text-gray-500">Cancel</button>
+          <button type="button" @click="resetForm" class="text-gray-500">Cancelar</button>
           <button type="submit" class="bg-primary hover:bg-hover text-white px-4 py-2 rounded">
             {{ editId ? 'Update' : 'Create' }}
           </button>

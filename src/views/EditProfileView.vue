@@ -1,13 +1,13 @@
 <template>
   <div class="max-w-2xl mx-auto p-6">
-    <h1 class="text-3xl font-bold text-primary mb-6 text-center">Edit Profile</h1>
+    <h1 class="text-3xl font-bold text-primary mb-6 text-center">Editar Perfil</h1>
 
     <form @submit.prevent="submitForm" class="space-y-6 bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <input v-model="form.firstName" type="text" placeholder="First Name" class="input" required />
-        <input v-model="form.lastName" type="text" placeholder="Last Name" class="input" required />
-        <input v-model="form.phone" type="tel" placeholder="Phone" class="input" />
-        <input v-model="form.address" type="text" placeholder="Address" class="input" />
+        <input v-model="form.firstName" type="text" placeholder="Nombre" class="input" required />
+        <input v-model="form.lastName" type="text" placeholder="Apellido" class="input" required />
+        <input v-model="form.phone" type="tel" placeholder="Teléfono" class="input" />
+        <input v-model="form.address" type="text" placeholder="Dirección" class="input" />
       </div>
 
       <div class="flex justify-end gap-4">
@@ -15,10 +15,10 @@
           to="/profile"
           class="px-4 py-2 text-sm border rounded text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
         >
-          Cancel
+          Cancelar
         </router-link>
         <button type="submit" class="bg-primary text-white px-6 py-2 rounded hover:bg-hover transition">
-          Save Changes
+          Guardar Cambios
         </button>
       </div>
     </form>

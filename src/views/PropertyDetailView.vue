@@ -17,26 +17,26 @@
 
       <!-- Details -->
       <div class="text-lg text-gray-800 dark:text-gray-200 space-y-2">
-        <p><strong>Price per night:</strong> ${{ property.pricePerNight }}</p>
-        <p><strong>Availability:</strong> {{ property.status === 'available' ? 'Available' : 'Unavailable' }}</p>
+        <p><strong>Precio por Noche:</strong> ${{ property.pricePerNight }}</p>
+        <p><strong>Disponibilidad:</strong> {{ property.status === 'available' ? 'Available' : 'Unavailable' }}</p>
       </div>
 
       <!-- Booking -->
       <div class="mt-8 space-y-4">
-        <h2 class="text-xl font-semibold text-primary">Reserve Dates</h2>
+        <h2 class="text-xl font-semibold text-primary">Reservas</h2>
 
         <VueDatePicker
           v-model="dateRange"
           range
           format="yyyy-MM-dd"
           :disabled-dates="bookedDates"
-          placeholder="Select a date range"
+          placeholder="Seleccion un rango"
           class="w-full max-w-md"
         />
 
         <div class="mt-2 max-w-xs">
           <label for="guests" class="block text-sm font-medium mb-1 text-gray-700 dark:text-white">
-            Number of guests
+            Número de personas
           </label>
           <input
             id="guests"
@@ -52,13 +52,13 @@
           class="bg-primary hover:bg-hover text-white px-6 py-2 rounded-full transition disabled:opacity-50"
           @click="handleReservation"
         >
-          Confirm Booking
+          Confirmar Reserva
         </button>
       </div>
     </div>
 
     <div v-else class="text-center py-20 text-gray-500 dark:text-gray-400">
-      Loading property details...
+      CArgando detalles de la propiedad...
     </div>
   </section>
 </template>

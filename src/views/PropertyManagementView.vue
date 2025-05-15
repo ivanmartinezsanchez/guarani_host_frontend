@@ -11,7 +11,7 @@
             <HomeIcon class="w-5 h-5" /> Lista de propiedades
           </div>
           <button @click="showForm = !showForm" class="text-white bg-primary hover:bg-hover px-3 py-1 rounded flex items-center gap-1">
-            <PlusIcon class="w-5 h-5" /> Nueva propiedad
+            <PlusIcon class="w-5 h-5" /> Agregar 
           </button>
         </h2>
 
@@ -101,7 +101,7 @@
     <!-- Return to dashboard -->
     <div class="mt-10 text-center">
       <RouterLink to="/admin/dashboard" class="inline-flex items-center gap-2 text-primary underline hover:text-hover">
-        <ArrowLeftIcon class="w-4 h-4" /> Ir al Dashboard
+        <ArrowLeftIcon class="w-4 h-4" /> Ir al Panel de Control
       </RouterLink>
     </div>
   </div>
