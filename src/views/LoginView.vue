@@ -1,21 +1,36 @@
 <template>
   <section class="min-h-screen flex items-center justify-center px-4 bg-gray-50 dark:bg-gray-950 transition-colors duration-300">
     <form
+      v-if="mounted"
       @submit.prevent="handleLogin"
-      v-show="mounted"
-      class="w-full max-w-md bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-md space-y-6 transition duration-500 ease-out transform scale-95 opacity-0"
-      :class="{ 'scale-100 opacity-100': mounted }"
+      class="w-full max-w-md bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-md space-y-6 transition duration-500 ease-out transform scale-100 opacity-100"
     >
       <h2 class="text-2xl font-bold text-center text-gray-800 dark:text-white tracking-tight">
         Iniciar Sesión
       </h2>
 
       <!-- Email -->
-      <FloatingInput v-model="email" id="email" label="Email" type="email" required :error="!emailValid" />
+      <FloatingInput
+        v-model="email"
+        id="email"
+        label="Email"
+        type="email"
+        autocomplete="email"
+        required
+        :error="!emailValid"
+      />
       <p v-if="!emailValid" class="text-sm text-red-600">Por favor, introduce un correo electrónico válido</p>
 
       <!-- Password -->
-      <FloatingInput v-model="password" id="password" label="Password" type="password" required :error="!passwordValid" />
+      <FloatingInput
+        v-model="password"
+        id="password"
+        label="Password"
+        type="password"
+        autocomplete="current-password"
+        required
+        :error="!passwordValid"
+      />
       <p v-if="!passwordValid" class="text-sm text-red-600">
         La contraseña debe contener una mayúscula, una minúscula y un número
       </p>
@@ -27,10 +42,18 @@
         class="w-full bg-primary hover:bg-hover text-white font-semibold py-2 px-4 rounded-md transition-colors relative"
       >
         <span v-if="!isLoading">Iniciar Sesión</span>
-        <svg v-else class="w-5 h-5 animate-spin text-white absolute inset-0 m-auto" fill="none" viewBox="0 0 24 24">
+        <svg
+          v-else
+          class="w-5 h-5 animate-spin text-white absolute inset-0 m-auto"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-          <path class="opacity-75" fill="currentColor"
-            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          <path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+          />
         </svg>
       </button>
 
@@ -85,7 +108,7 @@ async function handleLogin() {
     try {
       const user = await login({ email: email.value, password: password.value })
 
-      if (user.accountStatus !== 'active') {
+      if (user.accountStatus?.toUpperCase() !== 'ACTIVE') {
         Swal.fire({
           icon: 'warning',
           title: 'Cuenta no activa',
@@ -105,10 +128,10 @@ async function handleLogin() {
     } catch (error) {
       loginError.value = true
       Swal.fire({
-    icon: 'error',
-    title: 'Inicio de Sesión Fallido',
-    text: 'Correo electrónico o contraseña invaálido. Por favor, intente nuevamente.',
-  })
+        icon: 'error',
+        title: 'Inicio de Sesión Fallido',
+        text: 'Correo electrónico o contraseña inválido. Por favor, intente nuevamente.',
+      })
     } finally {
       isLoading.value = false
     }
@@ -129,4 +152,3 @@ async function handleLogin() {
   color: #3F51B5;
 }
 </style>
-
