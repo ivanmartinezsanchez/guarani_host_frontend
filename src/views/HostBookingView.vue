@@ -60,7 +60,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
 import Swal from 'sweetalert2'
-import { getHostBookings, exportHostBookingsToPDF, type Booking } from '@/services/hostBookingService'
+import { getHostBookings, exportHostBookingsToPDF, type Booking } from '../services/hostBookingService'
 
 const bookings = ref<Booking[]>([])
 const filter = ref({ paymentStatus: '' })

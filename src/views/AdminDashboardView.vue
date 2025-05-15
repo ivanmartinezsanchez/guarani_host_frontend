@@ -1,45 +1,34 @@
 <template>
-  <RouterLink
-    :to="to"
-    class="block bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6 hover:shadow-lg transition duration-300"
-  >
-    <div class="flex items-center gap-4">
-      <!-- Dynamic icon component -->
-      <component :is="iconComponent" class="w-8 h-8 text-primary" />
-      <h2 class="text-lg font-semibold text-gray-800 dark:text-white">{{ title }}</h2>
+  <div class="max-w-7xl mx-auto p-6">
+    <h1 class="text-3xl font-bold text-primary text-center mb-8">Admin Dashboard</h1>
+
+    <!-- Cards grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <!-- Users -->
+      <DashboardCard title="Users" icon="User" to="/admin/users" />
+      <!-- Properties -->
+      <DashboardCard title="Properties" icon="Home" to="/admin/homes" />
+      <!-- Tours -->
+      <DashboardCard title="Tour Packages" icon="MapPinned" to="/admin/tours" />
+      <!-- Bookings -->
+      <DashboardCard title="Bookings" icon="CalendarCheck" to="/admin/bookings" />
     </div>
-  </RouterLink>
+  </div>
 </template>
 
 <script setup lang="ts">
-/**
- * DashboardCard component
- * Used to display a management section with icon and label
- * Props:
- * - title: string - the title to show
- * - icon: one of the allowed icon names
- * - to: router path
- */
-
-import { defineProps, computed } from 'vue'
-import { User, Home, CalendarCheck, MapPinned } from 'lucide-vue-next'
-
-const props = defineProps<{
-  title: string
-  icon: 'User' | 'Home' | 'CalendarCheck' | 'MapPinned'
-  to: string
-}>()
-
-// Icon mapping
-const icons = { User, Home, CalendarCheck, MapPinned }
-
-// Compute the actual icon component from the prop
-const iconComponent = computed(() => icons[props.icon])
+import DashboardCard from '@/components/DashboardCard.vue'
 </script>
 
 <style scoped>
 .text-primary {
-  /* Indigo base color (Airbnb-inspired) */
   color: #3F51B5;
 }
+.bg-primary {
+  background-color: #3F51B5;
+}
+.hover\:bg-hover:hover {
+  background-color: #303F9F;
+}
 </style>
+

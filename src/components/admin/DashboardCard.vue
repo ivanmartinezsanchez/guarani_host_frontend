@@ -1,55 +1,57 @@
 <template>
+  <!-- Dashboard navigation card -->
   <RouterLink
     :to="to"
-    class="block bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6 hover:shadow-lg transition duration-300"
-    aria-label="Go to {{ title }}"  <!-- Added accessibility -->
+    class="group block w-full bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6 hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-primary"
+    :aria-label="`Go to ${title}`"
   >
     <div class="flex items-center gap-4">
-      <!-- Dynamically render the icon based on the 'icon' prop -->
-      <component :is="iconComponent" class="w-8 h-8 text-primary" />
-      <h2 class="text-lg font-semibold text-gray-800 dark:text-white">{{ title }}</h2>
+      <!-- Dynamic icon with animation -->
+      <component
+        :is="iconComponent"
+        class="w-10 h-10 text-primary group-hover:scale-110 transition-transform duration-300"
+      />
+      <h2 class="text-lg font-semibold text-gray-800 dark:text-white">
+        {{ title }}
+      </h2>
     </div>
   </RouterLink>
 </template>
 
 <script setup lang="ts">
-import { defineProps } from 'vue'
-import {
-  User,
-  Home,
-  CalendarCheck,
-  MapPinned
-} from 'lucide-vue-next'
+/**
+ * DashboardCard.vue
+ * -----------------
+ * Reusable dashboard card with animated icon and title.
+ * Props:
+ * - title: string - The section title
+ * - icon: string - One of the predefined Lucide icons
+ * - to: string - Vue Router path to navigate to
+ */
 
-// Define the props for the component
+import { defineProps, computed } from 'vue'
+import { User, Home, CalendarCheck, MapPinned } from 'lucide-vue-next'
+
+// Props definition with icon options
 const props = defineProps<{
   title: string
-  icon: 'User' | 'Home' | 'CalendarCheck' | 'MapPinned'  // Define icon options
+  icon: 'User' | 'Home' | 'CalendarCheck' | 'MapPinned'
   to: string
 }>()
 
-// Mapping of icon names to components
+// Icon lookup and dynamic resolution
 const icons = { User, Home, CalendarCheck, MapPinned }
-// Dynamically resolve the icon component based on the 'icon' prop
-const iconComponent = icons[props.icon]
+const iconComponent = computed(() => icons[props.icon])
 </script>
 
 <style scoped>
-/* Card styles */
-.block {
-  display: block;
-  width: 100%;
+.text-primary {
+  color: #3F51B5;
 }
 .bg-primary {
   background-color: #3F51B5;
 }
-.text-primary {
-  color: #3F51B5;
-}
-
-/* Icon and title styling */
-.icon {
-  width: 32px;
-  height: 32px;
+.hover\:bg-hover:hover {
+  background-color: #303F9F;
 }
 </style>
