@@ -72,3 +72,17 @@ export const updateUserById = async (
 export const deleteUserById = async (userId: string): Promise<void> => {
   await axios.delete(`${API_URL}/${userId}`, { headers: authHeaders() })
 }
+
+/**
+ * Update the current user's profile (for logged-in user)
+ * @param data Partial user data
+ * @returns Updated user
+ */
+export const updateProfileService = async (data: Partial<User>) => {
+  const response = await axios.patch(`${import.meta.env.VITE_API_BASE_URL}/auth/profile`, data, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
+    },
+  })
+  return response.data.user
+}
