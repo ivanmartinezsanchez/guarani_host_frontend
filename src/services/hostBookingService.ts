@@ -1,54 +1,54 @@
 import axios from 'axios'
 
-// Base API URL from environment variables
 const API_URL = `${import.meta.env.VITE_API_BASE_URL}`
 
-/**
- * Get authorization headers from localStorage
- */
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token')
   return {
     headers: {
-      Authorization: `Bearer ${token}`,
-    },
+      Authorization: `Bearer ${token}`
+    }
   }
 }
 
-/**
- * Booking interface aligned with backend schema
- */
+// ================== INTERFACES ==================
+
+export type BookingStatus = 'pending' | 'confirmed' | 'cancelled'
+export type PaymentStatus = 'pending' | 'paid' | 'refunded'
+
 export interface Booking {
-  _id: string
-  user: {
+  _id?: string
+  user: string | {
     _id: string
     email: string
-    firstName?: string
-    lastName?: string
-    role: 'admin' | 'host' | 'user'
+    firstName: string
+    lastName: string
   }
-  property?: {
-    _id: string
+  property?: string | {
+    _id?: string
+    title: string
+    city: string
+    host: string
+  }
+  tourPackage?: string | {
+    _id?: string
     title: string
     host: string
-  } | string
-  tourPackage?: {
-    _id: string
-    title: string
-    host: string
-  } | string
+  }
   checkIn: Date
   checkOut: Date
-  status: 'pending' | 'confirmed' | 'cancelled'
   guests: number
-  paymentStatus: 'pending' | 'paid' | 'refunded'
+  totalPrice: number
+  status: BookingStatus
+  paymentStatus: PaymentStatus
   paymentDetails?: string
   paymentImages?: string[]
 }
 
+// ================== HOST BOOKING SERVICE ==================
+
 /**
- * Get all bookings related to the current host (by properties or tours)
- * @returns List of bookings for the host
+ * Fetch all bookings related to the current host
  */
 export const getHostBookings = async (): Promise<Booking[]> => {
   const res = await axios.get(`${API_URL}/host/bookings`, getAuthHeaders())
@@ -56,19 +56,29 @@ export const getHostBookings = async (): Promise<Booking[]> => {
 }
 
 /**
- * Export filtered host bookings as PDF
- * @param filters Object with optional query parameters (from, to, paymentStatus)
- * @returns A Blob containing the PDF file
+ * Export host bookings to PDF with optional filters
+ * @param from optional start date
+ * @param to optional end date
+ * @param paymentStatus optional payment filter
  */
-export const getBookingsPDF = async (filters: {
-  from?: string
-  to?: string
-  paymentStatus?: string
-}): Promise<Blob> => {
-  const params = new URLSearchParams(filters).toString()
-  const res = await axios.get(`${API_URL}/host/bookings/export/pdf?${params}`, {
+export const exportHostBookingsToPDF = async (
+  from?: string,
+  to?: string,
+  paymentStatus?: PaymentStatus
+): Promise<Blob> => {
+  const params = new URLSearchParams()
+  if (from && to) {
+    params.append('from', from)
+    params.append('to', to)
+  }
+  if (paymentStatus) {
+    params.append('paymentStatus', paymentStatus)
+  }
+
+  const res = await axios.get(`${API_URL}/host/bookings/export/pdf?${params.toString()}`, {
     ...getAuthHeaders(),
-    responseType: 'blob',
+    responseType: 'blob'
   })
+
   return res.data
 }
