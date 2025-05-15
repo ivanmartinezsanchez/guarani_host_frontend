@@ -1,54 +1,34 @@
 import axios from 'axios'
 
-const API_URL = `${import.meta.env.VITE_API_BASE_URL}`
+const API_URL = import.meta.env.VITE_API_BASE_URL
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token')
   return {
     headers: {
-      Authorization: `Bearer ${token}`
-    }
+      Authorization: `Bearer ${token}`,
+    },
   }
 }
 
-// ================== INTERFACES ==================
-
-export type BookingStatus = 'pending' | 'confirmed' | 'cancelled'
-export type PaymentStatus = 'pending' | 'paid' | 'refunded'
-
+// Booking type aligned with backend
 export interface Booking {
   _id?: string
-  user: string | {
-    _id: string
-    email: string
-    firstName: string
-    lastName: string
-  }
-  property?: string | {
-    _id?: string
-    title: string
-    city: string
-    host: string
-  }
-  tourPackage?: string | {
-    _id?: string
-    title: string
-    host: string
-  }
-  checkIn: Date
-  checkOut: Date
+  user: { email: string } | string
+  property?: { title: string; host?: string } | string
+  tourPackage?: { title: string; host?: string } | string
+  checkIn: Date | string
+  checkOut: Date | string
   guests: number
+  status: 'pending' | 'confirmed' | 'cancelled'
   totalPrice: number
-  status: BookingStatus
-  paymentStatus: PaymentStatus
+  paymentStatus: 'pending' | 'paid' | 'refunded'
   paymentDetails?: string
   paymentImages?: string[]
 }
 
-// ================== HOST BOOKING SERVICE ==================
-
 /**
- * Fetch all bookings related to the current host
+ * Fetch host bookings (properties or tours owned by host)
  */
 export const getHostBookings = async (): Promise<Booking[]> => {
   const res = await axios.get(`${API_URL}/host/bookings`, getAuthHeaders())
@@ -57,28 +37,19 @@ export const getHostBookings = async (): Promise<Booking[]> => {
 
 /**
  * Export host bookings to PDF with optional filters
- * @param from optional start date
- * @param to optional end date
- * @param paymentStatus optional payment filter
  */
-export const exportHostBookingsToPDF = async (
-  from?: string,
-  to?: string,
-  paymentStatus?: PaymentStatus
-): Promise<Blob> => {
-  const params = new URLSearchParams()
-  if (from && to) {
-    params.append('from', from)
-    params.append('to', to)
-  }
-  if (paymentStatus) {
-    params.append('paymentStatus', paymentStatus)
-  }
-
-  const res = await axios.get(`${API_URL}/host/bookings/export/pdf?${params.toString()}`, {
+export const exportHostBookingsToPDF = async (filters: { paymentStatus?: string }) => {
+  const params = new URLSearchParams(filters).toString()
+  const res = await axios.get(`${API_URL}/host/bookings/export/pdf?${params}`, {
     ...getAuthHeaders(),
-    responseType: 'blob'
+    responseType: 'blob',
   })
 
-  return res.data
+  const url = window.URL.createObjectURL(new Blob([res.data]))
+  const link = document.createElement('a')
+  link.href = url
+  link.setAttribute('download', 'host-bookings.pdf')
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
 }
