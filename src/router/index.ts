@@ -22,6 +22,9 @@ import HostHomeManagementView from '@/views/HostHomeManagementView.vue'
 import HostTourManagementView from '@/views/HostTourManagementView.vue'
 import HostBookingView from '@/views/HostBookingView.vue'
 
+// Lazy-loaded profile edit (optional optimization)
+const EditProfileView = () => import('@/views/EditProfileView.vue')
+
 // Define routes for the application
 const routes = [
   // Public routes (footer visible)
@@ -30,6 +33,7 @@ const routes = [
   { path: '/login', name: 'login', component: LoginView, meta: { showFooter: true } }, 
   { path: '/register', name: 'register', component: RegisterView, meta: { showFooter: true } },
   { path: '/profile', name: 'profile', component: ProfileView, meta: { showFooter: true } }, 
+  { path: '/profile/edit', name: 'edit-profile', component: EditProfileView, meta: { showFooter: true, requiresAuth: true } },
   { path: '/home/:id', name: 'property-detail', component: PropertyDetailView, meta: { showFooter: true } },   
   { path: '/tour/:id', name: 'tour-detail', component: TourDetailView, meta: { showFooter: true } },
 
