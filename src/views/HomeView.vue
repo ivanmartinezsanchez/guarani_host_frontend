@@ -1,8 +1,15 @@
 <template>
-  <div class="max-w-7xl mx-auto px-4 py-10">
+  <main
+    class="max-w-7xl mx-auto px-4 py-10"
+    role="main"
+    aria-label="Contenido principal de GuaraníHost"
+  >
     <!-- Hero Section -->
-    <section class="text-center mb-20">
-      <h1 class="text-4xl md:text-5xl font-bold text-primary mb-6">
+    <section
+      class="text-center mb-20"
+      aria-labelledby="hero-title"
+    >
+      <h1 id="hero-title" class="text-4xl md:text-5xl font-bold text-primary mb-6">
         Bienvenido a <span class="text-indigo-600 dark:text-indigo-400">GuaraníHost</span>
       </h1>
       <p class="text-lg text-darkText dark:text-gray-300 mb-8">
@@ -11,46 +18,68 @@
       <RouterLink
         to="/register"
         class="bg-primary hover:bg-hover text-white font-semibold py-3 px-6 rounded-full shadow-md transition"
+        aria-label="Registrarse ahora en GuaraníHost"
       >
         ¡Comienza ahora!
       </RouterLink>
     </section>
 
-    <!-- Destacados -->
-    <section class="mb-16">
-      <h2 class="text-2xl font-bold text-center text-gray-800 dark:text-white mb-8">Propiedades destacadas</h2>
+    <!-- Propiedades destacadas -->
+    <section
+      aria-labelledby="homes-title"
+      class="mb-16"
+    >
+      <h2 id="homes-title" class="text-2xl font-bold text-center text-gray-800 dark:text-white mb-8">
+        Propiedades destacadas
+      </h2>
       <div class="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        <div
+        <article
           v-for="home in homes"
           :key="home._id"
           class="bg-white dark:bg-gray-800 rounded-xl shadow hover:shadow-lg transition overflow-hidden"
+          role="article"
+          aria-label="Propiedad destacada"
         >
           <img
             :src="home.imageUrls?.[0] || fallbackImage"
-            alt="Imagen propiedad"
+            :alt="`Imagen de la propiedad ${home.title}`"
             class="w-full h-48 object-cover"
           />
           <div class="p-4">
             <h3 class="font-semibold text-lg text-primary mb-1">{{ home.title }}</h3>
-            <p class="text-sm text-gray-600 dark:text-gray-300">{{ home.city }} · ${{ home.pricePerNight }}/noche</p>
-            <RouterLink to="/login" class="text-sm text-primary hover:underline mt-2 inline-block">Ver más</RouterLink>
+            <p class="text-sm text-gray-600 dark:text-gray-300">
+              {{ home.city }} · ${{ home.pricePerNight }}/noche
+            </p>
+            <RouterLink
+              to="/login"
+              class="text-sm text-primary hover:underline mt-2 inline-block"
+              aria-label="Ver más detalles de la propiedad"
+            >
+              Ver más
+            </RouterLink>
           </div>
-        </div>
+        </article>
       </div>
     </section>
 
-    <!-- Paquetes Turísticos -->
-    <section>
-      <h2 class="text-2xl font-bold text-center text-gray-800 dark:text-white mb-8">Paquetes turísticos</h2>
+    <!-- Paquetes turísticos -->
+    <section
+      aria-labelledby="tours-title"
+    >
+      <h2 id="tours-title" class="text-2xl font-bold text-center text-gray-800 dark:text-white mb-8">
+        Paquetes turísticos
+      </h2>
       <div class="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        <div
+        <article
           v-for="tour in tours"
           :key="tour._id"
           class="bg-white dark:bg-gray-800 rounded-xl shadow hover:shadow-lg transition overflow-hidden"
+          role="article"
+          aria-label="Paquete turístico"
         >
           <img
             :src="tour.imageUrls?.[0] || fallbackTour"
-            alt="Imagen tour"
+            :alt="`Imagen del paquete turístico ${tour.title}`"
             class="w-full h-48 object-cover"
           />
           <div class="p-4">
@@ -61,12 +90,18 @@
             <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mt-1">
               Desde ${{ tour.price }}
             </p>
-            <RouterLink to="/login" class="text-sm text-primary hover:underline mt-2 inline-block">Ver más</RouterLink>
+            <RouterLink
+              to="/login"
+              class="text-sm text-primary hover:underline mt-2 inline-block"
+              aria-label="Ver más detalles del tour"
+            >
+              Ver más
+            </RouterLink>
           </div>
-        </div>
+        </article>
       </div>
     </section>
-  </div>
+  </main>
 </template>
 
 <script setup lang="ts">
