@@ -1,14 +1,7 @@
 <template>
-  <main
-    class="max-w-7xl mx-auto px-4 py-10"
-    role="main"
-    aria-label="Contenido principal de GuaraníHost"
-  >
-    <!-- Hero Section -->
-    <section
-      class="text-center mb-20"
-      aria-labelledby="hero-title"
-    >
+  <main class="max-w-7xl mx-auto px-4 py-10" role="main" aria-label="Main content area for GuaraníHost">
+    <!-- Hero Section with Welcome and Registration -->
+    <section class="text-center mb-12" aria-labelledby="hero-title">
       <h1 id="hero-title" class="text-4xl md:text-5xl font-bold text-primary mb-6">
         Bienvenido a <span class="text-indigo-600 dark:text-indigo-400">GuaraníHost</span>
       </h1>
@@ -22,19 +15,44 @@
       >
         ¡Comienza ahora!
       </RouterLink>
+
+      <!-- Main filter form for searching availability by date, guest count, and location -->
+      <form
+        class="mt-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-left"
+        aria-label="Buscador de disponibilidad"
+        @submit.prevent="applyFilters"
+      >
+        <div>
+          <label for="checkin" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Check-in</label>
+          <input id="checkin" v-model="filters.checkIn" type="date" class="input" />
+        </div>
+        <div>
+          <label for="checkout" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Check-out</label>
+          <input id="checkout" v-model="filters.checkOut" type="date" class="input" />
+        </div>
+        <div>
+          <label for="guests" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Huéspedes</label>
+          <input id="guests" v-model.number="filters.guests" type="number" min="1" placeholder="2" class="input" />
+        </div>
+        <div class="flex items-end">
+          <button type="submit" class="w-full bg-primary hover:bg-hover text-white px-4 py-2 rounded-md">Buscar</button>
+        </div>
+      </form>
+
+      <!-- Accessibility note -->
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+        * El filtrado por fecha para paquetes turísticos está disponible tras realizar una reserva.
+      </p>
     </section>
 
-    <!-- Propiedades destacadas -->
-    <section
-      aria-labelledby="homes-title"
-      class="mb-16"
-    >
+    <!-- Featured Properties -->
+    <section aria-labelledby="homes-title" class="mb-16">
       <h2 id="homes-title" class="text-2xl font-bold text-center text-gray-800 dark:text-white mb-8">
         Propiedades destacadas
       </h2>
       <div class="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         <article
-          v-for="home in homes"
+          v-for="home in filteredHomes"
           :key="home._id"
           class="bg-white dark:bg-gray-800 rounded-xl shadow hover:shadow-lg transition overflow-hidden"
           role="article"
@@ -62,16 +80,14 @@
       </div>
     </section>
 
-    <!-- Paquetes turísticos -->
-    <section
-      aria-labelledby="tours-title"
-    >
+    <!-- Featured Tour Packages -->
+    <section aria-labelledby="tours-title">
       <h2 id="tours-title" class="text-2xl font-bold text-center text-gray-800 dark:text-white mb-8">
         Paquetes turísticos
       </h2>
       <div class="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         <article
-          v-for="tour in tours"
+          v-for="tour in filteredTours"
           :key="tour._id"
           class="bg-white dark:bg-gray-800 rounded-xl shadow hover:shadow-lg transition overflow-hidden"
           role="article"
@@ -105,24 +121,54 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import { getProperties, type Property } from '@/services/propertyService'
 import { getTours, type Tour } from '@/services/tourService'
 
 const homes = ref<Property[]>([])
 const tours = ref<Tour[]>([])
+
 const fallbackImage = 'https://source.unsplash.com/random/400x250?house,paraguay'
 const fallbackTour = 'https://source.unsplash.com/random/400x250?paraguay,tour'
+
+const filters = ref({
+  checkIn: '',
+  checkOut: '',
+  guests: 1
+})
+
+const filteredHomes = computed(() => {
+  return homes.value.filter((home) => {
+    const checkIn = new Date(filters.value.checkIn)
+    const checkOut = new Date(filters.value.checkOut)
+    const homeCheckIn = new Date(home.checkIn)
+    const homeCheckOut = new Date(home.checkOut)
+
+    return (
+      home.guests >= filters.value.guests &&
+      (!filters.value.checkIn || homeCheckIn <= checkIn) &&
+      (!filters.value.checkOut || homeCheckOut >= checkOut)
+    )
+  })
+})
+
+const filteredTours = computed(() => {
+  return tours.value
+})
 
 onMounted(async () => {
   try {
     homes.value = await getProperties()
     tours.value = await getTours()
   } catch (error) {
-    console.error('Error loading data:', error)
+    console.error('❌ Error loading data:', error)
   }
 })
+
+function applyFilters() {
+  console.log('Filters applied:', filters.value)
+}
 </script>
 
 <style scoped>
@@ -134,5 +180,8 @@ onMounted(async () => {
 }
 .hover\:bg-hover:hover {
   background-color: #303F9F;
+}
+.input {
+  @apply w-full px-4 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary;
 }
 </style>

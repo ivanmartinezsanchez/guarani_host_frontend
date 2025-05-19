@@ -11,9 +11,8 @@ export type User = {
   phone?: string
   address?: string
   role: 'admin' | 'host' | 'user'
-  accountStatus?: 'active' | 'suspended' | 'deleted' | 'pending_verification'
+  accountStatus?: 'ACTIVE' | 'SUSPENDED' | 'DELETED' | 'PENDING_VERIFICATION'
 }
-
 /**
  * Reactive user state initialized from localStorage
  */

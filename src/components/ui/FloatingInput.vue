@@ -1,17 +1,21 @@
 <template>
   <div class="relative">
-    <!-- Input field with dynamic styling and accessibility attributes -->
+    <!-- Input field with floating label logic and accessibility -->
     <input
-      v-bind="$attrs" <!-- Inherit all extra attributes like autocomplete, maxlength, etc. -->
+      v-bind="$attrs"
       :id="id"
       :type="type"
       :value="modelValue"
       :required="required"
       :aria-invalid="error ? 'true' : 'false'"
       :aria-describedby="error ? `${id}-error` : undefined"
-      class="peer w-full px-4 py-2 rounded-md border focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-900 dark:text-white"
+      class="peer w-full px-4 pt-6 pb-2 rounded-md border bg-white dark:bg-gray-900 dark:text-white
+        focus:outline-none focus:ring-2 focus:ring-primary transition-all
+        placeholder-transparent
+        text-sm sm:text-base
+        :class"
       :class="error ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'"
-      :placeholder="label"
+      placeholder=" " 
       @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
     />
 
@@ -19,8 +23,9 @@
     <label
       :for="id"
       class="absolute left-4 top-2 text-sm text-gray-500 dark:text-gray-400 transition-all
-        peer-placeholder-shown:top-2.5 peer-placeholder-shown:text-base
-        peer-placeholder-shown:text-gray-400 peer-focus:top-2 peer-focus:text-sm peer-focus:text-gray-500"
+        peer-placeholder-shown:top-4 peer-placeholder-shown:text-base
+        peer-placeholder-shown:text-gray-400
+        peer-focus:top-2 peer-focus:text-sm peer-focus:text-gray-500"
     >
       {{ label }}
     </label>
@@ -30,14 +35,11 @@
 <script setup lang="ts">
 /**
  * FloatingInput component
- * A reusable input field with label that floats on focus/typing
- * Supports accessibility, error styles, and extra HTML attributes
+ * Clean floating label UX without placeholder, accessible and responsive
  */
 
-// Allow parent components to bind additional HTML attributes
 defineOptions({ inheritAttrs: false })
 
-// Props definition
 defineProps<{
   id: string
   label: string
@@ -47,6 +49,5 @@ defineProps<{
   error?: boolean
 }>()
 
-// Emits update on value change
 defineEmits(['update:modelValue'])
 </script>

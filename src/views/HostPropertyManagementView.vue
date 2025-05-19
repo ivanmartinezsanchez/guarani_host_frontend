@@ -3,7 +3,7 @@
     <!-- Header -->
     <h1 class="text-3xl font-bold text-primary text-center mb-8">Mis Propiedades</h1>
 
-    <!-- Property List Section -->
+    <!-- Property List Section (Cards Responsive) -->
     <section class="mb-8">
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-xl font-semibold">Propiedades Publicadas</h2>
@@ -12,31 +12,34 @@
         </button>
       </div>
 
-      <!-- Properties Table -->
-      <div class="bg-white dark:bg-gray-800 p-4 rounded shadow-md overflow-x-auto">
-        <table class="min-w-full table-auto text-sm">
-          <thead class="bg-gray-100 dark:bg-gray-700">
-            <tr>
-              <th class="px-4 py-2 text-left">Título</th>
-              <th class="px-4 py-2 text-left">Ciudad</th>
-              <th class="px-4 py-2 text-left">Precio</th>
-              <th class="px-4 py-2 text-left">Disponibilidad</th>
-              <th class="px-4 py-2 text-left">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="home in myProperties" :key="home._id" class="border-b dark:border-gray-600">
-              <td class="px-4 py-2">{{ home.title }}</td>
-              <td class="px-4 py-2">{{ home.city }}</td>
-              <td class="px-4 py-2">${{ home.pricePerNight }}</td>
-              <td class="px-4 py-2">{{ home.status === 'available' ? 'Yes' : 'No' }}</td>
-              <td class="px-4 py-2 flex gap-2">
-                <button @click="editProperty(home)" class="text-blue-500 hover:text-blue-700">Editar</button>
-                <button @click="handleDeleteProperty(home._id!)" class="text-red-500 hover:text-red-700">Eliminar</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <!-- Grid of Cards instead of Table -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <div
+          v-for="home in myProperties"
+          :key="home._id"
+          class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 flex flex-col justify-between"
+          role="region"
+          aria-label="Property card"
+        >
+          <div>
+            <h3 class="text-lg font-semibold text-primary">{{ home.title }}</h3>
+            <p class="text-gray-600 dark:text-gray-300">{{ home.city }}</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">${{ home.pricePerNight }} / noche</p>
+            <p class="text-sm">Disponibilidad: <span class="font-medium">{{ home.status === 'available' ? 'Sí' : 'No' }}</span></p>
+          </div>
+          <div class="flex justify-end mt-4 gap-2">
+            <button
+              @click="editProperty(home)"
+              class="text-blue-600 hover:underline"
+              aria-label="Editar propiedad"
+            >Editar</button>
+            <button
+              @click="handleDeleteProperty(home._id!)"
+              class="text-red-600 hover:underline"
+              aria-label="Eliminar propiedad"
+            >Eliminar</button>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -44,14 +47,32 @@
     <section v-if="showForm" class="bg-white dark:bg-gray-800 p-6 rounded shadow-md">
       <h2 class="text-xl font-semibold mb-4">{{ editId ? 'Edit' : 'New' }} Property</h2>
       <form @submit.prevent="submitForm" class="space-y-4">
-        <input v-model="form.title" type="text" placeholder="Título" class="input" required />
-        <input v-model="form.city" type="text" placeholder="Ciudad" class="input" required />
-        <input v-model="form.address" type="text" placeholder="Dirección" class="input" required />
-        <input v-model.number="form.pricePerNight" type="number" placeholder="Precio por Noche" class="input" required />
+        <label for="title" class="block text-sm font-medium">Título</label>
+        <input id="title" v-model="form.title" type="text" class="input" required />
+
+        <label for="city" class="block text-sm font-medium">Ciudad</label>
+        <input id="city" v-model="form.city" type="text" class="input" required />
+
+        <label for="address" class="block text-sm font-medium">Dirección</label>
+        <input id="address" v-model="form.address" type="text" class="input" required />
+
+        <label for="price" class="block text-sm font-medium">Precio por noche</label>
+        <input id="price" v-model.number="form.pricePerNight" type="number" class="input" required />
+
+        <label for="images" class="block text-sm font-medium">Imágenes</label>
+        <input id="images" type="file" multiple accept="image/*" @change="handleImageUpload" class="input" aria-label="Seleccionar imágenes" />
+
         <label class="flex items-center gap-2">
-          <input type="checkbox" v-model="form.status" true-value="available" false-value="inactive" class="accent-primary" />
+          <input
+            type="checkbox"
+            v-model="form.status"
+            true-value="available"
+            false-value="inactive"
+            class="accent-primary"
+          />
           Disponible
         </label>
+
         <div class="flex justify-end gap-2">
           <button type="button" @click="resetForm" class="text-gray-500">Cancelar</button>
           <button type="submit" class="bg-primary hover:bg-hover text-white px-4 py-2 rounded">
@@ -73,10 +94,12 @@ import {
   deleteProperty,
   type Property
 } from '@/services/propertyService'
+import { propertyToFormData } from '@/utils/propertyToFormData' // asegúrate de tener este helper
 
 const showForm = ref(false)
 const editId = ref<string | null>(null)
 const allHomes = ref<Property[]>([])
+const selectedImages = ref<File[]>([])
 
 const user = JSON.parse(localStorage.getItem('user') || '{}')
 
@@ -121,16 +144,19 @@ async function refresh() {
 }
 
 /**
- * Submit form: create or update property
+ * Handle form submission for create/update
  */
 async function submitForm() {
+  const formData = propertyToFormData(form.value, selectedImages.value)
+
   if (!editId.value) {
-    await createProperty(form.value as Property)
+    await createProperty(formData)
     Swal.fire('Created', 'Property created successfully', 'success')
   } else {
-    await updateProperty(editId.value, form.value as Property)
+    await updateProperty(editId.value, formData)
     Swal.fire('Updated', 'Property updated successfully', 'success')
   }
+
   await refresh()
   resetForm()
 }
@@ -166,28 +192,40 @@ async function handleDeleteProperty(id: string) {
 }
 
 /**
+ * Handle image input (multiple files)
+ */
+function handleImageUpload(event: Event) {
+  const target = event.target as HTMLInputElement
+  if (target.files) {
+    selectedImages.value = Array.from(target.files)
+  }
+}
+
+/**
  * Reset form to initial state
  */
 function resetForm() {
   showForm.value = false
   editId.value = null
+  selectedImages.value = []
   form.value = {
-  title: '',
-  description: '',
-  address: '',
-  city: '',
-  pricePerNight: 0,
-  checkIn: new Date(),
-  checkOut: new Date(),
-  guests: 1,
-  amenities: [],
-  status: 'available',
-  paymentStatus: 'pending',
-  host: user._id,
-  imageUrls: []
-}
+    title: '',
+    description: '',
+    address: '',
+    city: '',
+    pricePerNight: 0,
+    checkIn: new Date(),
+    checkOut: new Date(),
+    guests: 1,
+    amenities: [],
+    status: 'available',
+    paymentStatus: 'pending',
+    host: user._id,
+    imageUrls: []
+  }
 }
 </script>
+
 
 <style scoped>
 .input {

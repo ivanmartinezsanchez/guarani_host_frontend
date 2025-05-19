@@ -1,10 +1,13 @@
 import axios from 'axios'
 
-const API_URL = `${import.meta.env.VITE_API_BASE_URL}`
+const API_URL = `${import.meta.env.VITE_API_BASE_URL}/host`
 
-// Auth headers using stored token
+/**
+ * Get auth headers using the JWT token
+ */
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token')
+  if (!token) throw new Error('❌ No token found in localStorage')
   return {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -12,7 +15,9 @@ const getAuthHeaders = () => {
   }
 }
 
-// Property interface aligned with backend model
+/**
+ * Property model aligned with backend
+ */
 export interface Property {
   _id?: string
   title: string
@@ -32,32 +37,47 @@ export interface Property {
 }
 
 /**
- * Fetch all properties for the current host
+ * Fetch all properties owned by the authenticated host
  */
 export const getProperties = async (): Promise<Property[]> => {
-  const res = await axios.get(`${API_URL}/host/properties`, getAuthHeaders())
+  const res = await axios.get(`${API_URL}/properties`, getAuthHeaders())
   return res.data.properties
 }
 
 /**
- * Create a new property (admin or host)
+ * Create a new property (host)
+ * @param formData FormData with fields and images
  */
-export const createProperty = async (property: Property): Promise<Property> => {
-  const res = await axios.post(`${API_URL}/admin/properties`, property, getAuthHeaders())
+export const createProperty = async (formData: FormData): Promise<Property> => {
+  const res = await axios.post(`${API_URL}/properties`, formData, {
+    ...getAuthHeaders(),
+    headers: {
+      ...getAuthHeaders().headers,
+      'Content-Type': 'multipart/form-data',
+    },
+  })
   return res.data.property
 }
 
 /**
- * Update an existing property by ID
+ * Update a property (host)
+ * @param id Property ID
+ * @param formData FormData with updated fields and images
  */
-export const updateProperty = async (id: string, property: Property): Promise<Property> => {
-  const res = await axios.patch(`${API_URL}/admin/properties/${id}`, property, getAuthHeaders())
+export const updateProperty = async (id: string, formData: FormData): Promise<Property> => {
+  const res = await axios.patch(`${API_URL}/properties/${id}`, formData, {
+    ...getAuthHeaders(),
+    headers: {
+      ...getAuthHeaders().headers,
+      'Content-Type': 'multipart/form-data',
+    },
+  })
   return res.data.property
 }
 
 /**
- * Delete a property by ID
+ * Delete a property by ID (host)
  */
 export const deleteProperty = async (id: string): Promise<void> => {
-  await axios.delete(`${API_URL}/admin/properties/${id}`, getAuthHeaders())
+  await axios.delete(`${API_URL}/properties/${id}`, getAuthHeaders())
 }
