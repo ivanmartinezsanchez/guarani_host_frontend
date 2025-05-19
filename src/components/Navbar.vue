@@ -1,74 +1,100 @@
 <template>
   <nav
-    class="sticky top-0 z-50 bg-white dark:bg-gray-900 text-gray-800 dark:text-white shadow-md px-4 py-3 rounded-b-lg flex flex-wrap items-center justify-between"
+    class="sticky top-0 z-50 bg-white dark:bg-gray-900 text-gray-800 dark:text-white shadow-md px-4 py-3 flex flex-wrap items-center justify-between"
+    role="navigation"
+    aria-label="Main navigation"
   >
-    <h1 class="text-lg font-semibold text-primary">GuaraníHost</h1>
+    <!-- Logo (links to home) -->
+    <RouterLink to="/" class="flex items-center" aria-label="Ir a inicio">
+      <img src="@/assets/logo.png" alt="GuaraníHost logo" class="h-12 md:h-16 w-auto" />
+    </RouterLink>
 
-    <!-- Botón toggle móvil -->
+    <!-- Mobile toggle button with accessibility attributes -->
     <button
       @click="menuOpen = !menuOpen"
       class="sm:hidden"
-      :aria-expanded="menuOpen ? 'true' : 'false'"
+      aria-label="Toggle navigation menu"
+      :aria-expanded="menuOpen"
       aria-controls="navbar-menu"
     >
-      <Menu class="w-6 h-6" />
+      <Menu class="w-6 h-6" aria-hidden="true" />
     </button>
 
-    <!-- Menú -->
+    <!-- Navigation menu -->
     <ul
       id="navbar-menu"
+      role="menubar"
       :class="[
-        'w-full sm:w-auto flex-col sm:flex-row sm:flex sm:items-center sm:space-x-6 mt-4 sm:mt-0 transition-all duration-300 ease-in-out',
+        'w-full sm:w-auto flex-col sm:flex-row sm:flex sm:items-center sm:gap-6 mt-4 sm:mt-0 transition-all duration-300 ease-in-out',
         menuOpen ? 'flex' : 'hidden'
       ]"
     >
-      <li>
+      <!-- Public links -->
+      <li role="none">
         <RouterLink
+          role="menuitem"
           to="/"
           class="block py-1 hover:underline"
           :class="{ 'font-bold underline text-primary': route.path === '/' }"
-        >Inicio</RouterLink>
+        >
+          Inicio
+        </RouterLink>
       </li>
-      <li>
+      <li role="none">
         <RouterLink
+          role="menuitem"
           to="/about"
           class="block py-1 hover:underline"
           :class="{ 'font-bold underline text-primary': route.path === '/about' }"
-        >Nosotros</RouterLink>
+        >
+          Nosotros
+        </RouterLink>
       </li>
 
-      <li v-if="!user">
+      <!-- Authenticated / Unauthenticated -->
+      <li v-if="!user" role="none">
         <RouterLink
+          role="menuitem"
           to="/login"
           class="block py-1 hover:underline"
           :class="{ 'font-bold underline text-primary': route.path === '/login' }"
-        >Login</RouterLink>
+        >
+          Login
+        </RouterLink>
       </li>
-      <li v-if="!user">
+      <li v-if="!user" role="none">
         <RouterLink
+          role="menuitem"
           to="/register"
           class="block py-1 hover:underline"
           :class="{ 'font-bold underline text-primary': route.path === '/register' }"
-        >Registro</RouterLink>
+        >
+          Registro
+        </RouterLink>
       </li>
 
-      <li v-if="user">
+      <li v-if="user" role="none">
         <RouterLink
+          role="menuitem"
           :to="`/${user.role}/dashboard`"
           class="block py-1 hover:underline"
           :class="{ 'font-bold underline text-primary': route.path.includes('/dashboard') }"
-        >Dashboard</RouterLink>
+        >
+          Dashboard
+        </RouterLink>
       </li>
 
-      <li v-if="user">
-        <button @click="logout" class="block py-1 hover:underline">Salir</button>
+      <li v-if="user" role="none">
+        <button @click="logout" class="block py-1 hover:underline" aria-label="Cerrar sesión">
+          Salir
+        </button>
       </li>
 
-      <!-- Tema -->
-      <li>
-        <button @click="toggleTheme" class="ml-2" title="Cambiar tema">
-          <Moon v-if="isDark" class="w-5 h-5" />
-          <Sun v-else class="w-5 h-5" />
+      <!-- Theme toggle -->
+      <li role="none">
+        <button @click="toggleTheme" class="ml-2" title="Cambiar tema" aria-label="Toggle dark mode">
+          <Moon v-if="isDark" class="w-5 h-5" aria-hidden="true" />
+          <Sun v-else class="w-5 h-5" aria-hidden="true" />
         </button>
       </li>
     </ul>
@@ -76,6 +102,10 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * Accessible Navbar with responsive layout, authentication state,
+ * route awareness, and theme toggle. Optimized for keyboard and screen readers.
+ */
 import { ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
