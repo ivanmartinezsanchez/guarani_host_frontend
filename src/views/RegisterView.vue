@@ -8,27 +8,15 @@
       class="w-full max-w-lg bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-md space-y-5 transition duration-500 ease-out transform scale-95 opacity-0"
       :class="{ 'scale-100 opacity-100': mounted }"
     >
-      <!-- Page Title -->
+      <!-- Título -->
       <h2 class="text-2xl font-bold text-center text-gray-800 dark:text-white tracking-tight">
         Crear Cuenta
       </h2>
 
-      <!-- First and Last Name -->
+      <!-- Nombre y Apellido -->
       <div class="grid md:grid-cols-2 gap-4">
-        <FloatingInput
-          v-model="firstName"
-          id="firstName"
-          label="Nombre"
-          type="text"
-          required
-        />
-        <FloatingInput
-          v-model="lastName"
-          id="lastName"
-          label="Apellido"
-          type="text"
-          required
-        />
+        <FloatingInput v-model="firstName" id="firstName" label="Nombre" type="text" required />
+        <FloatingInput v-model="lastName" id="lastName" label="Apellido" type="text" required />
       </div>
 
       <!-- Email -->
@@ -44,25 +32,13 @@
         Por favor, introduce un correo electrónico válido.
       </p>
 
-      <!-- Phone -->
-      <FloatingInput
-        v-model="phone"
-        id="phone"
-        label="Teléfono"
-        type="tel"
-        required
-      />
+      <!-- Teléfono -->
+      <FloatingInput v-model="phone" id="phone" label="Teléfono" type="tel" required />
 
-      <!-- Address -->
-      <FloatingInput
-        v-model="address"
-        id="address"
-        label="Dirección"
-        type="text"
-        required
-      />
+      <!-- Dirección -->
+      <FloatingInput v-model="address" id="address" label="Dirección" type="text" required />
 
-      <!-- Password -->
+      <!-- Contraseña -->
       <FloatingInput
         v-model="password"
         id="password"
@@ -72,10 +48,10 @@
         :error="!passwordValid"
       />
       <p v-if="!passwordValid" class="text-sm text-red-600">
-        La contraseña debe contener una mayúscula, una minúscula y un número.
+         La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número. Se permiten símbolos como !, @, #, etc.
       </p>
 
-      <!-- Submit Button -->
+      <!-- Botón enviar -->
       <button
         type="submit"
         :disabled="isLoading"
@@ -88,28 +64,19 @@
           fill="none"
           viewBox="0 0 24 24"
         >
-          <circle
-            class="opacity-25"
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            stroke-width="4"
-          ></circle>
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
           <path
             class="opacity-75"
             fill="currentColor"
             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-          ></path>
+          />
         </svg>
       </button>
 
-      <!-- Redirect to login -->
+      <!-- Ir a login -->
       <p class="text-center text-sm text-gray-600 dark:text-gray-300 mt-2">
         ¿Ya tienes una cuenta?
-        <RouterLink to="/login" class="text-primary hover:underline">
-          Inicia Sesión Aquí
-        </RouterLink>
+        <RouterLink to="/login" class="text-primary hover:underline"> Inicia Sesión Aquí </RouterLink>
       </p>
     </form>
   </section>
@@ -122,11 +89,11 @@ import { useAuth } from '@/composables/useAuth'
 import Swal from 'sweetalert2'
 import FloatingInput from '@/components/ui/FloatingInput.vue'
 
-// Auth composable and router
+// Composable y navegación
 const { register } = useAuth()
 const router = useRouter()
 
-// Form fields
+// Campos del formulario
 const firstName = ref('')
 const lastName = ref('')
 const email = ref('')
@@ -134,24 +101,25 @@ const password = ref('')
 const phone = ref('')
 const address = ref('')
 
-// UI state
+// Estado UI
 const emailValid = ref(true)
 const passwordValid = ref(true)
 const isLoading = ref(false)
 const mounted = ref(false)
 
-// Regex for validation
-const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/
+// Regex validación
+const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/
-
 onMounted(() => {
   mounted.value = true
 })
 
 /**
- * Handle user registration with validation and SweetAlert feedback
+ * Envía el formulario de registro
  */
 async function handleRegister() {
+  console.log('✅ handleRegister ejecutado')
+
   emailValid.value = emailRegex.test(email.value)
   passwordValid.value = passwordRegex.test(password.value)
 
@@ -165,15 +133,20 @@ async function handleRegister() {
   ) {
     isLoading.value = true
     try {
-      await register({
-        firstName: firstName.value,
-        lastName: lastName.value,
-        email: email.value,
-        password: password.value,
-        phone: phone.value,
-        address: address.value,
-        role: 'user' 
-      })
+      // Log justo antes de enviar
+      const userData = {
+        firstName: firstName.value.trim(),
+        lastName: lastName.value.trim(),
+        email: email.value.trim(),
+        password: password.value.trim(),
+        phone: phone.value.trim(),
+        address: address.value.trim(),
+        role: 'user' as 'user'
+      }
+
+      console.log('📤 Enviando al backend:', userData)
+
+      await register(userData)
 
       Swal.fire({
         icon: 'success',
@@ -184,11 +157,14 @@ async function handleRegister() {
       })
 
       router.push('/login')
-    } catch (error) {
+    } catch (error: any) {
+      console.error('❌ Error en el registro:', error)
+      console.log('🧩 Respuesta del backend:', error?.response?.data)
+
       Swal.fire({
         icon: 'error',
         title: 'Registro fallido',
-        text: 'Por favor, inténtalo de nuevo.',
+        text: error?.response?.data?.message || 'Por favor, inténtalo de nuevo.',
       })
     } finally {
       isLoading.value = false
@@ -201,6 +177,7 @@ async function handleRegister() {
     })
   }
 }
+
 </script>
 
 <style scoped>

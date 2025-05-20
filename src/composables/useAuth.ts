@@ -13,6 +13,7 @@ export type User = {
   role: 'admin' | 'host' | 'user'
   accountStatus?: 'ACTIVE' | 'SUSPENDED' | 'DELETED' | 'PENDING_VERIFICATION'
 }
+
 /**
  * Reactive user state initialized from localStorage
  */
@@ -29,7 +30,7 @@ export function useAuth() {
    * @returns Logged-in user object
    */
   async function login(credentials: { email: string; password: string }): Promise<User> {
-    const loggedInUser = await loginUser(credentials)
+    const { user: loggedInUser, token } = await loginUser(credentials)
     user.value = loggedInUser
     return loggedInUser
   }
@@ -48,7 +49,7 @@ export function useAuth() {
     address?: string
     role?: 'user' | 'host' | 'admin'
   }): Promise<User> {
-    const newUser = await registerUser(userData)
+    const { user: newUser, token } = await registerUser(userData)
     user.value = newUser
     return newUser
   }
