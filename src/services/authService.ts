@@ -2,9 +2,11 @@ import axios from 'axios'
 
 const API_URL = 'http://localhost:4000/api/auth' 
 // Helper to get auth headers with JWT token
-const authHeaders = () => ({
-  Authorization: `Bearer ${localStorage.getItem('token')}`
-})
+const authHeaders = () => {
+  const token = localStorage.getItem('token')
+  if (!token) throw new Error('❌ No token found in localStorage')
+  return { Authorization: `Bearer ${token}` }
+}
 
 /**
  * User type aligned with backend model.
@@ -16,7 +18,7 @@ export type User = {
   phone?: string
   address?: string
   role: 'admin' | 'host' | 'user'
-  accountStatus?: 'ACTIVE' | 'SUSPENDED' | 'DELETED' | 'PENDING_VERIFICATION'
+  accountStatus?: 'active' | 'suspended' | 'deleted' | 'pending_verification'
 }
 
 /**
@@ -24,14 +26,34 @@ export type User = {
  * @param credentials Object containing email and password.
  * @returns Object containing user and token.
  */
-export async function loginUser(credentials: { email: string; password: string }): Promise<{ user: User; token: string }> {
-  const response = await axios.post(`${API_URL}/login`, credentials)
-  const { token, user } = response.data
+export async function loginUser(credentials: {
+  email: string
+  password: string
+}): Promise<{ user: User; token: string }> {
+  try {
+    const response = await axios.post(`${API_URL}/login`, credentials)
+    const { token, user } = response.data
 
-  localStorage.setItem('token', token)
-  localStorage.setItem('user', JSON.stringify(user))
+    // Persist session in localStorage
+    localStorage.setItem('token', token)
+    localStorage.setItem('user', JSON.stringify(user))
 
-  return { token, user }
+    console.log('✅ Login successful')
+    console.log('🧩 Token saved:', token)
+    console.log('👤 User stored:', user)
+
+    return { token, user }
+  } catch (error: any) {
+    console.error('❌ loginUser error:', error)
+
+    // Extract backend error message or fallback to generic
+    const message =
+      error?.response?.data?.message ||
+      error?.message ||
+      'Login failed. Please try again.'
+
+    throw new Error(message)
+  }
 }
 
 /**

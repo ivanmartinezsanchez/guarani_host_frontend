@@ -14,19 +14,22 @@ export interface User {
   role: 'admin' | 'host' | 'user'
   phone?: string
   address?: string
-  accountStatus: 'ACTIVE' | 'SUSPENDED' | 'DELETED' | 'PENDING_VERIFICATION'
+  accountStatus?: 'active' | 'suspended' | 'deleted' | 'pending_verification'
 }
 
 /**
- * Auth headers with Bearer token for protected routes.
+ * Helper to construct authorization headers using the JWT token from localStorage.
+ * Throws error if token is missing.
  */
-const authHeaders = () => ({
-  Authorization: `Bearer ${localStorage.getItem('token')}`
-})
+const authHeaders = () => {
+  const token = localStorage.getItem('token')
+  if (!token) throw new Error('❌ No token found in localStorage')
+  return { Authorization: `Bearer ${token}` }
+}
 
 /**
- * Get all users (admin only).
- * @returns List of all users.
+ * Fetches the list of all users (accessible by admin only).
+ * @returns Array of User objects.
  */
 export const getAllUsers = async (): Promise<User[]> => {
   const response = await axios.get(API_URL, { headers: authHeaders() })
@@ -79,7 +82,7 @@ export const deleteUserById = async (userId: string): Promise<void> => {
  * @returns Updated user
  */
 export const updateProfileService = async (data: Partial<User>) => {
-  const response = await axios.patch(`${import.meta.env.VITE_API_BASE_URL}/auth/profile`, data, {
+  const response = await axios.patch(`${import.meta.env.VITE_API_BASE_URL}/users/profile`, data, {
     headers: {
       Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
