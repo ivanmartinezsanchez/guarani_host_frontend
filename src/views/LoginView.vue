@@ -89,7 +89,7 @@ const mounted = ref(false)
 
 // Regex rules
 const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/
-const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/
 
 onMounted(() => {
   mounted.value = true
@@ -106,13 +106,15 @@ async function handleLogin() {
   if (emailValid.value && passwordValid.value) {
     isLoading.value = true
     try {
-      const user = await login({ email: email.value, password: password.value })
+      const user = await login({ email: email.value.trim(), password: password.value.trim() })
 
-      if (user.accountStatus?.toUpperCase() !== 'ACTIVE') {
+      // Normalize and check account status
+      const normalizedStatus = user.accountStatus?.toLowerCase()
+      if (normalizedStatus !== 'active') {
         Swal.fire({
           icon: 'warning',
           title: 'Cuenta no activa',
-          text: `Tu cuenta actualmente está "${user.accountStatus?.replace('_', ' ')}". Por favor, contacta con soporte.`,
+          text: `Tu cuenta actualmente está "${normalizedStatus?.replace('_', ' ')}". Por favor, contacta con soporte.`,
         })
         return
       }
@@ -130,7 +132,7 @@ async function handleLogin() {
       Swal.fire({
         icon: 'error',
         title: 'Inicio de Sesión Fallido',
-        text: 'Correo electrónico o contraseña inválido. Por favor, intente nuevamente.',
+        text: (error as any)?.response?.data?.message || 'Correo electrónico o contraseña inválido.',
       })
     } finally {
       isLoading.value = false

@@ -1,19 +1,17 @@
 <template>
-  <section
-    class="min-h-screen flex items-center justify-center px-4 bg-gray-50 dark:bg-gray-950 transition-colors duration-300"
-  >
+  <section class="min-h-screen flex items-center justify-center px-4 bg-gray-50 dark:bg-gray-950 transition-colors duration-300">
     <form
       @submit.prevent="handleRegister"
       v-show="mounted"
       class="w-full max-w-lg bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-md space-y-5 transition duration-500 ease-out transform scale-95 opacity-0"
       :class="{ 'scale-100 opacity-100': mounted }"
     >
-      <!-- Título -->
+      <!-- Title -->
       <h2 class="text-2xl font-bold text-center text-gray-800 dark:text-white tracking-tight">
         Crear Cuenta
       </h2>
 
-      <!-- Nombre y Apellido -->
+      <!-- First and Last Name -->
       <div class="grid md:grid-cols-2 gap-4">
         <FloatingInput v-model="firstName" id="firstName" label="Nombre" type="text" required />
         <FloatingInput v-model="lastName" id="lastName" label="Apellido" type="text" required />
@@ -32,13 +30,13 @@
         Por favor, introduce un correo electrónico válido.
       </p>
 
-      <!-- Teléfono -->
+      <!-- Phone -->
       <FloatingInput v-model="phone" id="phone" label="Teléfono" type="tel" required />
 
-      <!-- Dirección -->
+      <!-- Address -->
       <FloatingInput v-model="address" id="address" label="Dirección" type="text" required />
 
-      <!-- Contraseña -->
+      <!-- Password -->
       <FloatingInput
         v-model="password"
         id="password"
@@ -48,10 +46,10 @@
         :error="!passwordValid"
       />
       <p v-if="!passwordValid" class="text-sm text-red-600">
-         La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número. Se permiten símbolos como !, @, #, etc.
+        La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número.
       </p>
 
-      <!-- Botón enviar -->
+      <!-- Submit button -->
       <button
         type="submit"
         :disabled="isLoading"
@@ -65,15 +63,11 @@
           viewBox="0 0 24 24"
         >
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-          <path
-            class="opacity-75"
-            fill="currentColor"
-            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-          />
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
         </svg>
       </button>
 
-      <!-- Ir a login -->
+      <!-- Link to login -->
       <p class="text-center text-sm text-gray-600 dark:text-gray-300 mt-2">
         ¿Ya tienes una cuenta?
         <RouterLink to="/login" class="text-primary hover:underline"> Inicia Sesión Aquí </RouterLink>
@@ -89,11 +83,11 @@ import { useAuth } from '@/composables/useAuth'
 import Swal from 'sweetalert2'
 import FloatingInput from '@/components/ui/FloatingInput.vue'
 
-// Composable y navegación
+// Auth composable and router
 const { register } = useAuth()
 const router = useRouter()
 
-// Campos del formulario
+// Form fields
 const firstName = ref('')
 const lastName = ref('')
 const email = ref('')
@@ -101,25 +95,25 @@ const password = ref('')
 const phone = ref('')
 const address = ref('')
 
-// Estado UI
+// UI state
 const emailValid = ref(true)
 const passwordValid = ref(true)
 const isLoading = ref(false)
 const mounted = ref(false)
 
-// Regex validación
+// Regex validation rules
 const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/
+
 onMounted(() => {
   mounted.value = true
 })
 
 /**
- * Envía el formulario de registro
+ * Handles registration form submission.
+ * Validates inputs, calls register() from useAuth, shows feedback, and redirects by role.
  */
 async function handleRegister() {
-  console.log('✅ handleRegister ejecutado')
-
   emailValid.value = emailRegex.test(email.value)
   passwordValid.value = passwordRegex.test(password.value)
 
@@ -133,7 +127,7 @@ async function handleRegister() {
   ) {
     isLoading.value = true
     try {
-      // Log justo antes de enviar
+      // Prepare user payload
       const userData = {
         firstName: firstName.value.trim(),
         lastName: lastName.value.trim(),
@@ -141,26 +135,31 @@ async function handleRegister() {
         password: password.value.trim(),
         phone: phone.value.trim(),
         address: address.value.trim(),
-        role: 'user' as 'user'
+        role: 'user' as 'user',
       }
 
-      console.log('📤 Enviando al backend:', userData)
+      // Register user and get back stored profile
+      const user = await register(userData)
 
-      await register(userData)
-
+      // Notify user
       Swal.fire({
         icon: 'success',
-        title: 'Registro exitoso!',
-        text: 'Puedes iniciar sesión.',
+        title: 'Bienvenido/a!',
+        text: `Cuenta creada con éxito como ${user.role}`,
         timer: 2000,
         showConfirmButton: false,
       })
 
-      router.push('/login')
+      // Redirect user by role
+      if (user.role === 'admin') {
+        router.push('/admin/dashboard')
+      } else if (user.role === 'host') {
+        router.push('/host/dashboard')
+      } else {
+        router.push('/profile')
+      }
     } catch (error: any) {
-      console.error('❌ Error en el registro:', error)
-      console.log('🧩 Respuesta del backend:', error?.response?.data)
-
+      console.error('❌ Registration error:', error)
       Swal.fire({
         icon: 'error',
         title: 'Registro fallido',
@@ -177,7 +176,6 @@ async function handleRegister() {
     })
   }
 }
-
 </script>
 
 <style scoped>

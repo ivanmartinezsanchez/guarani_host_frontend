@@ -1,6 +1,6 @@
 <template>
   <main class="max-w-7xl mx-auto px-4 py-10" role="main" aria-label="Main content area for GuaraníHost">
-    <!-- Hero Section with Welcome and Registration -->
+    <!-- Hero Section with welcome and call to register -->
     <section class="text-center mb-12" aria-labelledby="hero-title">
       <h1 id="hero-title" class="text-4xl md:text-5xl font-bold text-primary mb-6">
         Bienvenido a <span class="text-indigo-600 dark:text-indigo-400">GuaraníHost</span>
@@ -16,7 +16,7 @@
         ¡Comienza ahora!
       </RouterLink>
 
-      <!-- Main filter form for searching availability by date, guest count, and location -->
+      <!-- Main filter form: date range and guest count -->
       <form
         class="mt-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-left"
         aria-label="Buscador de disponibilidad"
@@ -31,7 +31,7 @@
           <input id="checkout" v-model="filters.checkOut" type="date" class="input" />
         </div>
         <div>
-          <label for="guests" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Huéspedes</label>
+          <label for="guests" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Húespedes</label>
           <input id="guests" v-model.number="filters.guests" type="number" min="1" placeholder="2" class="input" />
         </div>
         <div class="flex items-end">
@@ -39,13 +39,13 @@
         </div>
       </form>
 
-      <!-- Accessibility note -->
+      <!-- Info about filtering logic -->
       <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
         * El filtrado por fecha para paquetes turísticos está disponible tras realizar una reserva.
       </p>
     </section>
 
-    <!-- Featured Properties -->
+    <!-- Featured vacation homes -->
     <section aria-labelledby="homes-title" class="mb-16">
       <h2 id="homes-title" class="text-2xl font-bold text-center text-gray-800 dark:text-white mb-8">
         Propiedades destacadas
@@ -80,7 +80,7 @@
       </div>
     </section>
 
-    <!-- Featured Tour Packages -->
+    <!-- Featured tour packages -->
     <section aria-labelledby="tours-title">
       <h2 id="tours-title" class="text-2xl font-bold text-center text-gray-800 dark:text-white mb-8">
         Paquetes turísticos
@@ -126,18 +126,22 @@ import { RouterLink } from 'vue-router'
 import { getProperties, type Property } from '@/services/propertyService'
 import { getTours, type Tour } from '@/services/tourService'
 
+// State to hold loaded homes and tours
 const homes = ref<Property[]>([])
 const tours = ref<Tour[]>([])
 
+// Placeholder images for empty cases
 const fallbackImage = 'https://source.unsplash.com/random/400x250?house,paraguay'
 const fallbackTour = 'https://source.unsplash.com/random/400x250?paraguay,tour'
 
+// Filter state for check-in, check-out, and guests
 const filters = ref({
   checkIn: '',
   checkOut: '',
-  guests: 1
+  guests: 1,
 })
 
+// Filtered list of homes based on selected filters
 const filteredHomes = computed(() => {
   return homes.value.filter((home) => {
     const checkIn = new Date(filters.value.checkIn)
@@ -153,11 +157,16 @@ const filteredHomes = computed(() => {
   })
 })
 
-const filteredTours = computed(() => {
-  return tours.value
-})
+// Tours are not filtered by dates, only returned as-is
+const filteredTours = computed(() => tours.value)
 
+// Load properties and tours only if user is logged in
 onMounted(async () => {
+  const token = localStorage.getItem('token')
+  if (!token) {
+    console.warn('🔒 No token present, skipping protected data loading.')
+    return
+  }
   try {
     homes.value = await getProperties()
     tours.value = await getTours()
@@ -166,6 +175,7 @@ onMounted(async () => {
   }
 })
 
+// Handler for filter form
 function applyFilters() {
   console.log('Filters applied:', filters.value)
 }

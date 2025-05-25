@@ -17,7 +17,7 @@
 </template>
 
 <script setup lang="ts">
-import DashboardCard from '@/components/admin/DashboardCard.vue'
+import DashboardCard from '@/components/DashboardCard.vue'
 </script>
 
 <style scoped>

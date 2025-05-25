@@ -33,7 +33,7 @@
 
 <script setup lang="ts">
 // Import reusable dashboard card component
-import DashboardCard from '@/components/admin/DashboardCard.vue'
+import DashboardCard from '@/components/DashboardCard.vue'
 </script>
 
 <style scoped>
