@@ -1,8 +1,9 @@
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { loginUser, registerUser } from '@/services/authService'
 
 /**
- * User type aligned with backend model
+ * User type aligned with the backend model.
  */
 export type User = {
   firstName: string
@@ -11,34 +12,70 @@ export type User = {
   phone?: string
   address?: string
   role: 'admin' | 'host' | 'user'
-  accountStatus?: 'ACTIVE' | 'SUSPENDED' | 'DELETED' | 'PENDING_VERIFICATION'
+  accountStatus?: 'active' | 'suspended' | 'deleted' | 'pending_verification'
 }
 
 /**
- * Reactive user state initialized from localStorage
+ * Valid account status values from backend enum.
  */
-const storedUser = localStorage.getItem('user')
-const user = ref<User | null>(storedUser ? JSON.parse(storedUser) : null)
+const validStatuses = ['active', 'suspended', 'deleted', 'pending_verification'] as const
 
 /**
- * Composable to manage authentication state
+ * Normalize and safely cast a status string to the correct enum type.
+ */
+function normalizeStatus(status?: string): User['accountStatus'] {
+  const lower = status?.toLowerCase()
+  return validStatuses.includes(lower as any)
+    ? (lower as User['accountStatus'])
+    : 'pending_verification'
+}
+
+/**
+ * Reactive user state initialized from localStorage on app start.
+ */
+const storedUser = localStorage.getItem('user')
+const user = ref<User | null>(
+  storedUser
+    ? {
+        ...JSON.parse(storedUser),
+        accountStatus: normalizeStatus(JSON.parse(storedUser).accountStatus),
+      }
+    : null
+)
+
+/**
+ * Composable to manage authentication state: login, register, logout.
  */
 export function useAuth() {
+  const router = useRouter()
+
   /**
-   * Log in using email and password credentials
-   * @param credentials Object with email and password
-   * @returns Logged-in user object
+   * Log in using email and password.
+   * Normalizes accountStatus and persists token + user in localStorage.
    */
   async function login(credentials: { email: string; password: string }): Promise<User> {
-    const { user: loggedInUser, token } = await loginUser(credentials)
-    user.value = loggedInUser
-    return loggedInUser
+    try {
+      const { user: loggedInUser, token } = await loginUser(credentials)
+
+      const normalizedUser: User = {
+        ...loggedInUser,
+        accountStatus: normalizeStatus(loggedInUser.accountStatus),
+      }
+
+      user.value = normalizedUser
+      localStorage.setItem('token', token)
+      localStorage.setItem('user', JSON.stringify(normalizedUser))
+
+      return normalizedUser
+    } catch (error) {
+      console.error('❌ Login failed:', error)
+      throw error
+    }
   }
 
   /**
-   * Register a new user
-   * @param userData Full user data with password
-   * @returns Registered user object
+   * Register a new user.
+   * Normalizes accountStatus and persists token + user in localStorage.
    */
   async function register(userData: {
     firstName: string
@@ -50,17 +87,28 @@ export function useAuth() {
     role?: 'user' | 'host' | 'admin'
   }): Promise<User> {
     const { user: newUser, token } = await registerUser(userData)
-    user.value = newUser
-    return newUser
+
+    const normalizedUser: User = {
+      ...newUser,
+      accountStatus: normalizeStatus(newUser.accountStatus),
+    }
+
+    user.value = normalizedUser
+    localStorage.setItem('token', token)
+    localStorage.setItem('user', JSON.stringify(normalizedUser))
+
+    return normalizedUser
   }
 
   /**
-   * Log out and clear local storage
+   * Logout by clearing localStorage and resetting state.
    */
   function logout() {
     user.value = null
-    localStorage.removeItem('user')
     localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    console.log('👋 User logged out')
+    router.push('/login')
   }
 
   return {
@@ -70,3 +118,5 @@ export function useAuth() {
     logout,
   }
 }
+
+
