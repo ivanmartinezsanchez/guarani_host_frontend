@@ -28,16 +28,8 @@
             <p class="text-sm">Disponibilidad: <span class="font-medium">{{ home.status === 'available' ? 'Sí' : 'No' }}</span></p>
           </div>
           <div class="flex justify-end mt-4 gap-2">
-            <button
-              @click="editProperty(home)"
-              class="text-blue-600 hover:underline"
-              aria-label="Editar propiedad"
-            >Editar</button>
-            <button
-              @click="handleDeleteProperty(home._id!)"
-              class="text-red-600 hover:underline"
-              aria-label="Eliminar propiedad"
-            >Eliminar</button>
+            <button @click="editProperty(home)" class="text-blue-600 hover:underline">Editar</button>
+            <button @click="handleDeleteProperty(home._id!)" class="text-red-600 hover:underline">Eliminar</button>
           </div>
         </div>
       </div>
@@ -60,16 +52,10 @@
         <input id="price" v-model.number="form.pricePerNight" type="number" class="input" required />
 
         <label for="images" class="block text-sm font-medium">Imágenes</label>
-        <input id="images" type="file" multiple accept="image/*" @change="handleImageUpload" class="input" aria-label="Seleccionar imágenes" />
+        <input id="images" type="file" multiple accept="image/*" @change="handleImageUpload" class="input" />
 
         <label class="flex items-center gap-2">
-          <input
-            type="checkbox"
-            v-model="form.status"
-            true-value="available"
-            false-value="inactive"
-            class="accent-primary"
-          />
+          <input type="checkbox" v-model="form.status" true-value="available" false-value="inactive" class="accent-primary" />
           Disponible
         </label>
 
@@ -81,6 +67,13 @@
         </div>
       </form>
     </section>
+
+    <!-- Volver al dashboard -->
+    <div class="text-center mt-10">
+      <RouterLink to="/host/dashboard" class="inline-flex items-center gap-2 text-primary underline hover:text-hover">
+        <ArrowLeftIcon class="w-4 h-4" /> Volver al Panel de Control
+      </RouterLink>
+    </div>
   </div>
 </template>
 
@@ -94,16 +87,16 @@ import {
   deleteProperty,
   type Property
 } from '@/services/propertyService'
-import { propertyToFormData } from '@/utils/propertyToFormData' // asegúrate de tener este helper
+import { propertyToFormData } from '@/utils/propertyToFormData'
+import { ArrowLeftIcon } from 'lucide-vue-next'
 
 const showForm = ref(false)
 const editId = ref<string | null>(null)
 const allHomes = ref<Property[]>([])
 const selectedImages = ref<File[]>([])
-
 const user = JSON.parse(localStorage.getItem('user') || '{}')
 
-// Initial form values
+// Form state
 const form = ref<Partial<Property>>({
   title: '',
   description: '',
@@ -120,35 +113,24 @@ const form = ref<Partial<Property>>({
   imageUrls: []
 })
 
-// Get host's properties only
+// Host-only properties (fix: compare stringified host ID)
 const myProperties = computed(() =>
-  allHomes.value.filter(home => home.host === user._id)
+  allHomes.value.filter(home => home.host?.toString() === user._id)
 )
 
-// Fetch data on mount
 onMounted(refresh)
 
-/**
- * Toggle the visibility of the property form
- */
 function toggleForm() {
   showForm.value = !showForm.value
   if (!showForm.value) resetForm()
 }
 
-/**
- * Refresh the list of properties
- */
 async function refresh() {
   allHomes.value = await getProperties()
 }
 
-/**
- * Handle form submission for create/update
- */
 async function submitForm() {
   const formData = propertyToFormData(form.value, selectedImages.value)
-
   if (!editId.value) {
     await createProperty(formData)
     Swal.fire('Created', 'Property created successfully', 'success')
@@ -156,23 +138,16 @@ async function submitForm() {
     await updateProperty(editId.value, formData)
     Swal.fire('Updated', 'Property updated successfully', 'success')
   }
-
   await refresh()
   resetForm()
 }
 
-/**
- * Load property into form to edit
- */
 function editProperty(home: Property) {
   form.value = { ...home }
   editId.value = home._id || null
   showForm.value = true
 }
 
-/**
- * Delete property with confirmation
- */
 async function handleDeleteProperty(id: string) {
   const result = await Swal.fire({
     title: 'Delete this property?',
@@ -191,9 +166,6 @@ async function handleDeleteProperty(id: string) {
   }
 }
 
-/**
- * Handle image input (multiple files)
- */
 function handleImageUpload(event: Event) {
   const target = event.target as HTMLInputElement
   if (target.files) {
@@ -201,9 +173,6 @@ function handleImageUpload(event: Event) {
   }
 }
 
-/**
- * Reset form to initial state
- */
 function resetForm() {
   showForm.value = false
   editId.value = null
@@ -225,7 +194,6 @@ function resetForm() {
   }
 }
 </script>
-
 
 <style scoped>
 .input {

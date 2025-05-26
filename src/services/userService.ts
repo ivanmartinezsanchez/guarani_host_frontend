@@ -38,8 +38,7 @@ export const getAllUsers = async (): Promise<User[]> => {
 
 /**
  * Create a new user (admin only).
- * @param userData Object with user details.
- * @returns Created user object.
+ * If role is 'host', use the /create-host route.
  */
 export const createUser = async (userData: {
   firstName: string
@@ -50,9 +49,21 @@ export const createUser = async (userData: {
   phone?: string
   address?: string
 }) => {
-  const response = await axios.post(API_URL, userData, { headers: authHeaders() })
+  const token = localStorage.getItem('token')
+  if (!token) throw new Error('❌ No token found in localStorage')
+
+  const headers = { Authorization: `Bearer ${token}` }
+
+  // Determine correct endpoint
+  const endpoint =
+    userData.role === 'host'
+      ? `${import.meta.env.VITE_API_BASE_URL}/admin/create-host`
+      : `${import.meta.env.VITE_API_BASE_URL}/admin/users`
+
+  const response = await axios.post(endpoint, userData, { headers })
   return response.data
 }
+
 
 /**
  * Update a user by ID (admin only).

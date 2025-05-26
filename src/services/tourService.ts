@@ -37,32 +37,49 @@ export interface Tour {
  */
 export const getTours = async (): Promise<Tour[]> => {
   const res = await axios.get(`${API_URL}/host/tours`, getAuthHeaders())
-  return res.data.tours
+  return res.data.tourPackages
 }
 
 /**
  * Creates a new tour package (admin or host).
- * @param tour - Tour data object
  */
 export const createTour = async (tour: Tour): Promise<Tour> => {
-  const res = await axios.post(`${API_URL}/admin/tour-packages`, tour, getAuthHeaders())
-  return res.data.tour
+  const user = JSON.parse(localStorage.getItem('user') || '{}')
+  const isAdmin = user.role === 'admin'
+
+  const endpoint = isAdmin
+    ? `${API_URL}/admin/tour-packages`
+    : `${API_URL}/host/tours`
+
+  const res = await axios.post(endpoint, tour, getAuthHeaders())
+  return res.data.tourPackage
 }
 
 /**
  * Updates an existing tour by ID.
- * @param id - Tour ID
- * @param tour - Updated tour data
  */
 export const updateTour = async (id: string, tour: Tour): Promise<Tour> => {
-  const res = await axios.patch(`${API_URL}/admin/tour-packages/${id}`, tour, getAuthHeaders())
-  return res.data.tour
+  const user = JSON.parse(localStorage.getItem('user') || '{}')
+  const isAdmin = user.role === 'admin'
+
+  const endpoint = isAdmin
+    ? `${API_URL}/admin/tour-packages/${id}`
+    : `${API_URL}/host/tours/${id}`
+
+  const res = await axios.patch(endpoint, tour, getAuthHeaders())
+  return res.data.tourPackage
 }
 
 /**
  * Deletes a tour by ID.
- * @param id - Tour ID
  */
 export const deleteTour = async (id: string): Promise<void> => {
-  await axios.delete(`${API_URL}/admin/tour-packages/${id}`, getAuthHeaders())
+  const user = JSON.parse(localStorage.getItem('user') || '{}')
+  const isAdmin = user.role === 'admin'
+
+  const endpoint = isAdmin
+    ? `${API_URL}/admin/tour-packages/${id}`
+    : `${API_URL}/host/tours/${id}`
+
+  await axios.delete(endpoint, getAuthHeaders())
 }

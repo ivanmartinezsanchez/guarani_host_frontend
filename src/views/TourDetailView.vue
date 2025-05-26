@@ -21,7 +21,7 @@
         <p><strong>Precio:</strong> ${{ tour.price }}</p>
         <p>
           <strong>Status:</strong>
-           <span
+          <span
             :class="{
               'text-green-500': tour.status === 'available',
               'text-red-500': tour.status === 'sold out',
@@ -29,13 +29,14 @@
               'text-gray-500': tour.status === 'cancelled'
             }"
           >
-            {{ tour.status === 'available' ? 'Available' :
-              tour.status === 'sold out' ? 'Sold Out' :
-              tour.status === 'upcoming' ? 'Upcoming' : 'Cancelled' }}
+            {{
+              tour.status === 'available' ? 'Disponible' :
+              tour.status === 'sold out' ? 'Agotado' :
+              tour.status === 'upcoming' ? 'Próximamente' : 'Cancelado'
+            }}
           </span>
         </p>
         <p>
-        
           <strong>Estado del Pago:</strong>
           <span
             :class="{
@@ -45,9 +46,11 @@
               'text-gray-500': tour.paymentStatus === 'refunded'
             }"
           >
-            {{ tour.paymentStatus === 'paid' ? 'Paid' :
-              tour.paymentStatus === 'pending' ? 'Pending' :
-              tour.paymentStatus === 'failed' ? 'Failed' : 'Refunded' }}
+            {{
+              tour.paymentStatus === 'paid' ? 'Pagado' :
+              tour.paymentStatus === 'pending' ? 'Pendiente' :
+              tour.paymentStatus === 'failed' ? 'Fallido' : 'Reembolsado'
+            }}
           </span>
         </p>
       </div>
@@ -61,7 +64,7 @@
           range
           format="yyyy-MM-dd"
           :disabled-dates="bookedDates"
-          placeholder="Select date range"
+          placeholder="Selecciona un rango de fechas"
           class="w-full max-w-md"
         />
 
@@ -85,7 +88,7 @@
           class="bg-primary hover:bg-hover text-white px-6 py-2 rounded-full transition disabled:opacity-50"
           @click="handleReservation"
         >
-          Confirme su Reserva
+          Confirmar Reserva
         </button>
       </div>
     </div>
@@ -124,7 +127,7 @@ const isValidBooking = computed(() =>
 onMounted(async () => {
   try {
     const allTours = await getTours()
-    tour.value = allTours.find(t => t._id === route.params.id) || null
+    tour.value = allTours.find(t => t._id === (route.params.id as string)) || null
   } catch (error) {
     console.error('Error al cargar el tour:', error)
   }
@@ -133,7 +136,7 @@ onMounted(async () => {
 async function handleReservation() {
   const userStr = localStorage.getItem('user')
   if (!userStr) {
-    Swal.fire('Debe registrarse', 'Debe iniciar sesión para hacer una reserva.', 'warning')
+    Swal.fire('Debes iniciar sesión', 'Inicia sesión para hacer una reserva.', 'warning')
     router.push('/login')
     return
   }
@@ -144,7 +147,7 @@ async function handleReservation() {
   try {
     await createBooking({
       user: user._id,
-      tourPackage: tour.value!._id!, 
+      tourPackage: tour.value!._id!,
       checkIn,
       checkOut,
       guests: guests.value,
@@ -153,12 +156,12 @@ async function handleReservation() {
       paymentStatus: 'pending'
     })
 
-    Swal.fire('Reserva enviada', 'Su reserva ha sido enviada correctamente.', 'success')
+    Swal.fire('Reserva enviada', 'Tu reserva ha sido procesada con éxito.', 'success')
     dateRange.value = null
     guests.value = 1
   } catch (error) {
     console.error('Booking error:', error)
-    Swal.fire('Error', 'Hubo un problema con su reserva.', 'error')
+    Swal.fire('Error', 'Hubo un problema con la reserva.', 'error')
   }
 }
 </script>
