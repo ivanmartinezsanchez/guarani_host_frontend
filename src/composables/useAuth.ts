@@ -16,12 +16,12 @@ export type User = {
 }
 
 /**
- * Valid account status values from backend enum.
+ * Valid status values from AccountStatus enum (backend)
  */
 const validStatuses = ['active', 'suspended', 'deleted', 'pending_verification'] as const
 
 /**
- * Normalize and safely cast a status string to the correct enum type.
+ * Normalize a string to match allowed accountStatus values
  */
 function normalizeStatus(status?: string): User['accountStatus'] {
   const lower = status?.toLowerCase()
@@ -31,7 +31,7 @@ function normalizeStatus(status?: string): User['accountStatus'] {
 }
 
 /**
- * Reactive user state initialized from localStorage on app start.
+ * Reactive state: user is initialized from localStorage if available
  */
 const storedUser = localStorage.getItem('user')
 const user = ref<User | null>(
@@ -44,14 +44,13 @@ const user = ref<User | null>(
 )
 
 /**
- * Composable to manage authentication state: login, register, logout.
+ * Auth composable that handles login, registration, and logout logic
  */
 export function useAuth() {
   const router = useRouter()
 
   /**
-   * Log in using email and password.
-   * Normalizes accountStatus and persists token + user in localStorage.
+   * Log in with credentials, update state and localStorage
    */
   async function login(credentials: { email: string; password: string }): Promise<User> {
     try {
@@ -74,8 +73,7 @@ export function useAuth() {
   }
 
   /**
-   * Register a new user.
-   * Normalizes accountStatus and persists token + user in localStorage.
+   * Register a new user and store session in localStorage
    */
   async function register(userData: {
     firstName: string
@@ -101,7 +99,7 @@ export function useAuth() {
   }
 
   /**
-   * Logout by clearing localStorage and resetting state.
+   * Clear session and redirect to login
    */
   function logout() {
     user.value = null
@@ -118,5 +116,3 @@ export function useAuth() {
     logout,
   }
 }
-
-
