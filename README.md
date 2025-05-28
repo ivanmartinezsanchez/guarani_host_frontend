@@ -29,7 +29,7 @@ Frontend for **GuaraníHost**, a vacation rental platform in Paraguay with integ
 
 ## 🚀 Getting Started
 
-```bash
+```
 # 1. Clone the repo
 git clone https://github.com/youruser/guaranihost.git
 cd guaranihost/frontend
@@ -40,9 +40,11 @@ npm install
 # 3. Run locally
 npm run dev
 ```
-##⚙️ Environment Variables
+
+## ⚙️ Environment Variables
 
 Create a .env file and add your backend URL:
+
 ```
 env
 Copiar código
