@@ -88,15 +88,25 @@ export const deleteUserById = async (userId: string): Promise<void> => {
 }
 
 /**
- * Update the current user's profile (for logged-in user)
- * @param data Partial user data
- * @returns Updated user
+ * Update the authenticated user's own profile.
+ * Endpoint: PATCH /users/profile
+ * @param data Fields to update: firstName, lastName, phone, address
+ * @returns Updated user object
  */
-export const updateProfileService = async (data: Partial<User>) => {
-  const response = await axios.patch(`${import.meta.env.VITE_API_BASE_URL}/users/profile`, data, {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
-    },
-  })
+export const updateProfileService = async (data: {
+  firstName: string
+  lastName: string
+  phone?: string
+  address?: string
+}): Promise<User> => {
+  const token = localStorage.getItem('token')
+  if (!token) throw new Error('❌ No token found in localStorage')
+
+  const response = await axios.patch(
+    `${import.meta.env.VITE_API_BASE_URL}/users/profile`,
+    data,
+    { headers: { Authorization: `Bearer ${token}` } }
+  )
+
   return response.data.user
 }

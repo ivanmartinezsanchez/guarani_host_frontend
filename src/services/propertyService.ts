@@ -4,17 +4,21 @@ const API_URL = `${import.meta.env.VITE_API_BASE_URL}/host`
 
 /**
  * Returns authorization headers including the JWT token from localStorage.
- * Throws an error if the token is missing.
  */
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token')
   if (!token) throw new Error('❌ No token found in localStorage')
   return {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    Authorization: `Bearer ${token}`,
   }
 }
+
+/**
+ * Enum types for property status and payment status aligned with backend.
+ */
+export type PropertyStatus = 'available' | 'booked' | 'cancelled' | 'confirmed' | 'inactive'
+
+export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded'
 
 /**
  * Property interface matching backend schema.
@@ -26,60 +30,56 @@ export interface Property {
   address: string
   city: string
   pricePerNight: number
-  checkIn: Date
-  checkOut: Date
+  checkIn: string       // formatted as yyyy-MM-dd
+  checkOut: string      // formatted as yyyy-MM-dd
   guests: number
   amenities: string[]
-  paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded'
+  paymentStatus: PaymentStatus
   paymentDetails?: string
-  status: 'available' | 'booked' | 'cancelled' | 'confirmed' | 'inactive'
+  status: PropertyStatus
   host: string
   imageUrls: string[]
 }
 
 /**
- * Retrieves all properties owned by the currently authenticated host.
+ * Retrieves all properties for the authenticated host.
  */
 export const getProperties = async (): Promise<Property[]> => {
-  const token = localStorage.getItem('token')
-  if (!token) return [] // Prevent execution if not authenticated
-
-  const res = await axios.get(`${API_URL}/properties`, getAuthHeaders())
+  const res = await axios.get(`${API_URL}/properties`, {
+    headers: getAuthHeaders()
+  })
   return res.data.properties
 }
 
 /**
- * Creates a new property using FormData.
- * Requires multipart/form-data for image uploads.
+ * Creates a new property (with images).
  */
 export const createProperty = async (formData: FormData): Promise<Property> => {
-  const res = await axios.post(`${API_URL}/properties`, formData, {
+  const headers = {
     ...getAuthHeaders(),
-    headers: {
-      ...getAuthHeaders().headers,
-      'Content-Type': 'multipart/form-data',
-    },
-  })
+    'Content-Type': 'multipart/form-data'
+  }
+  const res = await axios.post(`${API_URL}/properties`, formData, { headers })
   return res.data.property
 }
 
 /**
- * Updates an existing property by ID using FormData.
+ * Updates an existing property (with optional new images).
  */
 export const updateProperty = async (id: string, formData: FormData): Promise<Property> => {
-  const res = await axios.patch(`${API_URL}/properties/${id}`, formData, {
+  const headers = {
     ...getAuthHeaders(),
-    headers: {
-      ...getAuthHeaders().headers,
-      'Content-Type': 'multipart/form-data',
-    },
-  })
+    'Content-Type': 'multipart/form-data'
+  }
+  const res = await axios.patch(`${API_URL}/properties/${id}`, formData, { headers })
   return res.data.property
 }
 
 /**
- * Deletes a property by its unique ID.
+ * Deletes a property by ID.
  */
 export const deleteProperty = async (id: string): Promise<void> => {
-  await axios.delete(`${API_URL}/properties/${id}`, getAuthHeaders())
+  await axios.delete(`${API_URL}/properties/${id}`, {
+    headers: getAuthHeaders()
+  })
 }

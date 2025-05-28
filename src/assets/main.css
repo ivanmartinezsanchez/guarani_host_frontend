@@ -5,3 +5,14 @@
 body {
   @apply bg-background text-darkText dark:bg-gray-900 dark:text-white;
 }
+
+/* Fix for calendar icon visibility in date inputs */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.4);
+  opacity: 0.8;
+  cursor: pointer;
+}
+
+.dark input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}

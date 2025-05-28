@@ -6,7 +6,7 @@
     :aria-label="`Go to ${title}`"
   >
     <div class="flex items-center gap-4">
-      <!-- Dynamic icon with animation -->
+      <!-- Dynamic icon with scale animation on hover -->
       <component
         :is="iconComponent"
         class="w-10 h-10 text-primary group-hover:scale-110 transition-transform duration-300"
@@ -22,29 +22,49 @@
 /**
  * DashboardCard.vue
  * -----------------
- * Reusable dashboard card with animated icon and title.
+ * Reusable dashboard card component with dynamic icon and navigation.
+ * 
  * Props:
- * - title: string - The section title
- * - icon: string - One of the predefined Lucide icons
- * - to: string - Vue Router path to navigate to
+ * - title: string        // Section title displayed below the icon
+ * - icon: string         // Lucide icon name from allowed set
+ * - to: string           // Vue Router path to navigate to
  */
 
 import { defineProps, computed } from 'vue'
-import { User, Home, CalendarCheck, MapPinned, CreditCard, HelpCircle, Heart } from 'lucide-vue-next'
+import {
+  User,
+  Home,
+  CalendarCheck,
+  MapPinned,
+  CreditCard,
+  HelpCircle,
+  Heart
+} from 'lucide-vue-next'
 
-// Props definition with icon options
+// Define props and allowed icon names
 const props = defineProps<{
   title: string
   icon: 'User' | 'Home' | 'CalendarCheck' | 'MapPinned' | 'CreditCard' | 'HelpCircle' | 'Heart'
   to: string
 }>()
 
-// Icon lookup and dynamic resolution
-const icons = { User, Home, CalendarCheck, MapPinned, CreditCard, HelpCircle, Heart }
+// Lookup table to resolve icon components dynamically
+const icons = {
+  User,
+  Home,
+  CalendarCheck,
+  MapPinned,
+  CreditCard,
+  HelpCircle,
+  Heart
+}
+
+// Computed property to resolve component for given icon name
 const iconComponent = computed(() => icons[props.icon])
 </script>
 
 <style scoped>
+/* Color styles for consistency with primary theme */
 .text-primary {
   color: #3F51B5;
 }

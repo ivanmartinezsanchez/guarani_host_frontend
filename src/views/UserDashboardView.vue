@@ -1,39 +1,41 @@
 <template>
   <div class="max-w-7xl mx-auto p-6">
-    <!-- Title -->
-    <h1 class="text-3xl font-bold text-primary text-center mb-8">Panel de Control del Uusario</h1>
+    <!-- User dashboard title -->
+    <h1 class="text-3xl font-bold text-primary text-center mb-8">
+      Panel de Control del Usuario
+    </h1>
 
-    <!-- Cards Grid -->
+    <!-- User dashboard cards grid -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      <!-- My Bookings -->
+      <!-- View bookings -->
       <DashboardCard
         title="Mis Reservas"
         icon="CalendarCheck"
         to="/profile/bookings"
       />
 
-      <!-- Payments -->
+      <!-- View payments -->
       <DashboardCard
         title="Mis Pagos"
         icon="CreditCard"
         to="/profile/payments"
       />
 
-      <!-- Support -->
+      <!-- Help and support -->
       <DashboardCard
         title="Soporte"
         icon="HelpCircle"
         to="/support"
       />
 
-      <!-- Favorites -->
+      <!-- Favorite listings -->
       <DashboardCard
         title="Favoritos"
         icon="Heart"
         to="/profile/favorites"
       />
 
-      <!-- Profile Settings -->
+      <!-- Profile settings -->
       <DashboardCard
         title="Mi Perfil"
         icon="User"
@@ -44,10 +46,22 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * UserDashboardView.vue
+ * ----------------------
+ * Dashboard for regular users with access to:
+ * - Bookings
+ * - Payments
+ * - Support
+ * - Favorites
+ * - Profile
+ */
+
 import DashboardCard from '@/components/DashboardCard.vue'
 </script>
 
 <style scoped>
+/* Primary brand color */
 .text-primary {
   color: #3F51B5;
 }

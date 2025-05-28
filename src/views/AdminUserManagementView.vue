@@ -62,44 +62,46 @@
       </div>
     </div>
 
-    <!-- User Form -->
-    <Transition name="fade">
-      <div v-if="showForm" class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md mb-10">
-        <h2 class="text-xl font-semibold mb-4">{{ modalTitle }}</h2>
-        <form @submit.prevent="handleFormSubmit" class="space-y-4">
-          <input v-model="form.firstName" type="text" placeholder="Nombre" class="input" required />
-          <input v-model="form.lastName" type="text" placeholder="Apellido" class="input" required />
-          <input v-model="form.email" type="email" placeholder="Correo Electrónico" class="input" required />
-          <input v-model="form.phone" type="tel" placeholder="Teléfono" class="input" required />
-          <input v-model="form.address" type="text" placeholder="Dirección" class="input" required />
-          <select v-model="form.role" class="input" required>
-            <option value="user">Usuario</option>
-            <option value="host">Anfitrión</option>
-            <option value="admin">Administrador</option>
-          </select>
-          <input
-            v-if="modalTitle === 'Create User'"
-            v-model="form.password"
-            type="password"
-            placeholder="Password"
-            class="input"
-            required
-          />
-          <div class="flex justify-end gap-2">
-            <button
-              type="button"
-              @click="resetForm"
-              class="border px-4 py-2 rounded text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition"
-            >
-              Cancelar
-            </button>
-            <button type="submit" class="bg-primary text-white px-6 py-2 rounded hover:bg-hover transition">
-              {{ modalTitle === 'Create User' ? 'Create' : 'Update' }}
-            </button>
-          </div>
-        </form>
-      </div>
-    </Transition>
+   <Modal v-if="showForm" @close="resetForm">
+  <template #title>{{ modalTitle }}</template>
+
+  <form @submit.prevent="handleFormSubmit" class="space-y-4">
+    <input v-model="form.firstName" type="text" placeholder="Nombre" class="input" required />
+    <input v-model="form.lastName" type="text" placeholder="Apellido" class="input" required />
+    <input v-model="form.email" type="email" placeholder="Correo Electrónico" class="input" required />
+    <input v-model="form.phone" type="tel" placeholder="Teléfono" class="input" required />
+    <input v-model="form.address" type="text" placeholder="Dirección" class="input" required />
+
+    <select v-model="form.role" class="input" required>
+      <option value="user">Usuario</option>
+      <option value="host">Anfitrión</option>
+      <option value="admin">Administrador</option>
+    </select>
+
+    <input
+      v-if="modalTitle === 'Create User'"
+      v-model="form.password"
+      type="password"
+      placeholder="Password"
+      class="input"
+      required
+    />
+
+    <div class="flex justify-end gap-2 mt-4">
+      <button
+        type="button"
+        @click="resetForm"
+        class="border px-4 py-2 rounded text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+      >
+        Cancelar
+      </button>
+      <button type="submit" class="bg-primary text-white px-6 py-2 rounded hover:bg-hover transition">
+        {{ modalTitle === 'Create User' ? 'Create' : 'Update' }}
+      </button>
+    </div>
+  </form>
+</Modal>
+
 
     <!-- Back to dashboard -->
     <div class="text-center mt-6">

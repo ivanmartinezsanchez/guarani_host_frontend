@@ -4,16 +4,16 @@
     role="navigation"
     aria-label="Main navigation"
   >
-    <!-- Logo (links to home) -->
-    <RouterLink to="/" class="flex items-center" aria-label="Ir a inicio">
-      <img src="@/assets/logo.png" alt="GuaraníHost logo" class="h-12 md:h-16 w-auto" />
+    <!-- Logo -->
+    <RouterLink to="/" class="flex items-center" aria-label="Go to Home">
+      <img src="@/assets/logo.png" alt="GuaraníHost logo" class="h-10 md:h-14 w-auto" />
     </RouterLink>
 
-    <!-- Mobile toggle button with accessibility attributes -->
+    <!-- Mobile menu toggle -->
     <button
       @click="menuOpen = !menuOpen"
       class="sm:hidden"
-      aria-label="Toggle navigation menu"
+      aria-label="Toggle navigation"
       :aria-expanded="menuOpen"
       aria-controls="navbar-menu"
     >
@@ -24,12 +24,9 @@
     <ul
       id="navbar-menu"
       role="menubar"
-      :class="[
-        'w-full sm:w-auto flex-col sm:flex-row sm:flex sm:items-center sm:gap-6 mt-4 sm:mt-0 transition-all duration-300 ease-in-out',
-        menuOpen ? 'flex' : 'hidden'
-      ]"
+      :class="[menuOpen ? 'flex' : 'hidden', 'w-full sm:flex sm:flex-row sm:items-center gap-4 mt-4 sm:mt-0 flex-col sm:w-auto']"
     >
-      <!-- Public links -->
+      <!-- Link: Inicio (all users) -->
       <li role="none">
         <RouterLink
           role="menuitem"
@@ -40,7 +37,9 @@
           Inicio
         </RouterLink>
       </li>
-      <li role="none">
+
+      <!-- Link: Nosotros (only for guest or user) -->
+      <li role="none" v-if="!user || user.role === 'user'">
         <RouterLink
           role="menuitem"
           to="/about"
@@ -51,48 +50,103 @@
         </RouterLink>
       </li>
 
-      <!-- Authenticated / Unauthenticated -->
-      <li v-if="!user" role="none">
-        <RouterLink
-          role="menuitem"
-          to="/login"
-          class="block py-1 hover:underline"
-          :class="{ 'font-bold underline text-primary': route.path === '/login' }"
-        >
-          Login
-        </RouterLink>
-      </li>
-      <li v-if="!user" role="none">
-        <RouterLink
-          role="menuitem"
-          to="/register"
-          class="block py-1 hover:underline"
-          :class="{ 'font-bold underline text-primary': route.path === '/register' }"
-        >
-          Registro
-        </RouterLink>
-      </li>
+      <!-- Guest links -->
+      <template v-if="!user">
+        <li role="none">
+          <RouterLink
+            role="menuitem"
+            to="/login"
+            class="block py-1 hover:underline"
+            :class="{ 'font-bold underline text-primary': route.path === '/login' }"
+          >
+            Iniciar sesión
+          </RouterLink>
+        </li>
+        <li role="none">
+          <RouterLink
+            role="menuitem"
+            to="/register"
+            class="block py-1 hover:underline"
+            :class="{ 'font-bold underline text-primary': route.path === '/register' }"
+          >
+            Registro
+          </RouterLink>
+        </li>
+      </template>
 
-      <li v-if="user" role="none">
-        <RouterLink
-          role="menuitem"
-          :to="`/${user.role}/dashboard`"
-          class="block py-1 hover:underline"
-          :class="{ 'font-bold underline text-primary': route.path.includes('/dashboard') }"
-        >
-          Dashboard
-        </RouterLink>
-      </li>
+      <!-- Authenticated user -->
+      <template v-else>
+        <!-- Tours (only for 'user') -->
+        <li role="none" v-if="user.role === 'user'">
+          <RouterLink
+            role="menuitem"
+            to="/tours"
+            class="block py-1 hover:underline"
+            :class="{ 'font-bold underline text-primary': route.name === 'tour-detail' || route.path === '/tours' }"
+          >
+            Paquetes turísticos
+          </RouterLink>
+        </li>
 
-      <li v-if="user" role="none">
-        <button @click="logout" class="block py-1 hover:underline" aria-label="Cerrar sesión">
-          Salir
-        </button>
-      </li>
+        <!-- Dashboard (based on role) -->
+        <li role="none" v-if="user.role === 'admin'">
+          <RouterLink
+            role="menuitem"
+            to="/admin/dashboard"
+            class="block py-1 hover:underline"
+            :class="{ 'font-bold underline text-primary': route.name === 'admin-dashboard' }"
+          >
+            Dashboard
+          </RouterLink>
+        </li>
+        <li role="none" v-else-if="user.role === 'host'">
+          <RouterLink
+            role="menuitem"
+            to="/host/dashboard"
+            class="block py-1 hover:underline"
+            :class="{ 'font-bold underline text-primary': route.name === 'host-dashboard' }"
+          >
+            Dashboard
+          </RouterLink>
+        </li>
+        <li role="none" v-else-if="user.role === 'user'">
+          <RouterLink
+            role="menuitem"
+            to="/user/dashboard"
+            class="block py-1 hover:underline"
+            :class="{ 'font-bold underline text-primary': route.name === 'user-dashboard' }"
+          >
+            Dashboard
+          </RouterLink>
+        </li>
+
+        <!-- Profile -->
+        <li role="none">
+          <RouterLink
+            role="menuitem"
+            to="/profile"
+            class="block py-1 hover:underline"
+            :class="{ 'font-bold underline text-primary': route.name === 'profile' }"
+          >
+            Perfil
+          </RouterLink>
+        </li>
+
+        <!-- Logout -->
+        <li role="none">
+          <button
+            @click="logout"
+            class="block py-1 hover:underline"
+            aria-label="Cerrar sesión"
+          >
+            Salir
+          </button>
+        </li>
+      </template>
 
       <!-- Theme toggle -->
       <li role="none">
-        <button @click="toggleTheme" class="ml-2" title="Cambiar tema" aria-label="Toggle dark mode">
+        <button @click="toggleTheme" class="ml-2" title="Cambiar tema" aria-label="Cambiar modo claro/oscuro">
           <Moon v-if="isDark" class="w-5 h-5" aria-hidden="true" />
           <Sun v-else class="w-5 h-5" aria-hidden="true" />
         </button>
@@ -103,8 +157,9 @@
 
 <script setup lang="ts">
 /**
- * Accessible Navbar with responsive layout, authentication state,
- * route awareness, and theme toggle. Optimized for keyboard and screen readers.
+ * GuaraníHost Navbar
+ * - Role-based conditional rendering for guest, user, host, admin
+ * - Responsive with dark/light mode support
  */
 import { ref } from 'vue'
 import { useRoute } from 'vue-router'

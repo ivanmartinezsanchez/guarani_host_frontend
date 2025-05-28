@@ -1,22 +1,30 @@
 <template>
   <div class="relative w-full">
-    <input
+    <select
       v-bind="$attrs"
       :id="id"
-      :type="type"
       :value="modelValue"
       :required="required"
       :aria-invalid="error ? 'true' : 'false'"
       :aria-describedby="error ? `${id}-error` : undefined"
-      @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
+      @change="$emit('update:modelValue', ($event.target as HTMLSelectElement).value)"
       :class="[
-        'peer w-full px-4 pt-6 pb-2 rounded-md border text-sm sm:text-base',
-        'bg-white dark:bg-gray-900 dark:text-white',
-        'focus:outline-none focus:ring-2 focus:ring-primary transition-all placeholder-transparent',
+        'peer w-full px-4 pt-6 pb-2 rounded-md border text-sm sm:text-base bg-white dark:bg-gray-900 dark:text-white',
+        'focus:outline-none focus:ring-2 focus:ring-primary transition-all',
         error ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
       ]"
-      placeholder=" "
-    />
+    >
+      <option value="" disabled hidden></option>
+      <option
+        v-for="option in options"
+        :key="option.value"
+        :value="option.value"
+      >
+        {{ option.label }}
+      </option>
+    </select>
+
+    <!-- Floating label -->
     <label
       :for="id"
       class="absolute left-4 top-2 text-sm text-gray-500 dark:text-gray-400 transition-all
@@ -35,8 +43,8 @@ defineOptions({ inheritAttrs: false })
 defineProps<{
   id: string
   label: string
-  type: string
   modelValue: string
+  options: { value: string; label: string }[]
   required?: boolean
   error?: boolean
 }>()

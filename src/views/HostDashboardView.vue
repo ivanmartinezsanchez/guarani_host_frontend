@@ -1,11 +1,11 @@
 <template>
   <div class="max-w-7xl mx-auto p-6">
-    <!-- Page title -->
+    <!-- Host Dashboard Title -->
     <h1 class="text-3xl font-bold mb-8 text-center text-primary">
       Panel de Control del Anfitrión
     </h1>
 
-    <!-- Dashboard card grid -->
+    <!-- Dashboard Cards Grid -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       <!-- Manage Properties -->
       <DashboardCard
@@ -16,14 +16,14 @@
 
       <!-- Manage Tour Packages -->
       <DashboardCard
-        title="Mis Tours"
+        title="Mis Paquetes Turísticos"
         icon="MapPinned"
         to="/host/tours"
       />
 
-      <!-- View Bookings -->
+      <!-- View Reservations -->
       <DashboardCard
-        title="Reservas"
+        title="Mis Reservas"
         icon="CalendarCheck"
         to="/host/bookings"
       />
@@ -32,17 +32,21 @@
 </template>
 
 <script setup lang="ts">
-// Import reusable dashboard card component
+/**
+ * HostDashboardView.vue
+ * - Host's main control panel with quick links
+ * - Uses DashboardCard component with icons
+ */
+
 import DashboardCard from '@/components/DashboardCard.vue'
 </script>
 
 <style scoped>
-/* Primary color (Airbnb-inspired) */
+/* Primary color styling (Airbnb-inspired) */
 .text-primary {
   color: #3F51B5;
 }
 
-/* Primary hover color */
 .bg-primary {
   background-color: #3F51B5;
 }

@@ -76,7 +76,7 @@
             <input v-model.number="form.pricePerNight" type="number" placeholder="Precio por noche" class="input" required />
             <input v-model="form.status" type="text" placeholder="Estado" class="input" required />
             <div>
-              <label class="block text-sm font-medium mb-1">Imágenes (puedes seleccionar varias)</label>
+              <label class="block text-sm font-medium mb-1">Imágenes</label>
               <input @change="handleFileUpload" type="file" multiple class="input bg-white dark:bg-gray-900 file:mr-4 file:py-2 file:px-4 file:border file:rounded file:border-gray-300 file:text-sm file:bg-primary file:text-white hover:file:bg-hover" />
               <div v-if="form.imageUrls?.length" class="flex flex-wrap mt-2 gap-2">
                 <div v-for="(img, i) in form.imageUrls" :key="i" class="relative w-24 h-24">
@@ -112,7 +112,6 @@ import { ref, computed, onMounted } from 'vue'
 import { HomeIcon, PencilIcon, Trash2Icon, PlusIcon, ArrowLeftIcon, XIcon } from 'lucide-vue-next'
 import Swal from 'sweetalert2'
 import { RouterLink } from 'vue-router'
-import { uploadImagesToCloudinary } from '@/services/cloudinaryService'
 import { getProperties, createProperty, updateProperty, deleteProperty, type Property } from '@/services/propertyService'
 
 const showForm = ref(false)
@@ -120,6 +119,7 @@ const modalTitle = ref('Crear propiedad')
 const editIndex = ref<number | null>(null)
 const selectedFilter = ref('')
 const properties = ref<Property[]>([])
+const selectedImages = ref<File[]>([])
 const form = ref<Partial<Property>>({
   title: '',
   city: '',
@@ -160,12 +160,11 @@ const filteredHomes = computed(() => {
   return result
 })
 
-async function handleFileUpload(event: Event) {
+function handleFileUpload(event: Event) {
   const input = event.target as HTMLInputElement
   const files = input.files
-  if (files && files.length > 0) {
-    const urls = await uploadImagesToCloudinary(Array.from(files))
-    form.value.imageUrls = urls
+  if (files) {
+    selectedImages.value = Array.from(files)
   }
 }
 
@@ -205,19 +204,30 @@ async function confirmDelete(index: number) {
 
 async function handleFormSubmit() {
   try {
+    const formData = new FormData()
+    formData.append('title', form.value.title || '')
+    formData.append('city', form.value.city || '')
+    formData.append('address', form.value.address || '')
+    formData.append('pricePerNight', String(form.value.pricePerNight || 0))
+    formData.append('status', form.value.status || 'available')
+
+    selectedImages.value.forEach(file => {
+      formData.append('images', file)
+    })
+
     if (editIndex.value === null) {
-      await createProperty(form.value as Property)
-      Swal.fire({ title: 'Éxito', text: 'Propiedad creada', icon: 'success', timer: 2000, showConfirmButton: false })
-    } else {
-      if (form.value._id) {
-        await updateProperty(form.value._id, form.value as Property)
-        Swal.fire({ title: 'Actualizado', text: 'Propiedad actualizada', icon: 'success', timer: 2000, showConfirmButton: false })
-      }
+      await createProperty(formData)
+      Swal.fire('Éxito', 'Propiedad creada correctamente', 'success')
+    } else if (form.value._id) {
+      await updateProperty(form.value._id, formData)
+      Swal.fire('Actualizado', 'Propiedad actualizada correctamente', 'success')
     }
+
     await fetchProperties()
     cancelForm()
   } catch (error) {
     console.error('Error al guardar propiedad:', error)
+    Swal.fire('Error', 'No se pudo guardar la propiedad', 'error')
   }
 }
 
@@ -232,6 +242,7 @@ function cancelForm() {
     status: 'available',
     imageUrls: []
   }
+  selectedImages.value = []
   editIndex.value = null
 }
 </script>
