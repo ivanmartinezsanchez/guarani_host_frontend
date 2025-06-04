@@ -30,6 +30,8 @@
 
 <script setup lang="ts">
 import { XIcon } from 'lucide-vue-next'
+
+defineProps<{ modelValue: boolean }>() 
 </script>
 
 <style scoped>

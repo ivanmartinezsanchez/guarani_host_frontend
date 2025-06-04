@@ -15,7 +15,7 @@ const authHeaders = () => {
  * User interface aligned with backend
  */
 export type User = {
-  _id: string // ✅ REQUIRED FIELD
+  _id: string
   firstName: string
   lastName: string
   email: string

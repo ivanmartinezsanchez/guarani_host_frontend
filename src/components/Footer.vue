@@ -1,81 +1,217 @@
 <template>
   <footer
-    class="bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300 text-sm border-t border-gray-200 dark:border-gray-700"
+    class="bg-background dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700"
     role="contentinfo"
     aria-label="Pie de página"
   >
-    <!-- Main grid -->
-    <div class="max-w-7xl mx-auto px-4 py-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
-      <!-- Branding -->
-      <div>
-        <h2 class="font-semibold text-gray-900 dark:text-white text-lg mb-2">GuaraníHost</h2>
-        <p class="leading-relaxed">
-          Descubre alojamientos y experiencias únicas en Paraguay. Inspirado en la hospitalidad guaraní.
-        </p>
-      </div>
-
-      <!-- Navigation -->
-      <div>
-        <h3 class="font-semibold text-gray-900 dark:text-white mb-3">Navegación</h3>
-        <ul class="space-y-1" role="list">
-          <li><RouterLink to="/" class="hover:underline">Inicio</RouterLink></li>
-          <li><RouterLink to="/about" class="hover:underline">Nosotros</RouterLink></li>
-          <li><RouterLink to="/login" class="hover:underline">Iniciar sesión</RouterLink></li>
-          <li><RouterLink to="/register" class="hover:underline">Registrarse</RouterLink></li>
-        </ul>
-      </div>
-
-      <!-- Contact -->
-      <div>
-        <h3 class="font-semibold text-gray-900 dark:text-white mb-3">Contacto</h3>
-        <ul class="space-y-1" role="list">
-          <li><span>Email:</span> contacto@guaranihost.com</li>
-          <li><span>Teléfono:</span> +595 981 123 456</li>
-          <li>Asunción, Paraguay</li>
-        </ul>
-      </div>
-
-      <!-- Social media -->
-      <div>
-        <h3 class="font-semibold text-gray-900 dark:text-white mb-3">Síguenos</h3>
-        <ul class="flex space-x-4 items-center" role="list">
-          <li>
-            <a href="#" aria-label="Facebook" class="hover:text-primary transition" target="_blank" rel="noopener">
-              <Facebook class="w-6 h-6" aria-hidden="true" />
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-6 py-12">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <!-- Brand Section -->
+        <div class="lg:col-span-1">
+          <div class="flex items-center space-x-2 mb-4">
+            <img src="@/assets/logo.png" alt="GuaraníHost logo" class="h-8 w-auto" />
+            <h2 class="text-xl font-bold text-darkText dark:text-white">GuaraníHost</h2>
+          </div>
+          <p class="text-lightText dark:text-gray-400 leading-relaxed mb-4">
+            Descubre Paraguay auténtico. Alojamientos únicos y experiencias locales 
+            con la hospitalidad guaraní.
+          </p>
+          <div class="flex items-center space-x-4">
+            <a 
+              href="#" 
+              aria-label="Síguenos en Facebook"
+              class="text-lightText dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors"
+              target="_blank" 
+              rel="noopener noreferrer"
+            >
+              <FacebookIcon class="w-5 h-5" />
             </a>
-          </li>
-          <li>
-            <a href="#" aria-label="Instagram" class="hover:text-primary transition" target="_blank" rel="noopener">
-              <Instagram class="w-6 h-6" aria-hidden="true" />
+            <a 
+              href="#" 
+              aria-label="Síguenos en Instagram"
+              class="text-lightText dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors"
+              target="_blank" 
+              rel="noopener noreferrer"
+            >
+              <InstagramIcon class="w-5 h-5" />
             </a>
-          </li>
-          <li>
-            <a href="#" aria-label="TikTok" class="hover:text-primary transition" target="_blank" rel="noopener">
-              <Music class="w-6 h-6" aria-hidden="true" />
+            <a 
+              href="#" 
+              aria-label="Síguenos en TikTok"
+              class="text-lightText dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors"
+              target="_blank" 
+              rel="noopener noreferrer"
+            >
+              <MusicIcon class="w-5 h-5" />
             </a>
-          </li>
-        </ul>
+          </div>
+        </div>
+
+        <!-- Navigation Links -->
+        <div>
+          <h3 class="font-semibold text-darkText dark:text-white mb-4">Navegación</h3>
+          <ul class="space-y-2">
+            <li>
+              <RouterLink 
+                to="/" 
+                class="text-lightText dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors"
+              >
+                Inicio
+              </RouterLink>
+            </li>
+            <li>
+              <RouterLink 
+                to="/about" 
+                class="text-lightText dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors"
+              >
+                Nosotros
+              </RouterLink>
+            </li>
+            <li v-if="!user">
+              <RouterLink 
+                to="/login" 
+                class="text-lightText dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors"
+              >
+                Iniciar sesión
+              </RouterLink>
+            </li>
+            <li v-if="!user">
+              <RouterLink 
+                to="/register" 
+                class="text-lightText dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors"
+              >
+                Registrarse
+              </RouterLink>
+            </li>
+            <li v-if="user">
+              <RouterLink 
+                to="/profile" 
+                class="text-lightText dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors"
+              >
+                Mi Perfil
+              </RouterLink>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Support & Help -->
+        <div>
+          <h3 class="font-semibold text-darkText dark:text-white mb-4">Soporte</h3>
+          <ul class="space-y-2">
+            <li>
+              <RouterLink 
+                to="/contact" 
+                class="text-lightText dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors"
+              >
+                Contacto
+              </RouterLink>
+            </li>
+            <li>
+              <RouterLink 
+                to="/help" 
+                class="text-lightText dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors"
+              >
+                Centro de ayuda
+              </RouterLink>
+            </li>
+            <li>
+              <RouterLink 
+                to="/terms" 
+                class="text-lightText dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors"
+              >
+                Términos de uso
+              </RouterLink>
+            </li>
+            <li>
+              <RouterLink 
+                to="/privacy" 
+                class="text-lightText dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors"
+              >
+                Política de privacidad
+              </RouterLink>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Contact Info -->
+        <div>
+          <h3 class="font-semibold text-darkText dark:text-white mb-4">Contacto</h3>
+          <div class="space-y-3">
+            <div class="flex items-center space-x-2">
+              <MailIcon class="w-4 h-4 text-lightText dark:text-gray-400" />
+              <a 
+                href="mailto:contacto@guaranihost.com"
+                class="text-lightText dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors"
+              >
+                contacto@guaranihost.com
+              </a>
+            </div>
+            <div class="flex items-center space-x-2">
+              <PhoneIcon class="w-4 h-4 text-lightText dark:text-gray-400" />
+              <a 
+                href="tel:+595981123456"
+                class="text-lightText dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors"
+              >
+                +595 981 123 456
+              </a>
+            </div>
+            <div class="flex items-center space-x-2">
+              <MapPinIcon class="w-4 h-4 text-lightText dark:text-gray-400" />
+              <span class="text-lightText dark:text-gray-400">
+                Asunción, Paraguay
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Bottom line -->
-    <div class="border-t border-gray-200 dark:border-gray-700 py-4 text-center text-xs">
-      &copy; 2025 GuaraníHost. Todos los derechos reservados.
+    <!-- Bottom Bar -->
+    <div class="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+      <div class="max-w-7xl mx-auto px-6 py-4">
+        <div class="flex flex-col sm:flex-row justify-between items-center space-y-2 sm:space-y-0">
+          <p class="text-sm text-lightText dark:text-gray-400">
+            &copy; {{ currentYear }} GuaraníHost. Todos los derechos reservados.
+          </p>
+          <div class="flex items-center space-x-4 text-sm">
+            <RouterLink 
+              to="/terms" 
+              class="text-lightText dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors"
+            >
+              Términos
+            </RouterLink>
+            <RouterLink 
+              to="/privacy" 
+              class="text-lightText dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors"
+            >
+              Privacidad
+            </RouterLink>
+            <span class="text-lightText dark:text-gray-400">•</span>
+            <span class="text-lightText dark:text-gray-400">Hecho en Paraguay 🇵🇾</span>
+          </div>
+        </div>
+      </div>
     </div>
   </footer>
 </template>
 
 <script setup lang="ts">
-/**
- * Footer component with accessible structure, responsive grid layout,
- * dark/light theme support, and social links.
- */
+import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
-import { Facebook, Instagram, Music } from 'lucide-vue-next'
-</script>
+import { 
+  FacebookIcon, 
+  InstagramIcon, 
+  MusicIcon,
+  MailIcon,
+  PhoneIcon,
+  MapPinIcon
+} from 'lucide-vue-next'
+import { useAuth } from '@/composables/useAuth'
 
-<style scoped>
-.text-primary {
-  color: #3F51B5;
-}
-</style>
+// Get current user
+const { user } = useAuth()
+
+// Current year for copyright
+const currentYear = computed(() => new Date().getFullYear())
+</script>

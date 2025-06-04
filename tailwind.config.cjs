@@ -8,11 +8,11 @@ module.exports = {
     extend: {
       colors: {
         primary: '#3F51B5',
+        'primary-dark': '#303F9F',
         secondary: '#E8EAF6',
         darkText: '#2C2C2C',
         lightText: '#9E9E9E',
         background: '#F5F5F5',
-        hover: '#5C6BC0',
         gray: {
           100: '#f5f5f5',
           200: '#e5e5e5',

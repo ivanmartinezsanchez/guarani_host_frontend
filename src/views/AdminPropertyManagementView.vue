@@ -3,19 +3,19 @@
     <!-- Page Header -->
     <header class="mb-8">
       <div class="flex items-center space-x-4 mb-2">
-        <RouterLink
-          to="/host/dashboard"
+        <button
+          @click="goBack"
           class="inline-flex items-center p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
-          aria-label="Volver al dashboard de host"
+          aria-label="Go back to dashboard"
         >
           <ArrowLeftIcon class="w-5 h-5" />
-        </RouterLink>
+        </button>
         <div>          
           <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-            Mis Paquetes Turísticos
+            Gestión de Propiedades
           </h1>
           <p class="text-sm text-gray-500 dark:text-gray-400">
-            Gestiona tus tours y paquetes disponibles
+            Administra las propiedades y su disponibilidad
           </p>
         </div>
       </div>
@@ -37,10 +37,27 @@
       </div>
       
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- City Filter -->
+        <div class="space-y-2">
+          <label for="cityFilter" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Ciudad
+          </label>
+          <select
+            id="cityFilter"
+            v-model="cityFilter"
+            class="w-full h-10 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+          >
+            <option value="">Todas las Ciudades</option>
+            <option v-for="city in availableCities" :key="city" :value="city">
+              {{ city }}
+            </option>
+          </select>
+        </div>
+        
         <!-- Status Filter -->
         <div class="space-y-2">
           <label for="statusFilter" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Estado del Tour
+            Estado
           </label>
           <select
             id="statusFilter"
@@ -49,9 +66,10 @@
           >
             <option value="">Todos los Estados</option>
             <option value="available">Disponible</option>
-            <option value="sold_out">Agotado</option>
+            <option value="booked">Reservado</option>
             <option value="cancelled">Cancelado</option>
-            <option value="upcoming">Próximamente</option>
+            <option value="confirmed">Confirmado</option>
+            <option value="inactive">Inactivo</option>
           </select>
         </div>
         
@@ -90,22 +108,21 @@
             />
           </div>
         </div>
-        
-        <!-- Search Filter -->
+      </div>
+      
+      <!-- Host Filter (admin only) -->
+      <div v-if="user.role === 'admin'" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
         <div class="space-y-2">
-          <label for="searchFilter" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Buscar Tours
+          <label for="hostFilter" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Anfitrión
           </label>
-          <div class="relative">
-            <SearchIcon class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
-              id="searchFilter"
-              v-model="searchQuery"
-              type="text"
-              placeholder="Buscar por título o descripción..."
-              class="w-full h-10 pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-            />
-          </div>
+          <input
+            id="hostFilter"
+            v-model="hostFilter"
+            type="text"
+            placeholder="Filtrar por nombre o ID del anfitrión..."
+            class="w-full h-10 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+          />
         </div>
       </div>
     </section>
@@ -127,7 +144,7 @@
         Exportar PDF
       </button>
     </div>
-    <!-- Tour Form - Always Visible -->
+   <!-- Property Form - Always Visible -->
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8">
       <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-3">
         <div class="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
@@ -137,21 +154,21 @@
           />
           <EditIcon v-else class="w-5 h-5 text-blue-600 dark:text-blue-400" />
         </div>
-        {{ editId ? "Editar Paquete Turístico" : "Crear Nuevo Paquete Turístico" }}
+        {{ editId ? "Editar Propiedad" : "Crear Nueva Propiedad" }}
       </h2>
 
       <form @submit.prevent="handleSubmit" class="space-y-8">
-        <!-- Basic Information Section -->
+        <!-- Basic Information -->
         <div class="space-y-6">
           <h3 class="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
             Información Básica
           </h3>
 
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Tour Title -->
+            <!-- Property Title -->
             <div class="lg:col-span-2 space-y-2">
               <label for="title" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Título del Paquete Turístico <span class="text-red-500">*</span>
+                Título de la Propiedad <span class="text-red-500">*</span>
               </label>
               <input
                 id="title"
@@ -164,17 +181,17 @@
                     ? 'border-red-500'
                     : 'border-gray-300 dark:border-gray-600',
                 ]"
-                placeholder="ej., Aventura en las Cataratas del Iguazú - 3 días"
+                placeholder="ej., Hermosa Casa Colonial en el Centro Histórico"
               />
               <p
                 v-if="formErrors.title"
                 class="text-sm text-red-600 dark:text-red-400"
               >
-                El título del paquete turístico es obligatorio
+                El título de la propiedad es obligatorio
               </p>
             </div>
 
-            <!-- Tour Description -->
+            <!-- Property Description -->
             <div class="lg:col-span-2 space-y-2">
               <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Descripción <span class="text-red-500">*</span>
@@ -190,7 +207,7 @@
                     ? 'border-red-500'
                     : 'border-gray-300 dark:border-gray-600',
                 ]"
-                placeholder="Describe el paquete turístico, actividades incluidas, destinos, duración y aspectos destacados del tour..."
+                placeholder="Describe la propiedad, sus características, comodidades y aspectos destacados de la ubicación..."
               ></textarea>
               <div class="flex justify-between items-center">
                 <p
@@ -205,23 +222,75 @@
               </div>
             </div>
 
-            <!-- Price -->
+            <!-- Address -->
             <div class="space-y-2">
-              <label for="price" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Precio del Tour (USD) <span class="text-red-500">*</span>
+              <label for="address" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Dirección <span class="text-red-500">*</span>
+              </label>
+              <input
+                id="address"
+                v-model="form.address"
+                type="text"
+                required
+                :class="[
+                  'w-full h-12 px-4 py-3 border rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors',
+                  formErrors.address
+                    ? 'border-red-500'
+                    : 'border-gray-300 dark:border-gray-600',
+                ]"
+                placeholder="ej., Avenida España 123"
+              />
+              <p
+                v-if="formErrors.address"
+                class="text-sm text-red-600 dark:text-red-400"
+              >
+                La dirección es obligatoria
+              </p>
+            </div>
+
+            <!-- City -->
+            <div class="space-y-2">
+              <label for="city" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Ciudad <span class="text-red-500">*</span>
+              </label>
+              <input
+                id="city"
+                v-model="form.city"
+                type="text"
+                required
+                :class="[
+                  'w-full h-12 px-4 py-3 border rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors',
+                  formErrors.city
+                    ? 'border-red-500'
+                    : 'border-gray-300 dark:border-gray-600',
+                ]"
+                placeholder="ej., Asunción"
+              />
+              <p
+                v-if="formErrors.city"
+                class="text-sm text-red-600 dark:text-red-400"
+              >
+                La ciudad es obligatoria
+              </p>
+            </div>
+
+            <!-- Price per Night -->
+            <div class="space-y-2">
+              <label for="pricePerNight" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Precio por Noche (USD) <span class="text-red-500">*</span>
               </label>
               <div class="relative">
                 <DollarSignIcon class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
-                  id="price"
-                  v-model="form.price"
+                  id="pricePerNight"
+                  v-model="form.pricePerNight"
                   type="number"
                   min="1"
                   step="0.01"
                   required
                   :class="[
                     'w-full h-12 pl-10 pr-4 py-3 border rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors',
-                    formErrors.price
+                    formErrors.pricePerNight
                       ? 'border-red-500'
                       : 'border-gray-300 dark:border-gray-600',
                   ]"
@@ -229,17 +298,84 @@
                 />
               </div>
               <p
-                v-if="formErrors.price"
+                v-if="formErrors.pricePerNight"
                 class="text-sm text-red-600 dark:text-red-400"
               >
                 El precio debe ser mayor que cero
               </p>
             </div>
 
-            <!-- Tour Status -->
+            <!-- Maximum Guests -->
+            <div class="space-y-2">
+              <label for="maxGuests" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Huéspedes Máximos <span class="text-red-500">*</span>
+              </label>
+              <div class="relative">
+                <UsersIcon class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  id="maxGuests"
+                  v-model="form.maxGuests"
+                  type="number"
+                  min="1"
+                  max="20"
+                  required
+                  :class="[
+                    'w-full h-12 pl-10 pr-4 py-3 border rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors',
+                    formErrors.maxGuests
+                      ? 'border-red-500'
+                      : 'border-gray-300 dark:border-gray-600',
+                  ]"
+                  placeholder="1"
+                />
+              </div>
+              <p
+                v-if="formErrors.maxGuests"
+                class="text-sm text-red-600 dark:text-red-400"
+              >
+                El número de huéspedes debe estar entre 1 y 20
+              </p>
+            </div>
+
+            <!-- Host Selection (Admin) / Hidden Host ID (Host) -->
+            <div v-if="user.role === 'admin'" class="space-y-2">
+              <label for="host" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Anfitrión <span class="text-red-500">*</span>
+              </label>
+              <select
+                id="host"
+                v-model="form.host"
+                required
+                :class="[
+                  'w-full h-12 px-4 py-3 border rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors',
+                  formErrors.host
+                    ? 'border-red-500'
+                    : 'border-gray-300 dark:border-gray-600',
+                ]"
+              >
+                <option value="">Seleccionar anfitrión...</option>
+                <option
+                  v-for="host in availableHosts"
+                  :key="host._id"
+                  :value="host._id"
+                >
+                  {{ host.firstName }} {{ host.lastName }} ({{ host.email }})
+                </option>
+              </select>
+              <p
+                v-if="formErrors.host"
+                class="text-sm text-red-600 dark:text-red-400"
+              >
+                Debe seleccionar un anfitrión
+              </p>
+            </div>
+
+            <!-- Hidden host field for hosts -->
+            <input v-else v-model="form.host" type="hidden" />
+
+            <!-- Property Status -->
             <div class="space-y-2">
               <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Estado del Tour
+                Estado de la Propiedad
               </label>
               <select
                 id="status"
@@ -247,20 +383,55 @@
                 class="w-full h-12 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
               >
                 <option value="available">Disponible</option>
-                <option value="sold_out">Agotado</option>
+                <option value="booked">Reservado</option>
                 <option value="cancelled">Cancelado</option>
-                <option value="upcoming">Próximamente</option>
+                <option value="confirmed">Confirmado</option>
+                <option value="inactive">Inactivo</option>
               </select>
               <p class="text-xs text-gray-500 dark:text-gray-400">
-                Solo los tours "Disponibles" serán visibles para los usuarios
+                Solo las propiedades "Disponibles" serán visibles para los usuarios
               </p>
             </div>
           </div>
         </div>
+
+  <!-- Amenities Section -->
+        <div class="space-y-6">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
+            Comodidades
+          </h3>
+
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div
+              v-for="amenity in availableAmenities"
+              :key="amenity.id"
+              class="flex items-center space-x-3"
+            >
+              <input
+                :id="`amenity-${amenity.id}`"
+                v-model="form.amenities"
+                :value="amenity.id"
+                type="checkbox"
+                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded"
+              />
+              <label
+                :for="`amenity-${amenity.id}`"
+                class="flex items-center text-sm text-gray-700 dark:text-gray-300 cursor-pointer"
+              >
+                <component
+                  :is="amenity.icon"
+                  class="w-4 h-4 mr-2 text-gray-500"
+                />
+                {{ amenity.label }}
+              </label>
+            </div>
+          </div>
+        </div>
+
         <!-- Image Upload Section -->
         <div class="space-y-6">
           <h3 class="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
-            Imágenes del Tour <span class="text-red-500">*</span>
+            Imágenes de la Propiedad <span class="text-red-500">*</span>
           </h3>
 
           <!-- Upload Area -->
@@ -272,7 +443,7 @@
                 : 'border-gray-300 dark:border-gray-600'
             ]"
           >
-            <MapIcon class="mx-auto h-12 w-12 text-gray-400 mb-4" />
+            <ImageIcon class="mx-auto h-12 w-12 text-gray-400 mb-4" />
             <div class="space-y-2">
               <label for="images" class="cursor-pointer">
                 <span class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
@@ -421,20 +592,20 @@
           </button>
         </div>
       </form>
-    </div>
-    <!-- Tours List -->
+    </div>      
+      <!-- Properties List -->
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
       <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
         <div class="flex items-center justify-between">
           <h2 class="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-3">
             <div class="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
-              <MapIcon class="w-5 h-5 text-green-600 dark:text-green-400" />
+              <HomeIcon class="w-5 h-5 text-green-600 dark:text-green-400" />
             </div>
-            Mis Paquetes Turísticos
+            Lista de Propiedades
           </h2>
           <div class="text-sm text-gray-500 dark:text-gray-400">
-            {{ filteredTours.length }} tour{{
-              filteredTours.length !== 1 ? "s" : ""
+            {{ filteredProperties.length }} propiedad{{
+              filteredProperties.length !== 1 ? "es" : ""
             }}
           </div>
         </div>
@@ -443,22 +614,22 @@
       <!-- Loading State -->
       <div v-if="isLoading" class="p-12 text-center">
         <LoaderIcon class="w-8 h-8 animate-spin mx-auto mb-4 text-gray-400" />
-        <p class="text-gray-600 dark:text-gray-300">Cargando paquetes turísticos...</p>
+        <p class="text-gray-600 dark:text-gray-300">Cargando propiedades...</p>
       </div>
 
       <!-- Empty State -->
-      <div v-else-if="filteredTours.length === 0" class="p-12 text-center">
+      <div v-else-if="filteredProperties.length === 0" class="p-12 text-center">
         <div class="mx-auto w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-4">
-          <MapIcon class="w-8 h-8 text-gray-400" />
+          <HomeIcon class="w-8 h-8 text-gray-400" />
         </div>
         <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
-          No se encontraron paquetes turísticos
+          No se encontraron propiedades
         </h3>
         <p class="text-gray-500 dark:text-gray-400">
           {{
             hasActiveFilters
-              ? "No hay tours que coincidan con los filtros actuales."
-              : "Comience creando su primer paquete turístico."
+              ? "No hay propiedades que coincidan con los filtros actuales."
+              : "Comience creando su primera propiedad."
           }}
         </p>
       </div>
@@ -469,13 +640,19 @@
           <thead class="bg-gray-50 dark:bg-gray-700">
             <tr>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                Paquete Turístico
+                Propiedad
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                Precio
+                Precio y Capacidad
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                Estado del Tour
+                Estado
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Anfitrión
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Comodidades
               </th>
               <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                 Acciones
@@ -484,69 +661,106 @@
           </thead>
           <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
             <tr
-              v-for="tour in filteredTours"
-              :key="tour._id"
+              v-for="property in filteredProperties"
+              :key="property._id"
               class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150"
             >
-              <!-- Tour info with image -->
+              <!-- Property info with image -->
               <td class="px-6 py-4">
                 <div class="flex items-center space-x-4">
                   <div class="flex-shrink-0">
                     <img
-                      v-if="tour.imageUrls && tour.imageUrls[0]"
-                      :src="tour.imageUrls[0]"
-                      :alt="`Imagen principal de ${tour.title}`"
+                      v-if="property.imageUrls && property.imageUrls[0]"
+                      :src="property.imageUrls[0]"
+                      :alt="`Imagen principal de ${property.title}`"
                       class="h-12 w-12 rounded-lg object-cover border border-gray-200 dark:border-gray-600"
                     />
                     <div
                       v-else
                       class="h-12 w-12 rounded-lg bg-gray-100 dark:bg-gray-600 flex items-center justify-center border border-gray-200 dark:border-gray-600"
                     >
-                      <MapIcon class="w-6 h-6 text-gray-400" />
+                      <ImageIcon class="w-6 h-6 text-gray-400" />
                     </div>
                   </div>
                   <div class="min-w-0 flex-1">
                     <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
-                      {{ tour.title }}
+                      {{ property.title }}
                     </p>
                     <p class="text-sm text-gray-500 dark:text-gray-400 truncate">
-                      {{ tour.description?.substring(0, 60) }}...
+                      {{ property.address }}, {{ property.city }}
                     </p>
                   </div>
                 </div>
               </td>
 
-              <!-- Price info -->
+              <!-- Price and capacity info -->
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-sm font-medium text-gray-900 dark:text-white">
-                  ${{ tour.price?.toLocaleString() }}
+                  ${{ property.pricePerNight?.toLocaleString() }}/noche
                 </div>
                 <div class="text-sm text-gray-500 dark:text-gray-400">
-                  por persona
+                  <UsersIcon class="w-4 h-4 inline mr-1" />
+                  {{ property.guests }} huéspedes máx.
                 </div>
               </td>
 
-              <!-- Tour Status badge -->
+              <!-- Status badge -->
               <td class="px-6 py-4 whitespace-nowrap">
-                <span :class="getTourStatusBadge(tour.status)">
-                  {{ getTourStatusLabel(tour.status) }}
+                <span :class="getStatusBadge(property.status)">
+                  {{ getStatusLabel(property.status) }}
                 </span>
+              </td>
+
+              <!-- Host information -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-900 dark:text-white">
+                  {{
+                    typeof property.host === "object"
+                      ? `${property.host.firstName} ${property.host.lastName}`
+                      : "ID: " + property.host
+                  }}
+                </div>
+                <div
+                  v-if="typeof property.host === 'object'"
+                  class="text-sm text-gray-500 dark:text-gray-400"
+                >
+                  {{ property.host.email }}
+                </div>
+              </td>
+
+              <!-- Amenities preview -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex flex-wrap gap-1 max-w-32">
+                  <span
+                    v-for="amenityId in property.amenities?.slice(0, 3)"
+                    :key="amenityId"
+                    class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-200"
+                  >
+                    {{ getAmenityLabel(amenityId) }}
+                  </span>
+                  <span
+                    v-if="property.amenities && property.amenities.length > 3"
+                    class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200"
+                  >
+                    +{{ property.amenities.length - 3 }}
+                  </span>
+                </div>
               </td>
 
               <!-- Action buttons -->
               <td class="px-6 py-4 whitespace-nowrap text-right">
                 <div class="flex justify-end space-x-2">
                   <button
-                    @click="editTour(tour)"
+                    @click="editProperty(property)"
                     class="inline-flex items-center p-2 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    :aria-label="`Editar tour ${tour.title}`"
+                    :aria-label="`Editar propiedad ${property.title}`"
                   >
                     <EditIcon class="w-4 h-4" />
                   </button>
                   <button
-                    @click="handleDeleteTour(tour._id!)"
+                    @click="handleDeleteProperty(property._id!)"
                     class="inline-flex items-center p-2 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
-                    :aria-label="`Eliminar tour ${tour.title}`"
+                    :aria-label="`Eliminar propiedad ${property.title}`"
                   >
                     <TrashIcon class="w-4 h-4" />
                   </button>
@@ -556,49 +770,48 @@
           </tbody>
         </table>
       </div>
-
-      <!-- Tablet View -->
+<!-- Tablet View -->
       <div class="hidden md:block lg:hidden divide-y divide-gray-200 dark:divide-gray-700">
         <div
-          v-for="tour in filteredTours"
-          :key="tour._id"
+          v-for="property in filteredProperties"
+          :key="property._id"
           class="p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150"
         >
           <div class="flex items-center justify-between mb-4">
             <div class="flex items-center space-x-4">
               <img
-                v-if="tour.imageUrls && tour.imageUrls[0]"
-                :src="tour.imageUrls[0]"
-                :alt="`Imagen principal de ${tour.title}`"
+                v-if="property.imageUrls && property.imageUrls[0]"
+                :src="property.imageUrls[0]"
+                :alt="`Imagen principal de ${property.title}`"
                 class="h-12 w-12 rounded-lg object-cover border border-gray-200 dark:border-gray-600"
               />
               <div
                 v-else
                 class="h-12 w-12 rounded-lg bg-gray-100 dark:bg-gray-600 flex items-center justify-center border border-gray-200 dark:border-gray-600"
               >
-                <MapIcon class="w-6 h-6 text-gray-400" />
+                <ImageIcon class="w-6 h-6 text-gray-400" />
               </div>
               <div>
                 <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-                  {{ tour.title }}
+                  {{ property.title }}
                 </h3>
                 <p class="text-sm text-gray-500 dark:text-gray-400">
-                  {{ tour.description?.substring(0, 80) }}...
+                  {{ property.address }}, {{ property.city }}
                 </p>
               </div>
             </div>
             <div class="flex space-x-2">
               <button
-                @click="editTour(tour)"
+                @click="editProperty(property)"
                 class="inline-flex items-center p-2 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
-                :aria-label="`Editar tour ${tour.title}`"
+                :aria-label="`Editar propiedad ${property.title}`"
               >
                 <EditIcon class="w-5 h-5" />
               </button>
               <button
-                @click="handleDeleteTour(tour._id!)"
+                @click="handleDeleteProperty(property._id!)"
                 class="inline-flex items-center p-2 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
-                :aria-label="`Eliminar tour ${tour.title}`"
+                :aria-label="`Eliminar propiedad ${property.title}`"
               >
                 <TrashIcon class="w-5 h-5" />
               </button>
@@ -608,14 +821,30 @@
             <div>
               <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Precio:</span>
               <p class="text-sm text-gray-900 dark:text-white">
-                ${{ tour.price }}/persona
+                ${{ property.pricePerNight }}/noche
+              </p>
+            </div>
+            <div>
+              <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Capacidad:</span>
+              <p class="text-sm text-gray-900 dark:text-white">
+                {{ property.guests }} huéspedes
               </p>
             </div>
             <div>
               <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Estado:</span>
-              <span :class="getTourStatusBadge(tour.status)" class="mt-1">
-                {{ getTourStatusLabel(tour.status) }}
+              <span :class="getStatusBadge(property.status)" class="mt-1">
+                {{ getStatusLabel(property.status) }}
               </span>
+            </div>
+            <div>
+              <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Anfitrión:</span>
+              <p class="text-sm text-gray-900 dark:text-white truncate">
+                {{
+                  typeof property.host === "object"
+                    ? `${property.host.firstName} ${property.host.lastName}`
+                    : property.host
+                }}
+              </p>
             </div>
           </div>
         </div>
@@ -624,45 +853,45 @@
       <!-- Mobile Cards -->
       <div class="md:hidden divide-y divide-gray-200 dark:divide-gray-700">
         <div
-          v-for="tour in filteredTours"
-          :key="tour._id"
+          v-for="property in filteredProperties"
+          :key="property._id"
           class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150"
         >
           <div class="flex items-start justify-between mb-3">
             <div class="flex items-center space-x-3">
               <img
-                v-if="tour.imageUrls && tour.imageUrls[0]"
-                :src="tour.imageUrls[0]"
-                :alt="`Imagen principal de ${tour.title}`"
+                v-if="property.imageUrls && property.imageUrls[0]"
+                :src="property.imageUrls[0]"
+                :alt="`Imagen principal de ${property.title}`"
                 class="h-10 w-10 rounded-lg object-cover border border-gray-200 dark:border-gray-600"
               />
               <div
                 v-else
                 class="h-10 w-10 rounded-lg bg-gray-100 dark:bg-gray-600 flex items-center justify-center border border-gray-200 dark:border-gray-600"
               >
-                <MapIcon class="w-5 h-5 text-gray-400" />
+                <ImageIcon class="w-5 h-5 text-gray-400" />
               </div>
-              <div class="flex-1">
-                <h3 class="font-medium text-gray-900 dark:text-white text-sm">
-                  {{ tour.title }}
+              <div>
+                <h3 class="font-medium text-gray-900 dark:text-white">
+                  {{ property.title }}
                 </h3>
-                <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">
-                  {{ tour.description?.substring(0, 60) }}...
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                  {{ property.city }}
                 </p>
               </div>
             </div>
             <div class="flex space-x-1">
               <button
-                @click="editTour(tour)"
+                @click="editProperty(property)"
                 class="inline-flex items-center p-1.5 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
-                :aria-label="`Editar tour ${tour.title}`"
+                :aria-label="`Editar propiedad ${property.title}`"
               >
                 <EditIcon class="w-4 h-4" />
               </button>
               <button
-                @click="handleDeleteTour(tour._id!)"
+                @click="handleDeleteProperty(property._id!)"
                 class="inline-flex items-center p-1.5 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
-                :aria-label="`Eliminar tour ${tour.title}`"
+                :aria-label="`Eliminar propiedad ${property.title}`"
               >
                 <TrashIcon class="w-4 h-4" />
               </button>
@@ -672,13 +901,19 @@
             <div class="flex justify-between">
               <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Precio:</span>
               <span class="text-xs text-gray-900 dark:text-white">
-                ${{ tour.price }}/persona
+                ${{ property.pricePerNight }}/noche
+              </span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Capacidad:</span>
+              <span class="text-xs text-gray-900 dark:text-white">
+                {{ property.guests }} huéspedes
               </span>
             </div>
             <div class="flex justify-between items-center">
               <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Estado:</span>
-              <span :class="getTourStatusBadge(tour.status)">
-                {{ getTourStatusLabel(tour.status) }}
+              <span :class="getStatusBadge(property.status)">
+                {{ getStatusLabel(property.status) }}
               </span>
             </div>
           </div>
@@ -687,36 +922,38 @@
     </div>
   </div>
 </template>
+
 <script setup lang="ts">
 /**
- * HostTourManagementView.vue
- * ---------------------------
- * Host tour package management interface with comprehensive CRUD operations
+ * PropertyManagementView.vue
+ * --------------------------
+ * Clean and efficient property management interface following the same patterns as UserManagement
  *
  * Features:
  * - Responsive design with mobile-first approach
  * - Native HTML inputs with Tailwind styling
+ * - Host selection dropdown for admins
+ * - Comprehensive amenities management
  * - Image upload with previews and reordering
- * - Advanced filtering capabilities (status, price, search)
+ * - Advanced filtering capabilities
  * - Accessibility compliance (WCAG 2.1 AA)
  * - Dark mode support
  * - Clean, minimal code structure
- * - Export functionality (CSV and PDF)
- * - Host can only manage their own tours
+ * - Fixed backend integration with proper field mapping
  */
 
-import { ref, computed, onMounted, nextTick } from "vue";
-import { RouterLink } from "vue-router";
+import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
 import Swal from "sweetalert2";
 import {
-  getHostTours as getTours,
-  createHostTour as createTour,
-  updateHostTour as updateTour,
-  deleteHostTour as deleteTour,
-  type Tour,
-} from "@/services/hostTourService";
-import { useAuth } from "@/composables/useAuth";
-import { tourToFormData } from "@/utils/formDataHelpers";
+  getProperties,
+  createProperty,
+  updateProperty,
+  deleteProperty,
+  type Property,
+  type PropertyStatus,
+} from "@/services/propertyService";
+import { getAllUsers, type User } from "@/services/userService";
 
 // Import icons from Lucide Vue Next
 import {
@@ -724,8 +961,11 @@ import {
   Plus as PlusIcon,
   X as XIcon,
   Edit as EditIcon,
-  Map as MapIcon,
+  Search as SearchIcon,
+  Image as ImageIcon,
   Upload as UploadIcon,
+  Home as HomeIcon,
+  Users as UsersIcon,
   DollarSign as DollarSignIcon,
   Trash as TrashIcon,
   Star as StarIcon,
@@ -737,31 +977,81 @@ import {
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
   AlertCircle as AlertCircleIcon,
-  Search as SearchIcon,
+  Wifi,
+  Car,
+  Coffee,
+  Tv,
+  Waves,
+  Dumbbell,
+  UtensilsCrossed,
+  WashingMachine,
+  AirVent,
+  Shield,
+  TreePine,
+  Thermometer,
+  ParkingCircle,
+  Baby,
+  Cigarette,
+  Dog,
+  Accessibility,
 } from "lucide-vue-next";
 
 // ===== TYPES AND INTERFACES =====
 
-type TourStatus = 'available' | 'sold_out' | 'cancelled' | 'upcoming';
-
-interface TourForm {
-  title: string;
-  description: string;
-  price: string;
-  status: TourStatus;
+/**
+ * Interface for amenity configuration
+ */
+interface Amenity {
+  id: string;
+  label: string;
+  icon: any;
 }
 
-// ===== USE COMPOSABLES - DECLARAR ANTES DE onMounted =====
+/**
+ * Form data structure matching backend expectations
+ */
+interface PropertyForm {
+  title: string;
+  description: string;
+  address: string;
+  city: string;
+  pricePerNight: string;
+  maxGuests: string; // Frontend uses maxGuests, maps to 'guests' in backend
+  host: string;
+  status: PropertyStatus;
+  amenities: string[];
+}
 
-const { user: authUser, refreshUser } = useAuth();
+// ===== ROUTER AND NAVIGATION =====
+
+const router = useRouter();
+
+/**
+ * Navigate back to appropriate dashboard based on user role
+ */
+const goBack = (): void => {
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  if (user.role === "admin") {
+    router.push("/admin/dashboard");
+  } else if (user.role === "host") {
+    router.push("/host/dashboard");
+  } else {
+    router.push("/");
+  }
+};
 
 // ===== REACTIVE STATE =====
 
+/** UI state management */
 const editId = ref<string | null>(null);
 const isLoading = ref<boolean>(false);
 const isSubmitting = ref<boolean>(false);
+
+/** Search and filter state */
 const searchQuery = ref<string>("");
 const statusFilter = ref<string>("");
+const cityFilter = ref<string>("");
+const hostFilter = ref<string>("");
 const priceRange = ref<{
   min: number | null;
   max: number | null;
@@ -769,106 +1059,170 @@ const priceRange = ref<{
   min: null,
   max: null,
 });
-const allTours = ref<Tour[]>([]);
+
+/** Properties and user data */
+const allProperties = ref<Property[]>([]);
+const availableHosts = ref<User[]>([]);
+
+/** Image handling state - Fixed to support proper reordering */
 const selectedImages = ref<File[]>([]);
 const imagePreviews = ref<string[]>([]);
+
+/** Form validation errors - Enhanced with image validation */
 const formErrors = ref<Record<string, string | boolean>>({});
-const form = ref<TourForm>({
+
+/** Current user information */
+const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+/** 
+ * Property form data structure
+ * Fixed to match backend expectations exactly
+ */
+const form = ref<PropertyForm>({
   title: "",
   description: "",
-  price: "",
-  status: "available" as TourStatus,
+  address: "",
+  city: "",
+  pricePerNight: "",
+  maxGuests: "", // Frontend field name
+  host: user.role === "host" ? user._id : "",
+  status: "AVAILABLE" as PropertyStatus, // Fixed: Backend uses AVAILABLE, not ACTIVE
+  amenities: [],
 });
 
-// ===== LIFECYCLE HOOKS =====
-onMounted(async () => {
-  console.log('🚀 Component mounted!');
-  
-  // Refresh user from localStorage in case it wasn't initialized properly
-  refreshUser();
-  
-  // Wait for next tick
-  await nextTick();
-  
-  console.log('👤 AuthUser after refresh:', authUser.value);
-  
-  // Check if user is authenticated
-  if (!authUser.value?._id) {
-    console.warn('❌ No authenticated user found after refresh');
-    
-    // Check localStorage directly as fallback
-    const fallbackUser = localStorage.getItem('user');
-    const fallbackToken = localStorage.getItem('token');
-    
-    console.log('🔍 Fallback check:', { 
-      hasUser: !!fallbackUser, 
-      hasToken: !!fallbackToken,
-      userContent: fallbackUser 
-    });
-    
-    if (!fallbackToken || !fallbackUser || fallbackUser === 'null') {
-      await Swal.fire({
-        icon: 'warning',
-        title: 'Sesión no válida',
-        text: 'Por favor, inicia sesión nuevamente.',
-        confirmButtonText: 'OK'
-      });
-      return;
-    }
-  }
-  
-  console.log('✅ User authenticated, loading tours...');
-  await loadTours();
-});
+// ===== AMENITIES CONFIGURATION =====
+
+/**
+ * Available amenities with icons and labels
+ * Comprehensive list covering common property features
+ */
+const availableAmenities = ref<Amenity[]>([
+  { id: "wifi", label: "WiFi", icon: Wifi },
+  { id: "parking", label: "Estacionamiento", icon: Car },
+  { id: "kitchen", label: "Cocina", icon: Coffee },
+  { id: "tv", label: "TV", icon: Tv },
+  { id: "pool", label: "Piscina", icon: Waves },
+  { id: "gym", label: "Gimnasio", icon: Dumbbell },
+  { id: "restaurant", label: "Restaurante", icon: UtensilsCrossed },
+  { id: "laundry", label: "Lavandería", icon: WashingMachine },
+  { id: "air_conditioning", label: "Aire Acondicionado", icon: AirVent },
+  { id: "security", label: "Seguridad 24/7", icon: Shield },
+  { id: "garden", label: "Jardín", icon: TreePine },
+  { id: "heating", label: "Calefacción", icon: Thermometer },
+  { id: "valet_parking", label: "Valet Parking", icon: ParkingCircle },
+  { id: "baby_friendly", label: "Apto para Bebés", icon: Baby },
+  { id: "smoking_allowed", label: "Permitido Fumar", icon: Cigarette },
+  { id: "pet_friendly", label: "Acepta Mascotas", icon: Dog },
+  { id: "accessible", label: "Accesible", icon: Accessibility },
+]);
 
 // ===== COMPUTED PROPERTIES =====
 
+/**
+ * Check if form is in editing mode
+ */
 const isEditing = computed(() => !!editId.value);
 
-const filteredTours = computed<Tour[]>(() => {
-  if (!allTours.value || allTours.value.length === 0) {
-    return [];
-  }
-  
-  if (!authUser.value?._id) {
-    return [];
-  }
-  
-  let filtered = allTours.value.filter(tour => {
-    const tourHostId = typeof tour.host === 'string' ? tour.host : tour.host?._id;
-    const tourHostString = String(tourHostId);
-    const userIdString = String(authUser.value!._id);
-    return tourHostString === userIdString;
-  });
+/**
+ * Filter properties based on user role
+ * Hosts only see their own properties, admins see all
+ */
+const myProperties = computed<Property[]>(() => {
+  let filtered = allProperties.value;
 
-  // Apply other filters
-  if (searchQuery.value.trim()) {
-    const query = searchQuery.value.toLowerCase().trim();
-    filtered = filtered.filter(
-      (tour) =>
-        tour.title.toLowerCase().includes(query) ||
-        tour.description.toLowerCase().includes(query)
-    );
-  }
-
-  if (statusFilter.value) {
-    filtered = filtered.filter((tour) => tour.status === statusFilter.value);
-  }
-
-  if (priceRange.value.min !== null && priceRange.value.min > 0) {
-    filtered = filtered.filter((tour) => tour.price >= priceRange.value.min!);
-  }
-  if (priceRange.value.max !== null && priceRange.value.max > 0) {
-    filtered = filtered.filter((tour) => tour.price <= priceRange.value.max!);
+  if (user.role === "host") {
+    filtered = filtered.filter((property) => {
+      const propertyHostId =
+        typeof property.host === "string" ? property.host : property.host?._id;
+      return propertyHostId === user._id;
+    });
   }
 
   return filtered;
 });
 
+/**
+ * Apply advanced filtering to properties
+ * Supports search, status, city, price range, and host filters
+ */
+const filteredProperties = computed<Property[]>(() => {
+  let filtered = myProperties.value;
+
+  // Search filter - searches title, city, and address
+  if (searchQuery.value.trim()) {
+    const query = searchQuery.value.toLowerCase().trim();
+    filtered = filtered.filter(
+      (property) =>
+        property.title.toLowerCase().includes(query) ||
+        property.city.toLowerCase().includes(query) ||
+        property.address.toLowerCase().includes(query)
+    );
+  }
+
+  // City filter
+  if (cityFilter.value) {
+    filtered = filtered.filter(
+      (property) =>
+        property.city.toLowerCase() === cityFilter.value.toLowerCase()
+    );
+  }
+
+  // Status filter
+  if (statusFilter.value) {
+    filtered = filtered.filter(
+      (property) => property.status === statusFilter.value
+    );
+  }
+
+  // Price range filter
+  if (priceRange.value.min !== null && priceRange.value.min > 0) {
+    filtered = filtered.filter(
+      (property) => property.pricePerNight >= priceRange.value.min!
+    );
+  }
+  if (priceRange.value.max !== null && priceRange.value.max > 0) {
+    filtered = filtered.filter(
+      (property) => property.pricePerNight <= priceRange.value.max!
+    );
+  }
+
+  // Host filter (admin only)
+  if (hostFilter.value.trim() && user.role === "admin") {
+    const hostQuery = hostFilter.value.toLowerCase().trim();
+    filtered = filtered.filter((property) => {
+      if (typeof property.host === "object") {
+        const fullName =
+          `${property.host.firstName} ${property.host.lastName}`.toLowerCase();
+        return (
+          fullName.includes(hostQuery) ||
+          property.host.email.toLowerCase().includes(hostQuery) ||
+          property.host._id.toLowerCase().includes(hostQuery)
+        );
+      } else {
+        return property.host.toLowerCase().includes(hostQuery);
+      }
+    });
+  }
+
+  return filtered;
+});
+
+/**
+ * Get unique cities from all properties for filter dropdown
+ */
+const availableCities = computed<string[]>(() => {
+  const cities = myProperties.value.map((property) => property.city);
+  return [...new Set(cities)].sort();
+});
+
+/**
+ * Check if any filters are currently active
+ */
 const hasActiveFilters = computed<boolean>(() => {
   return !!(
-    searchQuery.value.trim() ||
     statusFilter.value ||
+    cityFilter.value ||
+    hostFilter.value ||
     priceRange.value.min ||
     priceRange.value.max
   );
@@ -878,42 +1232,47 @@ const hasActiveFilters = computed<boolean>(() => {
 
 /**
  * Initialize component on mount
+ * Load properties and available hosts in parallel
  */
 onMounted(async (): Promise<void> => {
-  // Check if user is authenticated
-  if (!authUser.value?._id) {
-    await Swal.fire({
-      icon: 'warning',
-      title: 'Sesión no válida',
-      text: 'Por favor, inicia sesión nuevamente.',
-      confirmButtonText: 'OK'
-    });
-    return;
-  }
-  
-  await loadTours();
+  await Promise.all([loadProperties(), loadAvailableHosts()]);
 });
 
 // ===== DATA LOADING =====
 
 /**
- * Load all tours from the backend
- * The service will automatically filter to show only host's tours
+ * Load all properties from the backend
+ * Handles errors gracefully with user feedback
  */
-const loadTours = async (): Promise<void> => {
+const loadProperties = async (): Promise<void> => {
   try {
     isLoading.value = true;
-    allTours.value = await getTours();
+    allProperties.value = await getProperties();
   } catch (error) {
-    console.error("Error loading tours:", error);
+    console.error("Error loading properties:", error);
     await Swal.fire({
       icon: "error",
       title: "Error de Carga",
-      text: "No se pudieron cargar los paquetes turísticos. Intente nuevamente.",
+      text: "No se pudieron cargar las propiedades. Intente nuevamente.",
       confirmButtonText: "OK",
     });
   } finally {
     isLoading.value = false;
+  }
+};
+
+/**
+ * Load available hosts for admin users
+ * Only loads if user is admin to optimize performance
+ */
+const loadAvailableHosts = async (): Promise<void> => {
+  if (user.role !== "admin") return;
+
+  try {
+    const users = await getAllUsers();
+    availableHosts.value = users.filter((user) => user.role === "host");
+  } catch (error) {
+    console.error("Error loading hosts:", error);
   }
 };
 
@@ -925,22 +1284,29 @@ const loadTours = async (): Promise<void> => {
 const clearAllFilters = (): void => {
   searchQuery.value = "";
   statusFilter.value = "";
+  cityFilter.value = "";
+  hostFilter.value = "";
   priceRange.value = {
     min: null,
     max: null,
   };
 };
 // ===== FORM MANAGEMENT =====
-
 /**
  * Reset form to initial state
+ * Clears all fields, images, and validation errors
  */
 const resetForm = (): void => {
   form.value = {
     title: "",
     description: "",
-    price: "",
-    status: "available" as TourStatus,
+    address: "",
+    city: "",
+    pricePerNight: "",
+    maxGuests: "",
+    host: user.role === "host" ? user._id : "",
+    status: "AVAILABLE" as PropertyStatus, 
+    amenities: [],
   };
   selectedImages.value = [];
   imagePreviews.value = [];
@@ -950,6 +1316,7 @@ const resetForm = (): void => {
 
 /**
  * Validate form fields before submission
+ * Enhanced validation including image requirements
  */
 const validateForm = (): boolean => {
   const errors: Record<string, string | boolean> = {};
@@ -969,44 +1336,84 @@ const validateForm = (): boolean => {
     isValid = false;
   }
 
-  // Validate price
-  const price = parseFloat(form.value.price);
-  if (isNaN(price) || price <= 0) {
-    errors.price = "El precio debe ser mayor que cero";
+  if (!form.value.address?.trim()) {
+    errors.address = "La dirección es obligatoria";
     isValid = false;
   }
 
-  // Image validation
+  if (!form.value.city?.trim()) {
+    errors.city = "La ciudad es obligatoria";
+    isValid = false;
+  }
+
+  // Validate price
+  const price = parseFloat(form.value.pricePerNight);
+  if (isNaN(price) || price <= 0) {
+    errors.pricePerNight = "El precio debe ser mayor que cero";
+    isValid = false;
+  }
+
+  // Validate max guests
+  const guests = parseInt(form.value.maxGuests);
+  if (isNaN(guests) || guests <= 0 || guests > 20) {
+    errors.maxGuests = "El número de huéspedes debe estar entre 1 y 20";
+    isValid = false;
+  }
+
+  // Validate host (for admin users)
+  if (user.role === "admin" && !form.value.host) {
+    errors.host = "Debe seleccionar un anfitrión";
+    isValid = false;
+  }
+
+  // Different image validation for create vs edit
   if (!isEditing.value) {
+    // For NEW properties: images are REQUIRED
     if (!selectedImages.value || selectedImages.value.length === 0) {
-      errors.images = "Se requiere al menos una imagen para crear un nuevo tour";
+      errors.images = "Se requiere al menos una imagen para crear una nueva propiedad";
       isValid = false;
     }
   } else {
+    // For EDITING: images are optional (existing images will be kept)
+    // Only validate if they selected new images
     if (selectedImages.value && selectedImages.value.length > 10) {
       errors.images = "Máximo 10 imágenes permitidas";
       isValid = false;
     }
     
+    // Check if property has existing images OR new images
     const hasExistingImages = imagePreviews.value && imagePreviews.value.length > 0;
     const hasNewImages = selectedImages.value && selectedImages.value.length > 0;
     
     if (!hasExistingImages && !hasNewImages) {
-      errors.images = "El tour debe tener al menos una imagen";
+      errors.images = "La propiedad debe tener al menos una imagen";
       isValid = false;
     }
   }
 
   formErrors.value = errors;
   
+  console.log('🔍 Form validation:', isValid ? 'PASSED' : 'FAILED', errors);
+  console.log('📊 Validation context:', {
+    isEditing: isEditing.value,
+    editId: editId.value,
+    existingImages: imagePreviews.value?.length || 0,
+    newImages: selectedImages.value?.length || 0
+  });
+  
   return isValid;
 };
 
 /**
  * Handle form submission (create or update)
+ * Fixed to properly handle edit mode
  */
 const handleSubmit = async (): Promise<void> => {
+  console.log('🚀 Starting form submission...');
+  console.log('🔍 Edit mode:', isEditing.value, 'Edit ID:', editId.value);
+  
   if (!validateForm()) {
+    console.log('❌ Validation failed');
     Swal.fire(
       "Error",
       "Por favor, complete todos los campos requeridos correctamente.",
@@ -1018,39 +1425,85 @@ const handleSubmit = async (): Promise<void> => {
   try {
     isSubmitting.value = true;
     
-    // Prepare tour data for FormData conversion
-    const tourData = {
-      title: form.value.title.trim(),
-      description: form.value.description.trim(),
-      price: parseFloat(form.value.price),
-      status: form.value.status,
-    };
+    const formData = new FormData();
     
-    // Use the helper function to create FormData
-    const formData = tourToFormData(tourData, selectedImages.value);
+    // Add required fields exactly as backend expects
+    formData.append('title', form.value.title.trim());
+    formData.append('description', form.value.description.trim());
+    formData.append('address', form.value.address.trim());
+    formData.append('city', form.value.city.trim());
+    formData.append('pricePerNight', form.value.pricePerNight.toString());
+    
+    // Backend expects 'guests', not 'maxGuests'
+    formData.append('guests', form.value.maxGuests.toString());
+    
+    // Set host based on user role
+    if (user.role === "admin") {
+      formData.append('host', form.value.host);
+    } else {
+      formData.append('host', user._id);
+    }
+    
+    // Property status
+    formData.append('status', form.value.status);
+    
+    // Amenities as JSON string (backend parses this)
+    formData.append('amenities', JSON.stringify(form.value.amenities || []));
+    
+    // Images with exact field name backend expects
+    // Only append images for NEW properties or when new images are selected
+    if (selectedImages.value && selectedImages.value.length > 0) {
+      console.log(`📸 Adding ${selectedImages.value.length} new images`);
+      selectedImages.value.forEach((file) => {
+        formData.append('images', file);
+      });
+    } else if (!isEditing.value) {
+      // For new properties, images are required
+      console.log('❌ No images selected for new property');
+      Swal.fire("Error", "Se requiere al menos una imagen para crear una nueva propiedad.", "warning");
+      return;
+    } else {
+      console.log('📝 Updating property without new images');
+    }
+    
+    // Debug logging 
+    console.log('📦 FormData contents:');
+    const formDataEntries: [string, FormDataEntryValue][] = [];
+    formData.forEach((value, key) => {
+      formDataEntries.push([key, value]);
+    });
+    formDataEntries.forEach(([key, value]) => {
+      console.log(`${key}: ${value}`);
+    });
 
     let response;
     
+    // Proper edit/create logic
     if (isEditing.value && editId.value) {
-      response = await updateTour(editId.value, formData);
+      console.log('🔄 UPDATING property with ID:', editId.value);
+      response = await updateProperty(editId.value, formData);
       await Swal.fire(
         "Éxito",
-        "Paquete turístico actualizado correctamente.",
+        "Propiedad actualizada correctamente.",
         "success"
       );
     } else {
-      response = await createTour(formData);
-      await Swal.fire("Éxito", "Paquete turístico creado correctamente.", "success");
+      console.log('➕ CREATING new property');
+      response = await createProperty(formData);
+      await Swal.fire("Éxito", "Propiedad creada correctamente.", "success");
     }
+
+    console.log('✅ Property saved successfully:', response);
     
     resetForm();
-    await loadTours();
+    await loadProperties();
     
   } catch (error) {
-    console.error("❌ Error saving tour:", error);
+    console.error("❌ Error saving property:", error);
 
-    let errorMessage = "No se pudo guardar el paquete turístico.";
+    let errorMessage = "No se pudo guardar la propiedad.";
     
+    // Extract error message from response
     if (error instanceof Error) {
       errorMessage = error.message;
     } else if (error && typeof error === 'object' && 'response' in error) {
@@ -1058,6 +1511,9 @@ const handleSubmit = async (): Promise<void> => {
       if (response?.data?.message) {
         errorMessage = response.data.message;
       }
+      
+      // Log detailed error for debugging
+      console.error('📋 Server error details:', response?.data);
     }
 
     Swal.fire({
@@ -1070,36 +1526,50 @@ const handleSubmit = async (): Promise<void> => {
     isSubmitting.value = false;
   }
 };
-
+    
 /**
- * Edit existing tour
+ * Edit existing property
+ * Populates form with property data and sets edit mode
  */
-const editTour = (tour: Tour): void => {
+const editProperty = (property: Property): void => {
+  console.log('🔄 Editing property:', property.title);
+  console.log('📝 Property data:', property);
+
+  // Map property data to form structure
   form.value = {
-    title: tour.title,
-    description: tour.description || "",
-    price: tour.price.toString(),
-    status: tour.status,
+    title: property.title,
+    description: property.description || "",
+    address: property.address,
+    city: property.city,
+    pricePerNight: property.pricePerNight.toString(),
+    maxGuests: property.guests.toString(), // Map guests to maxGuests for frontend
+    host: typeof property.host === "string" ? property.host : property.host._id,
+    status: property.status,
+    amenities: property.amenities || [],
   };
   
-  editId.value = tour._id || null;
-  imagePreviews.value = tour.imageUrls || [];
-  selectedImages.value = [];
+  editId.value = property._id || null;
+  console.log('🆔 Edit ID set:', editId.value);
+
+  // Load existing images as previews
+  imagePreviews.value = property.imageUrls || [];
+  selectedImages.value = []; // Clear selected files for editing
   formErrors.value = {};
+
+  console.log('📋 Form updated:', form.value);
 
   // Smooth scroll to form
   document.querySelector("form")?.scrollIntoView({ behavior: "smooth" });
 };
 
 /**
- * Confirm and delete tour
+ * Confirm and delete property
+ * Shows confirmation dialog before deletion
  */
-const handleDeleteTour = async (tourId: string): Promise<void> => {
-  const tour = allTours.value.find(t => t._id === tourId);
-  
+const handleDeleteProperty = async (propertyId: string): Promise<void> => {
   const result = await Swal.fire({
-    title: "¿Eliminar Paquete Turístico?",
-    html: `¿Estás seguro de que deseas eliminar <strong>"${tour?.title}"</strong>?<br><small class="text-gray-500">Esta acción no se puede deshacer. El tour será eliminado permanentemente.</small>`,
+    title: "¿Eliminar Propiedad?",
+    text: "Esta acción no se puede deshacer. La propiedad será eliminada permanentemente.",
     icon: "warning",
     showCancelButton: true,
     confirmButtonColor: "#dc2626",
@@ -1110,23 +1580,25 @@ const handleDeleteTour = async (tourId: string): Promise<void> => {
 
   if (result.isConfirmed) {
     try {
-      await deleteTour(tourId);
+      await deleteProperty(propertyId);
       await Swal.fire(
-        "Eliminado",
-        "Paquete turístico eliminado correctamente.",
+        "Eliminada",
+        "Propiedad eliminada correctamente.",
         "success"
       );
-      await loadTours();
+      await loadProperties();
     } catch (error) {
-      console.error("Error deleting tour:", error);
-      Swal.fire("Error", "No se pudo eliminar el paquete turístico.", "error");
+      console.error("Error deleting property:", error);
+      Swal.fire("Error", "No se pudo eliminar la propiedad.", "error");
     }
   }
 };
+
 // ===== IMAGE MANAGEMENT =====
 
 /**
  * Handle image file selection and generate previews
+ * Validates file count and size before processing
  */
 const handleImageUpload = (event: Event): void => {
   const files = (event.target as HTMLInputElement).files;
@@ -1139,7 +1611,7 @@ const handleImageUpload = (event: Event): void => {
     Swal.fire({
       icon: "warning",
       title: "Demasiadas Imágenes",
-      text: "Puede subir un máximo de 10 imágenes por tour.",
+      text: "Puede subir un máximo de 10 imágenes por propiedad.",
       confirmButtonText: "OK",
     });
     return;
@@ -1181,14 +1653,18 @@ const handleImageUpload = (event: Event): void => {
 
 /**
  * Remove image from preview list
+ * Updates both preview URLs and file arrays
  */
 const removeImagePreview = (index: number): void => {
   imagePreviews.value.splice(index, 1);
   selectedImages.value.splice(index, 1);
+  
+  console.log('🗑️ Image removed from index:', index);
 };
 
 /**
  * Move image to first position (make it main image)
+ * First image is always considered the main property photo
  */
 const moveToFirst = (index: number): void => {
   if (index === 0) return;
@@ -1200,10 +1676,13 @@ const moveToFirst = (index: number): void => {
   // Move file object
   const file = selectedImages.value.splice(index, 1)[0];
   selectedImages.value.unshift(file);
+  
+  console.log('⭐ Image moved to main position');
 };
 
 /**
  * Move image one position to the left
+ * Swaps current image with previous one
  */
 const moveLeft = (index: number): void => {
   if (index === 0) return;
@@ -1217,10 +1696,13 @@ const moveLeft = (index: number): void => {
   const tempFile = selectedImages.value[index];
   selectedImages.value[index] = selectedImages.value[index - 1];
   selectedImages.value[index - 1] = tempFile;
+  
+  console.log('⬅️ Image moved left');
 };
 
 /**
  * Move image one position to the right
+ * Swaps current image with next one
  */
 const moveRight = (index: number): void => {
   if (index === imagePreviews.value.length - 1) return;
@@ -1234,51 +1716,81 @@ const moveRight = (index: number): void => {
   const tempFile = selectedImages.value[index];
   selectedImages.value[index] = selectedImages.value[index + 1];
   selectedImages.value[index + 1] = tempFile;
+  
+  console.log('➡️ Image moved right');
+};
+
+/**
+ * Handle drag over event for image reordering
+ * Enables drop functionality with proper cursor feedback
+ */
+const handleDragOver = (event: DragEvent): void => {
+  event.preventDefault();
+  if (event.dataTransfer) {
+    event.dataTransfer.dropEffect = 'move';
+  }
 };
 // ===== UTILITY FUNCTIONS =====
 
 /**
- * Get user-friendly tour status label in Spanish
+ * Get user-friendly status label in Spanish
+ * Maps backend enum values to localized display text
  */
-const getTourStatusLabel = (status: TourStatus): string => {
-  const labels: Record<TourStatus, string> = {
-    available: "Disponible",
-    sold_out: "Agotado",
-    cancelled: "Cancelado",
-    upcoming: "Próximamente",
+const getStatusLabel = (status: PropertyStatus): string => {
+  const labels: Record<PropertyStatus, string> = {
+    AVAILABLE: "Disponible", // Fixed: Backend uses AVAILABLE
+    ACTIVE: "Activo",
+    INACTIVE: "Inactivo",
+    MAINTENANCE: "Mantenimiento",
   };
   return labels[status] || status;
 };
 
 /**
- * Get CSS classes for tour status badges
+ * Get CSS classes for status badges
+ * Provides consistent visual styling for different property states
  */
-const getTourStatusBadge = (status: TourStatus): string => {
+const getStatusBadge = (status: PropertyStatus): string => {
   const base =
     "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium";
-  const colors: Record<TourStatus, string> = {
-    available: "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-200",
-    sold_out: "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-200",
-    cancelled: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200",
-    upcoming: "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-200",
+  const colors: Record<PropertyStatus, string> = {
+    AVAILABLE: "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-200",
+    ACTIVE: "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-200",
+    INACTIVE: "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-200",
+    MAINTENANCE: "bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-200",
   };
-  return `${base} ${colors[status] || colors.available}`;
+  return `${base} ${colors[status] || colors.AVAILABLE}`;
+};
+
+/**
+ * Get amenity label by ID
+ * Looks up human-readable label for amenity identifier
+ */
+const getAmenityLabel = (amenityId: string): string => {
+  const amenity = availableAmenities.value.find((a) => a.id === amenityId);
+  return amenity?.label || amenityId;
 };
 
 // ===== EXPORT FUNCTIONS =====
 
 /**
- * Export filtered tours to CSV format
+ * Export filtered properties to CSV format
+ * Generates downloadable CSV file with property data
  */
 const exportCSV = (): void => {
-  const headers = ['Título', 'Precio', 'Estado del Tour', 'Fecha Creación'];
+  const headers = ['Título', 'Ciudad', 'Dirección', 'Precio', 'Capacidad', 'Estado', 'Anfitrión'];
   const csvContent = [
     headers.join(','),
-    ...filteredTours.value.map(tour => [
-      `"${tour.title}"`,
-      tour.price,
-      `"${getTourStatusLabel(tour.status)}"`,
-      tour.createdAt ? `"${new Date(tour.createdAt).toLocaleDateString()}"` : '""'
+    ...filteredProperties.value.map(property => [
+      `"${property.title}"`, // Wrap in quotes to handle commas
+      `"${property.city}"`,
+      `"${property.address}"`,
+      property.pricePerNight,
+      property.guests, // Fixed: Use correct field name
+      `"${getStatusLabel(property.status)}"`,
+      typeof property.host === 'object' 
+        ? `"${property.host.firstName} ${property.host.lastName}"` 
+        : `"${property.host}"`
     ].join(','))
   ].join('\n');
 
@@ -1287,160 +1799,69 @@ const exportCSV = (): void => {
   const url = URL.createObjectURL(blob);
   
   link.setAttribute('href', url);
-  link.setAttribute('download', `mis_tours_${new Date().toISOString().split('T')[0]}.csv`);
+  link.setAttribute('download', `propiedades_${new Date().toISOString().split('T')[0]}.csv`);
   link.style.visibility = 'hidden';
   
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+  URL.revokeObjectURL(url); // Clean up memory
 };
 
 /**
- * Export filtered tours to PDF format
+ * Export filtered properties to PDF format
+ * Opens print dialog with formatted property table
  */
 const exportPDF = (): void => {
-  const currentDate = new Date().toLocaleDateString('es-ES', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-
   const htmlContent = `
-    <!DOCTYPE html>
     <html>
       <head>
-        <meta charset="UTF-8">
-        <title>Mis Paquetes Turísticos - GuaraníHost</title>
+        <title>Lista de Propiedades</title>
         <style>
-          * { margin: 0; padding: 0; box-sizing: border-box; }
-          body { 
-            font-family: 'Segoe UI', sans-serif; 
-            line-height: 1.6; 
-            color: #333; 
-            padding: 40px 20px;
-          }
-          .header {
-            text-align: center;
-            margin-bottom: 40px;
-            border-bottom: 3px solid #4f46e5;
-            padding-bottom: 20px;
-          }
-          .header h1 {
-            color: #4f46e5;
-            font-size: 28px;
-            margin-bottom: 10px;
-          }
-          .stats {
-            display: flex;
-            justify-content: space-around;
-            margin-bottom: 30px;
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-          }
-          .stat-item {
-            text-align: center;
-          }
-          .stat-number {
-            font-size: 24px;
-            font-weight: bold;
-            color: #4f46e5;
-          }
-          .stat-label {
-            font-size: 12px;
-            color: #666;
-            text-transform: uppercase;
-          }
-          table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            margin: 20px 0;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-          }
-          th, td { 
-            border: 1px solid #e5e7eb; 
-            padding: 12px 8px; 
-            text-align: left; 
-            font-size: 11px;
-          }
-          th { 
-            background: #f3f4f6; 
-            font-weight: 600;
-            color: #374151;
-            text-transform: uppercase;
-            font-size: 10px;
-          }
-          tr:nth-child(even) { background: #f9fafb; }
-          .status { 
-            padding: 4px 8px; 
-            border-radius: 12px; 
-            font-size: 10px; 
-            font-weight: 500;
-            text-align: center;
-          }
-          .available { background: #d1fae5; color: #065f46; }
-          .sold_out { background: #fee2e2; color: #991b1b; }
-          .cancelled { background: #f3f4f6; color: #374151; }
-          .upcoming { background: #dbeafe; color: #1e40af; }
-          .footer {
-            margin-top: 40px;
-            text-align: center;
-            font-size: 11px;
-            color: #6b7280;
-            border-top: 1px solid #e5e7eb;
-            padding-top: 20px;
-          }
-          .price { font-weight: 600; color: #059669; }
+          body { font-family: Arial, sans-serif; margin: 20px; }
+          h1 { color: #333; text-align: center; margin-bottom: 30px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+          th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+          th { background-color: #f8f9fa; font-weight: 600; }
+          .badge { padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 500; }
+          .available { background-color: #d1fae5; color: #065f46; }
+          .active { background-color: #d1fae5; color: #065f46; }
+          .inactive { background-color: #fee2e2; color: #991b1b; }
+          .maintenance { background-color: #fef3c7; color: #92400e; }
+          tr:nth-child(even) { background-color: #f9fafb; }
         </style>
       </head>
       <body>
-        <div class="header">
-          <h1>Mis Paquetes Turísticos</h1>
-          <p>GuaraníHost - Panel de Host</p>
-          <p>Generado el ${currentDate}</p>
-        </div>
-        
-        <div class="stats">
-          <div class="stat-item">
-            <div class="stat-number">${filteredTours.value.length}</div>
-            <div class="stat-label">Total Tours</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-number">${filteredTours.value.filter(t => t.status === 'available').length}</div>
-            <div class="stat-label">Disponibles</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-number">$${filteredTours.value.length > 0 ? Math.round(filteredTours.value.reduce((sum, t) => sum + t.price, 0) / filteredTours.value.length) : 0}</div>
-            <div class="stat-label">Precio Promedio</div>
-          </div>
-        </div>
-
+        <h1>Lista de Propiedades</h1>
+        <p style="text-align: center; color: #6b7280; margin-bottom: 20px;">
+          Generado el ${new Date().toLocaleDateString()} - Total: ${filteredProperties.value.length} propiedades
+        </p>
         <table>
           <thead>
             <tr>
               <th>Título</th>
-              <th>Precio</th>
-              <th>Estado del Tour</th>
-              <th>Fecha Creación</th>
+              <th>Ciudad</th>
+              <th>Dirección</th>
+              <th>Precio/Noche</th>
+              <th>Capacidad</th>
+              <th>Estado</th>
+              <th>Anfitrión</th>
             </tr>
           </thead>
           <tbody>
-            ${filteredTours.value.map(tour => `
+            ${filteredProperties.value.map(property => `
               <tr>
-                <td><strong>${tour.title}</strong></td>
-                <td class="price">$${tour.price?.toLocaleString()}</td>
-                <td><span class="status ${tour.status}">${getTourStatusLabel(tour.status)}</span></td>
-                <td>${tour.createdAt ? new Date(tour.createdAt).toLocaleDateString() : 'N/A'}</td>
+                <td>${property.title}</td>
+                <td>${property.city}</td>
+                <td>${property.address}</td>
+                <td>$${property.pricePerNight}</td>
+                <td>${property.guests} huéspedes</td>
+                <td><span class="badge ${property.status.toLowerCase()}">${getStatusLabel(property.status)}</span></td>
+                <td>${typeof property.host === 'object' ? `${property.host.firstName} ${property.host.lastName}` : property.host}</td>
               </tr>
             `).join('')}
           </tbody>
         </table>
-
-        <div class="footer">
-          <p><strong>GuaraníHost - Mis Paquetes Turísticos</strong><br>
-          Total de tours: ${filteredTours.value.length}</p>
-        </div>
       </body>
     </html>
   `;
@@ -1450,27 +1871,35 @@ const exportPDF = (): void => {
     printWindow.document.write(htmlContent);
     printWindow.document.close();
     printWindow.focus();
-    
     setTimeout(() => {
       printWindow.print();
       printWindow.close();
-    }, 500);
+    }, 250);
   }
 };
 </script>
 
 <style scoped>
-/**
- * Minimal scoped styles for tour management
- * Most styling is handled by Tailwind CSS classes
- */
+.cursor-move:hover {
+  cursor: move;
+}
 
-/* Line clamp utility for text truncation */
-.line-clamp-2 {
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+.cursor-move:active {
+  cursor: grabbing;
+}
+
+/* Smooth transitions for drag & drop */
+.transition-all {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Drag feedback styles */
+[draggable="true"]:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+[draggable="true"]:active {
+  transform: scale(0.98);
 }
 </style>
-

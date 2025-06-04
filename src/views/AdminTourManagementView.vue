@@ -3,19 +3,19 @@
     <!-- Page Header -->
     <header class="mb-8">
       <div class="flex items-center space-x-4 mb-2">
-        <RouterLink
-          to="/host/dashboard"
+        <button
+          @click="goBack"
           class="inline-flex items-center p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
-          aria-label="Volver al dashboard de host"
+          aria-label="Go back to admin dashboard"
         >
           <ArrowLeftIcon class="w-5 h-5" />
-        </RouterLink>
+        </button>
         <div>          
           <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-            Mis Paquetes Turísticos
+            Gestión de Paquetes Turísticos
           </h1>
           <p class="text-sm text-gray-500 dark:text-gray-400">
-            Gestiona tus tours y paquetes disponibles
+            Administra los tours y paquetes disponibles
           </p>
         </div>
       </div>
@@ -55,6 +55,24 @@
           </select>
         </div>
         
+        <!-- Payment Status Filter -->
+        <div class="space-y-2">
+          <label for="paymentStatusFilter" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Estado de Pago
+          </label>
+          <select
+            id="paymentStatusFilter"
+            v-model="paymentStatusFilter"
+            class="w-full h-10 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+          >
+            <option value="">Todos los Pagos</option>
+            <option value="pending">Pendiente</option>
+            <option value="paid">Pagado</option>
+            <option value="failed">Fallido</option>
+            <option value="refunded">Reembolsado</option>
+          </select>
+        </div>
+        
         <!-- Price Range Min -->
         <div class="space-y-2">
           <label for="minPrice" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -90,8 +108,10 @@
             />
           </div>
         </div>
-        
-        <!-- Search Filter -->
+      </div>
+      
+      <!-- Search Filter -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
         <div class="space-y-2">
           <label for="searchFilter" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
             Buscar Tours
@@ -197,10 +217,10 @@
                   v-if="formErrors.description"
                   class="text-sm text-red-600 dark:text-red-400"
                 >
-                  La descripción debe tener al menos 50 caracteres
+                  La descripción debe tener al menos 100 caracteres
                 </p>
                 <p class="text-xs text-gray-500 dark:text-gray-400">
-                  {{ form.description?.length || 0 }}/50 caracteres mínimo
+                  {{ form.description?.length || 0 }}/100 caracteres mínimo
                 </p>
               </div>
             </div>
@@ -255,8 +275,46 @@
                 Solo los tours "Disponibles" serán visibles para los usuarios
               </p>
             </div>
+
+            <!-- Payment Status -->
+            <div class="space-y-2">
+              <label for="paymentStatus" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Estado de Pago
+              </label>
+              <select
+                id="paymentStatus"
+                v-model="form.paymentStatus"
+                class="w-full h-12 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+              >
+                <option value="pending">Pendiente</option>
+                <option value="paid">Pagado</option>
+                <option value="failed">Fallido</option>
+                <option value="refunded">Reembolsado</option>
+              </select>
+              <p class="text-xs text-gray-500 dark:text-gray-400">
+                Estado actual del pago del paquete turístico
+              </p>
+            </div>
+
+            <!-- Payment Details -->
+            <div class="space-y-2">
+              <label for="paymentDetails" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Detalles de Pago
+              </label>
+              <input
+                id="paymentDetails"
+                v-model="form.paymentDetails"
+                type="text"
+                class="w-full h-12 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                placeholder="ej., Transferencia bancaria, Tarjeta de crédito, etc."
+              />
+              <p class="text-xs text-gray-500 dark:text-gray-400">
+                Información adicional sobre el método de pago (opcional)
+              </p>
+            </div>
           </div>
         </div>
+
         <!-- Image Upload Section -->
         <div class="space-y-6">
           <h3 class="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
@@ -430,7 +488,7 @@
             <div class="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
               <MapIcon class="w-5 h-5 text-green-600 dark:text-green-400" />
             </div>
-            Mis Paquetes Turísticos
+            Lista de Paquetes Turísticos
           </h2>
           <div class="text-sm text-gray-500 dark:text-gray-400">
             {{ filteredTours.length }} tour{{
@@ -476,6 +534,12 @@
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                 Estado del Tour
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Estado de Pago
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Host
               </th>
               <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                 Acciones
@@ -531,6 +595,30 @@
                 <span :class="getTourStatusBadge(tour.status)">
                   {{ getTourStatusLabel(tour.status) }}
                 </span>
+              </td>
+
+              <!-- Payment Status badge -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span :class="getPaymentStatusBadge(tour.paymentStatus || 'pending')">
+                  {{ getPaymentStatusLabel(tour.paymentStatus || 'pending') }}
+                </span>
+              </td>
+
+              <!-- Host information -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-900 dark:text-white">
+                  {{
+                    typeof tour.host === "object"
+                      ? `${tour.host.firstName} ${tour.host.lastName}`
+                      : "ID: " + tour.host
+                  }}
+                </div>
+                <div
+                  v-if="typeof tour.host === 'object' && tour.host.email"
+                  class="text-sm text-gray-500 dark:text-gray-400"
+                >
+                  {{ tour.host.email }}
+                </div>
               </td>
 
               <!-- Action buttons -->
@@ -617,10 +705,25 @@
                 {{ getTourStatusLabel(tour.status) }}
               </span>
             </div>
+            <div>
+              <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Pago:</span>
+              <span :class="getPaymentStatusBadge(tour.paymentStatus || 'pending')" class="mt-1">
+                {{ getPaymentStatusLabel(tour.paymentStatus || 'pending') }}
+              </span>
+            </div>
+            <div>
+              <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Host:</span>
+              <p class="text-sm text-gray-900 dark:text-white truncate">
+                {{
+                  typeof tour.host === "object"
+                    ? `${tour.host.firstName} ${tour.host.lastName}`
+                    : tour.host
+                }}
+              </p>
+            </div>
           </div>
         </div>
       </div>
-
       <!-- Mobile Cards -->
       <div class="md:hidden divide-y divide-gray-200 dark:divide-gray-700">
         <div
@@ -681,6 +784,22 @@
                 {{ getTourStatusLabel(tour.status) }}
               </span>
             </div>
+            <div class="flex justify-between items-center">
+              <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Pago:</span>
+              <span :class="getPaymentStatusBadge(tour.paymentStatus || 'pending')">
+                {{ getPaymentStatusLabel(tour.paymentStatus || 'pending') }}
+              </span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Host:</span>
+              <span class="text-xs text-gray-900 dark:text-white truncate max-w-32">
+                {{
+                  typeof tour.host === "object"
+                    ? `${tour.host.firstName} ${tour.host.lastName}`
+                    : tour.host
+                }}
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -689,33 +808,32 @@
 </template>
 <script setup lang="ts">
 /**
- * HostTourManagementView.vue
- * ---------------------------
- * Host tour package management interface with comprehensive CRUD operations
+ * TourManagementView.vue
+ * -----------------------
+ * Tour package management interface for admins with comprehensive CRUD operations
  *
  * Features:
  * - Responsive design with mobile-first approach
  * - Native HTML inputs with Tailwind styling
  * - Image upload with previews and reordering
- * - Advanced filtering capabilities (status, price, search)
+ * - Advanced filtering capabilities (status, payment, price, search)
  * - Accessibility compliance (WCAG 2.1 AA)
  * - Dark mode support
  * - Clean, minimal code structure
  * - Export functionality (CSV and PDF)
- * - Host can only manage their own tours
+ * - Tour status and payment status management
  */
 
-import { ref, computed, onMounted, nextTick } from "vue";
-import { RouterLink } from "vue-router";
+import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
 import Swal from "sweetalert2";
 import {
-  getHostTours as getTours,
-  createHostTour as createTour,
-  updateHostTour as updateTour,
-  deleteHostTour as deleteTour,
+  getTours,
+  createTour,
+  updateTour,
+  deleteTour,
   type Tour,
-} from "@/services/hostTourService";
-import { useAuth } from "@/composables/useAuth";
+} from "@/services/tourService";
 import { tourToFormData } from "@/utils/formDataHelpers";
 
 // Import icons from Lucide Vue Next
@@ -726,6 +844,7 @@ import {
   Edit as EditIcon,
   Map as MapIcon,
   Upload as UploadIcon,
+  Users as UsersIcon,
   DollarSign as DollarSignIcon,
   Trash as TrashIcon,
   Star as StarIcon,
@@ -742,26 +861,50 @@ import {
 
 // ===== TYPES AND INTERFACES =====
 
+/**
+ * Tour status type definition
+ */
 type TourStatus = 'available' | 'sold_out' | 'cancelled' | 'upcoming';
 
+/**
+ * Payment status type definition
+ */
+type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded';
+
+/**
+ * Form data structure for tour management
+ */
 interface TourForm {
   title: string;
   description: string;
   price: string;
   status: TourStatus;
+  paymentStatus: PaymentStatus;
+  paymentDetails: string;
 }
 
-// ===== USE COMPOSABLES - DECLARAR ANTES DE onMounted =====
+// ===== ROUTER AND NAVIGATION =====
 
-const { user: authUser, refreshUser } = useAuth();
+const router = useRouter();
+
+/**
+ * Navigate back to admin dashboard
+ */
+const goBack = (): void => {
+  router.push("/admin/dashboard");
+};
 
 // ===== REACTIVE STATE =====
 
+/** UI state management */
 const editId = ref<string | null>(null);
 const isLoading = ref<boolean>(false);
 const isSubmitting = ref<boolean>(false);
+
+/** Search and filter state */
 const searchQuery = ref<string>("");
 const statusFilter = ref<string>("");
+const paymentStatusFilter = ref<string>("");
 const priceRange = ref<{
   min: number | null;
   max: number | null;
@@ -769,79 +912,44 @@ const priceRange = ref<{
   min: null,
   max: null,
 });
+
+/** Tours data */
 const allTours = ref<Tour[]>([]);
+
+/** Image handling state */
 const selectedImages = ref<File[]>([]);
 const imagePreviews = ref<string[]>([]);
+
+/** Form validation errors */
 const formErrors = ref<Record<string, string | boolean>>({});
+
+/** 
+ * Tour form data structure
+ */
 const form = ref<TourForm>({
   title: "",
   description: "",
   price: "",
   status: "available" as TourStatus,
-});
-
-// ===== LIFECYCLE HOOKS =====
-onMounted(async () => {
-  console.log('🚀 Component mounted!');
-  
-  // Refresh user from localStorage in case it wasn't initialized properly
-  refreshUser();
-  
-  // Wait for next tick
-  await nextTick();
-  
-  console.log('👤 AuthUser after refresh:', authUser.value);
-  
-  // Check if user is authenticated
-  if (!authUser.value?._id) {
-    console.warn('❌ No authenticated user found after refresh');
-    
-    // Check localStorage directly as fallback
-    const fallbackUser = localStorage.getItem('user');
-    const fallbackToken = localStorage.getItem('token');
-    
-    console.log('🔍 Fallback check:', { 
-      hasUser: !!fallbackUser, 
-      hasToken: !!fallbackToken,
-      userContent: fallbackUser 
-    });
-    
-    if (!fallbackToken || !fallbackUser || fallbackUser === 'null') {
-      await Swal.fire({
-        icon: 'warning',
-        title: 'Sesión no válida',
-        text: 'Por favor, inicia sesión nuevamente.',
-        confirmButtonText: 'OK'
-      });
-      return;
-    }
-  }
-  
-  console.log('✅ User authenticated, loading tours...');
-  await loadTours();
+  paymentStatus: "pending" as PaymentStatus,
+  paymentDetails: "",
 });
 
 // ===== COMPUTED PROPERTIES =====
 
+/**
+ * Check if form is in editing mode
+ */
 const isEditing = computed(() => !!editId.value);
 
+/**
+ * Apply advanced filtering to tours
+ * Supports search, status, payment status, and price range filters
+ */
 const filteredTours = computed<Tour[]>(() => {
-  if (!allTours.value || allTours.value.length === 0) {
-    return [];
-  }
-  
-  if (!authUser.value?._id) {
-    return [];
-  }
-  
-  let filtered = allTours.value.filter(tour => {
-    const tourHostId = typeof tour.host === 'string' ? tour.host : tour.host?._id;
-    const tourHostString = String(tourHostId);
-    const userIdString = String(authUser.value!._id);
-    return tourHostString === userIdString;
-  });
+  let filtered = allTours.value;
 
-  // Apply other filters
+  // Search filter - searches title and description
   if (searchQuery.value.trim()) {
     const query = searchQuery.value.toLowerCase().trim();
     filtered = filtered.filter(
@@ -851,24 +959,43 @@ const filteredTours = computed<Tour[]>(() => {
     );
   }
 
+  // Status filter
   if (statusFilter.value) {
-    filtered = filtered.filter((tour) => tour.status === statusFilter.value);
+    filtered = filtered.filter(
+      (tour) => tour.status === statusFilter.value
+    );
   }
 
+  // Payment status filter
+  if (paymentStatusFilter.value) {
+    filtered = filtered.filter(
+      (tour) => (tour.paymentStatus || 'pending') === paymentStatusFilter.value
+    );
+  }
+
+  // Price range filter
   if (priceRange.value.min !== null && priceRange.value.min > 0) {
-    filtered = filtered.filter((tour) => tour.price >= priceRange.value.min!);
+    filtered = filtered.filter(
+      (tour) => tour.price >= priceRange.value.min!
+    );
   }
   if (priceRange.value.max !== null && priceRange.value.max > 0) {
-    filtered = filtered.filter((tour) => tour.price <= priceRange.value.max!);
+    filtered = filtered.filter(
+      (tour) => tour.price <= priceRange.value.max!
+    );
   }
 
   return filtered;
 });
 
+/**
+ * Check if any filters are currently active
+ */
 const hasActiveFilters = computed<boolean>(() => {
   return !!(
     searchQuery.value.trim() ||
     statusFilter.value ||
+    paymentStatusFilter.value ||
     priceRange.value.min ||
     priceRange.value.max
   );
@@ -880,17 +1007,6 @@ const hasActiveFilters = computed<boolean>(() => {
  * Initialize component on mount
  */
 onMounted(async (): Promise<void> => {
-  // Check if user is authenticated
-  if (!authUser.value?._id) {
-    await Swal.fire({
-      icon: 'warning',
-      title: 'Sesión no válida',
-      text: 'Por favor, inicia sesión nuevamente.',
-      confirmButtonText: 'OK'
-    });
-    return;
-  }
-  
   await loadTours();
 });
 
@@ -898,7 +1014,7 @@ onMounted(async (): Promise<void> => {
 
 /**
  * Load all tours from the backend
- * The service will automatically filter to show only host's tours
+ * Handles errors gracefully with user feedback
  */
 const loadTours = async (): Promise<void> => {
   try {
@@ -925,6 +1041,7 @@ const loadTours = async (): Promise<void> => {
 const clearAllFilters = (): void => {
   searchQuery.value = "";
   statusFilter.value = "";
+  paymentStatusFilter.value = "";
   priceRange.value = {
     min: null,
     max: null,
@@ -941,6 +1058,8 @@ const resetForm = (): void => {
     description: "",
     price: "",
     status: "available" as TourStatus,
+    paymentStatus: "pending" as PaymentStatus,
+    paymentDetails: "",
   };
   selectedImages.value = [];
   imagePreviews.value = [];
@@ -964,8 +1083,8 @@ const validateForm = (): boolean => {
   if (!form.value.description?.trim()) {
     errors.description = "La descripción es obligatoria";
     isValid = false;
-  } else if (form.value.description.trim().length < 50) {
-    errors.description = "La descripción debe tener al menos 50 caracteres";
+  } else if (form.value.description.trim().length < 100) {
+    errors.description = "La descripción debe tener al menos 100 caracteres";
     isValid = false;
   }
 
@@ -999,6 +1118,8 @@ const validateForm = (): boolean => {
 
   formErrors.value = errors;
   
+  console.log('🔍 Form validation:', isValid ? 'PASSED' : 'FAILED', errors);
+  
   return isValid;
 };
 
@@ -1006,7 +1127,11 @@ const validateForm = (): boolean => {
  * Handle form submission (create or update)
  */
 const handleSubmit = async (): Promise<void> => {
+  console.log('🚀 Starting form submission...');
+  console.log('🔍 Edit mode:', isEditing.value, 'Edit ID:', editId.value);
+  
   if (!validateForm()) {
+    console.log('❌ Validation failed');
     Swal.fire(
       "Error",
       "Por favor, complete todos los campos requeridos correctamente.",
@@ -1024,14 +1149,17 @@ const handleSubmit = async (): Promise<void> => {
       description: form.value.description.trim(),
       price: parseFloat(form.value.price),
       status: form.value.status,
+      paymentStatus: form.value.paymentStatus,
+      paymentDetails: form.value.paymentDetails.trim(),
     };
     
-    // Use the helper function to create FormData
+    // Convert to FormData using helper function
     const formData = tourToFormData(tourData, selectedImages.value);
 
     let response;
     
     if (isEditing.value && editId.value) {
+      console.log('🔄 UPDATING tour with ID:', editId.value);
       response = await updateTour(editId.value, formData);
       await Swal.fire(
         "Éxito",
@@ -1039,9 +1167,12 @@ const handleSubmit = async (): Promise<void> => {
         "success"
       );
     } else {
+      console.log('➕ CREATING new tour');
       response = await createTour(formData);
       await Swal.fire("Éxito", "Paquete turístico creado correctamente.", "success");
     }
+
+    console.log('✅ Tour saved successfully:', response);
     
     resetForm();
     await loadTours();
@@ -1058,6 +1189,7 @@ const handleSubmit = async (): Promise<void> => {
       if (response?.data?.message) {
         errorMessage = response.data.message;
       }
+      console.error('📋 Server error details:', response?.data);
     }
 
     Swal.fire({
@@ -1075,11 +1207,15 @@ const handleSubmit = async (): Promise<void> => {
  * Edit existing tour
  */
 const editTour = (tour: Tour): void => {
+  console.log('🔄 Editing tour:', tour.title);
+
   form.value = {
     title: tour.title,
     description: tour.description || "",
     price: tour.price.toString(),
     status: tour.status,
+    paymentStatus: tour.paymentStatus || "pending",
+    paymentDetails: tour.paymentDetails || "",
   };
   
   editId.value = tour._id || null;
@@ -1123,6 +1259,7 @@ const handleDeleteTour = async (tourId: string): Promise<void> => {
     }
   }
 };
+
 // ===== IMAGE MANAGEMENT =====
 
 /**
@@ -1185,6 +1322,8 @@ const handleImageUpload = (event: Event): void => {
 const removeImagePreview = (index: number): void => {
   imagePreviews.value.splice(index, 1);
   selectedImages.value.splice(index, 1);
+  
+  console.log('🗑️ Image removed from index:', index);
 };
 
 /**
@@ -1200,6 +1339,8 @@ const moveToFirst = (index: number): void => {
   // Move file object
   const file = selectedImages.value.splice(index, 1)[0];
   selectedImages.value.unshift(file);
+  
+  console.log('⭐ Image moved to main position');
 };
 
 /**
@@ -1217,6 +1358,8 @@ const moveLeft = (index: number): void => {
   const tempFile = selectedImages.value[index];
   selectedImages.value[index] = selectedImages.value[index - 1];
   selectedImages.value[index - 1] = tempFile;
+  
+  console.log('⬅️ Image moved left');
 };
 
 /**
@@ -1234,6 +1377,8 @@ const moveRight = (index: number): void => {
   const tempFile = selectedImages.value[index];
   selectedImages.value[index] = selectedImages.value[index + 1];
   selectedImages.value[index + 1] = tempFile;
+  
+  console.log('➡️ Image moved right');
 };
 // ===== UTILITY FUNCTIONS =====
 
@@ -1265,19 +1410,51 @@ const getTourStatusBadge = (status: TourStatus): string => {
   return `${base} ${colors[status] || colors.available}`;
 };
 
+/**
+ * Get user-friendly payment status label in Spanish
+ */
+const getPaymentStatusLabel = (status: PaymentStatus): string => {
+  const labels: Record<PaymentStatus, string> = {
+    pending: "Pendiente",
+    paid: "Pagado",
+    failed: "Fallido",
+    refunded: "Reembolsado",
+  };
+  return labels[status] || status;
+};
+
+/**
+ * Get CSS classes for payment status badges
+ */
+const getPaymentStatusBadge = (status: PaymentStatus): string => {
+  const base =
+    "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium";
+  const colors: Record<PaymentStatus, string> = {
+    pending: "bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-200",
+    paid: "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-200",
+    failed: "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-200",
+    refunded: "bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-200",
+  };
+  return `${base} ${colors[status] || colors.pending}`;
+};
+
 // ===== EXPORT FUNCTIONS =====
 
 /**
  * Export filtered tours to CSV format
  */
 const exportCSV = (): void => {
-  const headers = ['Título', 'Precio', 'Estado del Tour', 'Fecha Creación'];
+  const headers = ['Título', 'Precio', 'Estado del Tour', 'Estado de Pago', 'Host', 'Fecha Creación'];
   const csvContent = [
     headers.join(','),
     ...filteredTours.value.map(tour => [
       `"${tour.title}"`,
       tour.price,
       `"${getTourStatusLabel(tour.status)}"`,
+      `"${getPaymentStatusLabel(tour.paymentStatus || 'pending')}"`,
+      typeof tour.host === 'object' 
+        ? `"${tour.host.firstName} ${tour.host.lastName}"` 
+        : `"${tour.host}"`,
       tour.createdAt ? `"${new Date(tour.createdAt).toLocaleDateString()}"` : '""'
     ].join(','))
   ].join('\n');
@@ -1287,7 +1464,7 @@ const exportCSV = (): void => {
   const url = URL.createObjectURL(blob);
   
   link.setAttribute('href', url);
-  link.setAttribute('download', `mis_tours_${new Date().toISOString().split('T')[0]}.csv`);
+  link.setAttribute('download', `paquetes_turisticos_${new Date().toISOString().split('T')[0]}.csv`);
   link.style.visibility = 'hidden';
   
   document.body.appendChild(link);
@@ -1311,7 +1488,7 @@ const exportPDF = (): void => {
     <html>
       <head>
         <meta charset="UTF-8">
-        <title>Mis Paquetes Turísticos - GuaraníHost</title>
+        <title>Paquetes Turísticos - GuaraníHost</title>
         <style>
           * { margin: 0; padding: 0; box-sizing: border-box; }
           body { 
@@ -1383,6 +1560,10 @@ const exportPDF = (): void => {
           .sold_out { background: #fee2e2; color: #991b1b; }
           .cancelled { background: #f3f4f6; color: #374151; }
           .upcoming { background: #dbeafe; color: #1e40af; }
+          .pending { background: #fef3c7; color: #92400e; }
+          .paid { background: #d1fae5; color: #065f46; }
+          .failed { background: #fee2e2; color: #991b1b; }
+          .refunded { background: #e9d5ff; color: #7c3aed; }
           .footer {
             margin-top: 40px;
             text-align: center;
@@ -1396,8 +1577,8 @@ const exportPDF = (): void => {
       </head>
       <body>
         <div class="header">
-          <h1>Mis Paquetes Turísticos</h1>
-          <p>GuaraníHost - Panel de Host</p>
+          <h1>Gestión de Paquetes Turísticos</h1>
+          <p>GuaraníHost - Panel de Administración</p>
           <p>Generado el ${currentDate}</p>
         </div>
         
@@ -1411,6 +1592,10 @@ const exportPDF = (): void => {
             <div class="stat-label">Disponibles</div>
           </div>
           <div class="stat-item">
+            <div class="stat-number">${filteredTours.value.filter(t => t.paymentStatus === 'paid').length}</div>
+            <div class="stat-label">Pagados</div>
+          </div>
+          <div class="stat-item">
             <div class="stat-number">$${filteredTours.value.length > 0 ? Math.round(filteredTours.value.reduce((sum, t) => sum + t.price, 0) / filteredTours.value.length) : 0}</div>
             <div class="stat-label">Precio Promedio</div>
           </div>
@@ -1422,6 +1607,8 @@ const exportPDF = (): void => {
               <th>Título</th>
               <th>Precio</th>
               <th>Estado del Tour</th>
+              <th>Estado de Pago</th>
+              <th>Host</th>
               <th>Fecha Creación</th>
             </tr>
           </thead>
@@ -1431,6 +1618,8 @@ const exportPDF = (): void => {
                 <td><strong>${tour.title}</strong></td>
                 <td class="price">$${tour.price?.toLocaleString()}</td>
                 <td><span class="status ${tour.status}">${getTourStatusLabel(tour.status)}</span></td>
+                <td><span class="status ${tour.paymentStatus || 'pending'}">${getPaymentStatusLabel(tour.paymentStatus || 'pending')}</span></td>
+                <td>${typeof tour.host === 'object' ? `${tour.host.firstName} ${tour.host.lastName}` : tour.host}</td>
                 <td>${tour.createdAt ? new Date(tour.createdAt).toLocaleDateString() : 'N/A'}</td>
               </tr>
             `).join('')}
@@ -1438,7 +1627,7 @@ const exportPDF = (): void => {
         </table>
 
         <div class="footer">
-          <p><strong>GuaraníHost - Mis Paquetes Turísticos</strong><br>
+          <p><strong>GuaraníHost - Gestión de Paquetes Turísticos</strong><br>
           Total de tours: ${filteredTours.value.length}</p>
         </div>
       </body>
@@ -1461,11 +1650,32 @@ const exportPDF = (): void => {
 
 <style scoped>
 /**
- * Minimal scoped styles for tour management
- * Most styling is handled by Tailwind CSS classes
+ * Scoped styles for tour management
  */
+.cursor-move:hover {
+  cursor: move;
+}
 
-/* Line clamp utility for text truncation */
+.cursor-move:active {
+  cursor: grabbing;
+}
+
+/* Smooth transitions for drag & drop */
+.transition-all {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Drag feedback styles */
+[draggable="true"]:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+[draggable="true"]:active {
+  transform: scale(0.98);
+}
+
+/* Line clamp utilities for text truncation */
 .line-clamp-2 {
   overflow: hidden;
   display: -webkit-box;
@@ -1473,4 +1683,4 @@ const exportPDF = (): void => {
   -webkit-line-clamp: 2;
 }
 </style>
-
+    
