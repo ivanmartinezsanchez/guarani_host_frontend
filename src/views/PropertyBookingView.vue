@@ -35,7 +35,29 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { getBookings, type Booking } from '@/services/bookingService'
+import { getUserBookings as getBookings } from '@/services/bookingService'
+
+interface Booking {
+  _id: string
+  user: {
+    firstName: string
+    lastName: string
+  }
+  property?: {
+    title: string
+    city: string
+  }
+  tourPackage?: {
+    title: string
+    location: string
+  }
+  checkIn: Date
+  checkOut: Date
+  guests: number
+  status: 'pending' | 'confirmed' | 'cancelled'
+  totalPrice: number
+  paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded'
+}
 
 const bookings = ref<Booking[]>([])
 
@@ -49,7 +71,7 @@ onMounted(async () => {
 
 // Filter bookings that belong to properties (not tours)
 const homeBookings = computed(() =>
-  bookings.value.filter(b => b.property && !b.tourPackage)
+  bookings.value.filter((b: Booking) => b.property && !b.tourPackage)
 )
 
 // Format Date safely
