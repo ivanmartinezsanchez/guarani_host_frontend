@@ -5,7 +5,7 @@
       <p class="text-gray-700 dark:text-gray-300 text-lg">{{ property.city }} · {{ property.address }}</p>
 
       <!-- Gallery -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div v-if="property.imageUrls?.length" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <img
           v-for="(img, i) in property.imageUrls"
           :key="i"
@@ -15,15 +15,16 @@
         />
       </div>
 
-      <!-- Host Info -->
-      <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-6">
+      <!-- Host Info - FIXED: Added proper null checks -->
+      <div v-if="property.host" class="bg-gray-50 dark:bg-gray-800 rounded-xl p-6">
         <h3 class="text-lg font-semibold mb-2">Anfitrión</h3>
         <div class="flex items-center space-x-3">
           <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white font-bold">
-            {{ property.host.firstName.charAt(0) }}{{ property.host.lastName.charAt(0) }}
+            <!-- FIXED: Safe access to charAt with fallbacks -->
+            {{ (property.host.firstName || '').charAt(0) }}{{ (property.host.lastName || '').charAt(0) }}
           </div>
           <div>
-            <p class="font-medium">{{ property.host.firstName }} {{ property.host.lastName }}</p>
+            <p class="font-medium">{{ property.host.firstName || 'N/A' }} {{ property.host.lastName || '' }}</p>
             <div v-if="property.averageRating" class="flex items-center text-sm text-gray-600">
               <span class="text-yellow-500">★</span>
               <span class="ml-1">{{ property.averageRating }} ({{ property.totalReviews }} reseñas)</span>
@@ -33,7 +34,7 @@
       </div>
 
       <!-- Description -->
-      <div>
+      <div v-if="property.description">
         <h3 class="text-lg font-semibold mb-2">Descripción</h3>
         <p class="text-gray-700 dark:text-gray-300">{{ property.description }}</p>
       </div>
@@ -54,7 +55,7 @@
 
       <!-- Details -->
       <div class="text-lg text-gray-800 dark:text-gray-200 space-y-2">
-        <p><strong>Precio por Noche:</strong> €{{ property.pricePerNight?.toLocaleString() }}</p>
+        <p><strong>Precio por Noche:</strong> €{{ property.pricePerNight?.toLocaleString() || 'N/A' }}</p>
         <p><strong>Disponibilidad:</strong> 
           <span :class="property.status === 'available' ? 'text-green-600' : 'text-red-600'">
             {{ property.status === 'available' ? 'Disponible' : 'No disponible' }}
@@ -180,14 +181,18 @@ onMounted(async () => {
     loading.value = true
     const propertyId = route.params.id as string
     
+    console.log('🏠 Loading property with ID:', propertyId)
+    
     // Usar el servicio público en lugar del protegido
     property.value = await getPublicPropertyById(propertyId)
     
     if (!property.value) {
-      console.warn('Property not found:', propertyId)
+      console.warn('❌ Property not found:', propertyId)
+    } else {
+      console.log('✅ Property loaded successfully:', property.value.title)
     }
   } catch (error) {
-    console.error('Error fetching property:', error)
+    console.error('❌ Error fetching property:', error)
     property.value = null
   } finally {
     loading.value = false
