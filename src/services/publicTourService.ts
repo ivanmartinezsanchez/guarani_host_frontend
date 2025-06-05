@@ -19,7 +19,7 @@ export interface PublicTour {
   duration?: number
   maxCapacity?: number  
   location?: string
-  amenities: string[] // Array siempre presente
+  amenities: string[] 
   status: 'available' | 'sold_out' | 'cancelled' | 'upcoming'
   imageUrls: string[]
   host: {
