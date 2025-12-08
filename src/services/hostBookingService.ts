@@ -4,13 +4,30 @@ import { bookingToFormData } from '@/utils/formDataHelpers'
 const API_URL = import.meta.env.VITE_API_BASE_URL
 
 const getAuthHeaders = () => {
-  const token = localStorage.getItem('token')
+  const tokenFromSession =
+    sessionStorage.getItem('token') ||
+    sessionStorage.getItem('accessToken') ||
+    sessionStorage.getItem('authToken')
+
+  const tokenFromLocal =
+    localStorage.getItem('token') ||
+    localStorage.getItem('accessToken') ||
+    localStorage.getItem('authToken')
+
+  const token = tokenFromSession || tokenFromLocal
+
+  if (!token) {
+    console.warn('⚠️ No authentication token found in sessionStorage/localStorage')
+    return { headers: {} }
+  }
+
   return {
     headers: {
       Authorization: `Bearer ${token}`,
     },
   }
 }
+
 
 // ===== INTERFACES CORREGIDAS SEGÚN EL BACKEND =====
 

@@ -11,14 +11,30 @@ const HOST_API_URL = `${import.meta.env.VITE_API_BASE_URL}/host`
  * Returns authorization headers using JWT token from localStorage
  */
 const getAuthHeaders = () => {
-  const token = localStorage.getItem('token')
-  if (!token) throw new Error('❌ No token found in localStorage')
+  const tokenFromSession =
+    sessionStorage.getItem('token') ||
+    sessionStorage.getItem('accessToken') ||
+    sessionStorage.getItem('authToken')
+
+  const tokenFromLocal =
+    localStorage.getItem('token') ||
+    localStorage.getItem('accessToken') ||
+    localStorage.getItem('authToken')
+
+  const token = tokenFromSession || tokenFromLocal
+
+  if (!token) {
+    console.warn('⚠️ No authentication token found in sessionStorage/localStorage')
+    return { headers: {} }
+  }
+
   return {
     headers: {
       Authorization: `Bearer ${token}`,
     },
   }
 }
+
 
 /**
  * Tour interface - matches your backend model

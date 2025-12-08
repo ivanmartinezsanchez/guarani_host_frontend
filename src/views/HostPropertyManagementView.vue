@@ -10,7 +10,7 @@
         >
           <ArrowLeftIcon class="w-5 h-5" />
         </button>
-        <div>          
+        <div>
           <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
             Gestión de Mis Propiedades
           </h1>
@@ -21,8 +21,10 @@
       </div>
     </header>
 
-    <!-- Enhanced Filters Section -->
-    <section class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8">
+    <!-- Filters -->
+    <section
+      class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8"
+    >
       <div class="flex items-center justify-between mb-6">
         <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
           Filtros
@@ -35,11 +37,14 @@
           Limpiar filtros
         </button>
       </div>
-      
+
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <!-- City Filter -->
         <div class="space-y-2">
-          <label for="cityFilter" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label
+            for="cityFilter"
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+          >
             Ciudad
           </label>
           <select
@@ -53,10 +58,13 @@
             </option>
           </select>
         </div>
-        
+
         <!-- Status Filter -->
         <div class="space-y-2">
-          <label for="statusFilter" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label
+            for="statusFilter"
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+          >
             Estado
           </label>
           <select
@@ -72,14 +80,19 @@
             <option value="inactive">Inactivo</option>
           </select>
         </div>
-        
+
         <!-- Price Range Min -->
         <div class="space-y-2">
-          <label for="minPrice" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label
+            for="minPrice"
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+          >
             Precio Min.
           </label>
           <div class="relative">
-            <DollarSignIcon class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <DollarSignIcon
+              class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
+            />
             <input
               id="minPrice"
               v-model="priceRange.min"
@@ -90,14 +103,19 @@
             />
           </div>
         </div>
-        
+
         <!-- Price Range Max -->
         <div class="space-y-2">
-          <label for="maxPrice" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label
+            for="maxPrice"
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+          >
             Precio Máx.
           </label>
           <div class="relative">
-            <DollarSignIcon class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <DollarSignIcon
+              class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
+            />
             <input
               id="maxPrice"
               v-model="priceRange.max"
@@ -113,45 +131,58 @@
 
     <!-- Export Buttons -->
     <div class="flex flex-col sm:flex-row justify-end gap-3 mb-6">
-      <button 
-        @click="exportCSV" 
+      <button
+        @click="exportCSV"
         class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
       >
         <DownloadIcon class="w-4 h-4" />
         Exportar CSV
       </button>
-      <button 
-        @click="exportPDF" 
+      <button
+        @click="exportPDF"
         class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
       >
         <FileTextIcon class="w-4 h-4" />
         Exportar PDF
       </button>
     </div>
-    <!-- Property Form - Always Visible -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8">
-      <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-3">
+
+    <!-- Property Form -->
+    <div
+      class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8"
+    >
+      <h2
+        class="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-3"
+      >
         <div class="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
           <PlusIcon
             v-if="!editId"
             class="w-5 h-5 text-blue-600 dark:text-blue-400"
           />
-          <EditIcon v-else class="w-5 h-5 text-blue-600 dark:text-blue-400" />
+          <EditIcon
+            v-else
+            class="w-5 h-5 text-blue-600 dark:text-blue-400"
+          />
         </div>
         {{ editId ? "Editar Mi Propiedad" : "Crear Nueva Propiedad" }}
       </h2>
 
       <form @submit.prevent="handleSubmit" class="space-y-8">
-        <!-- Basic Information Section -->
+        <!-- Basic Information -->
         <div class="space-y-6">
-          <h3 class="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
+          <h3
+            class="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2"
+          >
             Información Básica
           </h3>
 
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Property Title -->
+            <!-- Title -->
             <div class="lg:col-span-2 space-y-2">
-              <label for="title" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                for="title"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 Título de la Propiedad <span class="text-red-500">*</span>
               </label>
               <input
@@ -175,9 +206,12 @@
               </p>
             </div>
 
-            <!-- Property Description -->
+            <!-- Description -->
             <div class="lg:col-span-2 space-y-2">
-              <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                for="description"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 Descripción <span class="text-red-500">*</span>
               </label>
               <textarea
@@ -208,7 +242,10 @@
 
             <!-- Address -->
             <div class="space-y-2">
-              <label for="address" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                for="address"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 Dirección <span class="text-red-500">*</span>
               </label>
               <input
@@ -234,7 +271,10 @@
 
             <!-- City -->
             <div class="space-y-2">
-              <label for="city" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                for="city"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 Ciudad <span class="text-red-500">*</span>
               </label>
               <input
@@ -258,13 +298,18 @@
               </p>
             </div>
 
-            <!-- Price per Night -->
+            <!-- Price -->
             <div class="space-y-2">
-              <label for="pricePerNight" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                for="pricePerNight"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 Precio por Noche (USD) <span class="text-red-500">*</span>
               </label>
               <div class="relative">
-                <DollarSignIcon class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <DollarSignIcon
+                  class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
+                />
                 <input
                   id="pricePerNight"
                   v-model="form.pricePerNight"
@@ -289,13 +334,18 @@
               </p>
             </div>
 
-            <!-- Maximum Guests -->
+            <!-- Guests -->
             <div class="space-y-2">
-              <label for="maxGuests" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                for="maxGuests"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 Huéspedes Máximos <span class="text-red-500">*</span>
               </label>
               <div class="relative">
-                <UsersIcon class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <UsersIcon
+                  class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
+                />
                 <input
                   id="maxGuests"
                   v-model="form.maxGuests"
@@ -320,9 +370,12 @@
               </p>
             </div>
 
-            <!-- Property Status -->
+            <!-- Status -->
             <div class="space-y-2">
-              <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                for="status"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 Estado de la Propiedad
               </label>
               <select
@@ -337,14 +390,18 @@
                 <option value="inactive">Inactivo</option>
               </select>
               <p class="text-xs text-gray-500 dark:text-gray-400">
-                Solo las propiedades "Disponibles" serán visibles para los usuarios
+                Solo las propiedades "Disponibles" serán visibles para los
+                usuarios
               </p>
             </div>
           </div>
         </div>
-        <!-- Amenities Section -->
+
+        <!-- Amenities -->
         <div class="space-y-6">
-          <h3 class="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
+          <h3
+            class="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2"
+          >
             Comodidades
           </h3>
 
@@ -375,9 +432,11 @@
           </div>
         </div>
 
-        <!-- Image Upload Section -->
+        <!-- Images -->
         <div class="space-y-6">
-          <h3 class="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
+          <h3
+            class="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2"
+          >
             Imágenes de la Propiedad <span class="text-red-500">*</span>
           </h3>
 
@@ -385,15 +444,17 @@
           <div
             :class="[
               'border-2 border-dashed rounded-lg p-6 text-center hover:border-gray-400 dark:hover:border-gray-500 transition-colors',
-              formErrors.images 
-                ? 'border-red-500 bg-red-50 dark:bg-red-900/10' 
-                : 'border-gray-300 dark:border-gray-600'
+              formErrors.images
+                ? 'border-red-500 bg-red-50 dark:bg-red-900/10'
+                : 'border-gray-300 dark:border-gray-600',
             ]"
           >
             <ImageIcon class="mx-auto h-12 w-12 text-gray-400 mb-4" />
             <div class="space-y-2">
               <label for="images" class="cursor-pointer">
-                <span class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <span
+                  class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
                   <UploadIcon class="w-4 h-4 mr-2" />
                   Seleccionar Imágenes
                 </span>
@@ -415,7 +476,7 @@
             </div>
           </div>
 
-          <!-- Error message for images -->
+          <!-- Image Error -->
           <p
             v-if="formErrors.images"
             class="text-sm text-red-600 dark:text-red-400 flex items-center"
@@ -434,34 +495,44 @@
                 Primera imagen es la foto principal
               </p>
             </div>
-            
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              <div 
-                v-for="(preview, index) in imagePreviews" 
+
+            <div
+              class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+            >
+              <div
+                v-for="(preview, index) in imagePreviews"
                 :key="`preview-${index}`"
                 class="relative group border-2 rounded-lg overflow-hidden transition-all"
-                :class="index === 0 ? 'border-blue-500 ring-2 ring-blue-200 dark:ring-blue-800' : 'border-gray-200 dark:border-gray-600'"
+                :class="
+                  index === 0
+                    ? 'border-blue-500 ring-2 ring-blue-200 dark:ring-blue-800'
+                    : 'border-gray-200 dark:border-gray-600'
+                "
               >
-                <!-- Main photo badge -->
+                <!-- Main badge -->
                 <div v-if="index === 0" class="absolute top-2 left-2 z-10">
-                  <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-600 text-white shadow-md">
+                  <span
+                    class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-600 text-white shadow-md"
+                  >
                     <StarIcon class="w-3 h-3 mr-1" />
                     Principal
                   </span>
                 </div>
-                
+
                 <!-- Image -->
-                <img 
-                  :src="preview" 
+                <img
+                  :src="preview"
                   :alt="`Preview imagen ${index + 1}`"
                   class="w-full h-24 object-cover"
                 />
-                
-                <!-- Control Buttons -->
-                <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+
+                <!-- Controls -->
+                <div
+                  class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100"
+                >
                   <div class="flex space-x-1">
-                    <!-- Move to first (main) -->
-                    <button 
+                    <!-- Main -->
+                    <button
                       v-if="index !== 0"
                       type="button"
                       @click="moveToFirst(index)"
@@ -471,9 +542,9 @@
                     >
                       <StarIcon class="w-4 h-4" />
                     </button>
-                    
-                    <!-- Move left -->
-                    <button 
+
+                    <!-- Left -->
+                    <button
                       v-if="index > 0"
                       type="button"
                       @click="moveLeft(index)"
@@ -483,9 +554,9 @@
                     >
                       <ChevronLeftIcon class="w-4 h-4" />
                     </button>
-                    
-                    <!-- Move right -->
-                    <button 
+
+                    <!-- Right -->
+                    <button
                       v-if="index < imagePreviews.length - 1"
                       type="button"
                       @click="moveRight(index)"
@@ -495,11 +566,11 @@
                     >
                       <ChevronRightIcon class="w-4 h-4" />
                     </button>
-                    
-                    <!-- Remove button -->
-                    <button 
+
+                    <!-- Remove -->
+                    <button
                       type="button"
-                      @click="removeImagePreview(index)" 
+                      @click="removeImagePreview(index)"
                       class="p-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 shadow-md"
                       :aria-label="`Eliminar imagen ${index + 1}`"
                       title="Eliminar"
@@ -509,8 +580,10 @@
                   </div>
                 </div>
 
-                <!-- Drag handle indicator -->
-                <div class="absolute bottom-1 right-1 p-1 bg-gray-700 bg-opacity-75 rounded text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                <!-- Drag indicator (visual only) -->
+                <div
+                  class="absolute bottom-1 right-1 p-1 bg-gray-700 bg-opacity-75 rounded text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                >
                   <MoveIcon class="w-3 h-3" />
                 </div>
               </div>
@@ -519,7 +592,9 @@
         </div>
 
         <!-- Form Actions -->
-        <div class="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">
+        <div
+          class="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t border-gray-200 dark:border-gray-700"
+        >
           <button
             type="button"
             @click="resetForm"
@@ -540,11 +615,16 @@
         </div>
       </form>
     </div>
+
     <!-- Properties List -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+    <div
+      class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"
+    >
       <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
         <div class="flex items-center justify-between">
-          <h2 class="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-3">
+          <h2
+            class="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-3"
+          >
             <div class="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
               <HomeIcon class="w-5 h-5 text-green-600 dark:text-green-400" />
             </div>
@@ -558,15 +638,22 @@
         </div>
       </div>
 
-      <!-- Loading State -->
+      <!-- Loading -->
       <div v-if="isLoading" class="p-12 text-center">
         <LoaderIcon class="w-8 h-8 animate-spin mx-auto mb-4 text-gray-400" />
-        <p class="text-gray-600 dark:text-gray-300">Cargando propiedades...</p>
+        <p class="text-gray-600 dark:text-gray-300">
+          Cargando propiedades...
+        </p>
       </div>
 
-      <!-- Empty State -->
-      <div v-else-if="filteredProperties.length === 0" class="p-12 text-center">
-        <div class="mx-auto w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-4">
+      <!-- Empty -->
+      <div
+        v-else-if="filteredProperties.length === 0"
+        class="p-12 text-center"
+      >
+        <div
+          class="mx-auto w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-4"
+        >
           <HomeIcon class="w-8 h-8 text-gray-400" />
         </div>
         <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
@@ -586,19 +673,29 @@
         <table class="w-full">
           <thead class="bg-gray-50 dark:bg-gray-700">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+              >
                 Propiedad
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+              >
                 Precio y Capacidad
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+              >
                 Estado
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+              >
                 Comodidades
               </th>
-              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+              <th
+                class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+              >
                 Acciones
               </th>
             </tr>
@@ -609,7 +706,7 @@
               :key="property._id"
               class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150"
             >
-              <!-- Property info with image -->
+              <!-- Main info -->
               <td class="px-6 py-4">
                 <div class="flex items-center space-x-4">
                   <div class="flex-shrink-0">
@@ -627,17 +724,21 @@
                     </div>
                   </div>
                   <div class="min-w-0 flex-1">
-                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                    <p
+                      class="text-sm font-medium text-gray-900 dark:text-white truncate"
+                    >
                       {{ property.title }}
                     </p>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 truncate">
+                    <p
+                      class="text-sm text-gray-500 dark:text-gray-400 truncate"
+                    >
                       {{ property.address }}, {{ property.city }}
                     </p>
                   </div>
                 </div>
               </td>
 
-              <!-- Price and capacity info -->
+              <!-- Price & guests -->
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-sm font-medium text-gray-900 dark:text-white">
                   ${{ property.pricePerNight?.toLocaleString() }}/noche
@@ -648,14 +749,14 @@
                 </div>
               </td>
 
-              <!-- Status badge -->
+              <!-- Status -->
               <td class="px-6 py-4 whitespace-nowrap">
                 <span :class="getStatusBadge(property.status)">
                   {{ getStatusLabel(property.status) }}
                 </span>
               </td>
 
-              <!-- Amenities preview -->
+              <!-- Amenities -->
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="flex flex-wrap gap-1 max-w-32">
                   <span
@@ -666,7 +767,9 @@
                     {{ getAmenityLabel(amenityId) }}
                   </span>
                   <span
-                    v-if="property.amenities && property.amenities.length > 3"
+                    v-if="
+                      property.amenities && property.amenities.length > 3
+                    "
                     class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200"
                   >
                     +{{ property.amenities.length - 3 }}
@@ -674,7 +777,7 @@
                 </div>
               </td>
 
-              <!-- Action buttons -->
+              <!-- Actions -->
               <td class="px-6 py-4 whitespace-nowrap text-right">
                 <div class="flex justify-end space-x-2">
                   <button
@@ -698,8 +801,10 @@
         </table>
       </div>
 
-      <!-- Tablet View -->
-      <div class="hidden md:block lg:hidden divide-y divide-gray-200 dark:divide-gray-700">
+      <!-- Tablet List -->
+      <div
+        class="hidden md:block lg:hidden divide-y divide-gray-200 dark:divide-gray-700"
+      >
         <div
           v-for="property in filteredProperties"
           :key="property._id"
@@ -747,19 +852,28 @@
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Precio:</span>
+              <span
+                class="text-sm font-medium text-gray-500 dark:text-gray-400"
+                >Precio:</span
+              >
               <p class="text-sm text-gray-900 dark:text-white">
                 ${{ property.pricePerNight }}/noche
               </p>
             </div>
             <div>
-              <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Capacidad:</span>
+              <span
+                class="text-sm font-medium text-gray-500 dark:text-gray-400"
+                >Capacidad:</span
+              >
               <p class="text-sm text-gray-900 dark:text-white">
                 {{ property.guests }} huéspedes
               </p>
             </div>
             <div>
-              <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Estado:</span>
+              <span
+                class="text-sm font-medium text-gray-500 dark:text-gray-400"
+                >Estado:</span
+              >
               <span :class="getStatusBadge(property.status)" class="mt-1">
                 {{ getStatusLabel(property.status) }}
               </span>
@@ -767,6 +881,7 @@
           </div>
         </div>
       </div>
+
       <!-- Mobile Cards -->
       <div class="md:hidden divide-y divide-gray-200 dark:divide-gray-700">
         <div
@@ -816,19 +931,28 @@
           </div>
           <div class="space-y-2">
             <div class="flex justify-between">
-              <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Precio:</span>
+              <span
+                class="text-xs font-medium text-gray-500 dark:text-gray-400"
+                >Precio:</span
+              >
               <span class="text-xs text-gray-900 dark:text-white">
                 ${{ property.pricePerNight }}/noche
               </span>
             </div>
             <div class="flex justify-between">
-              <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Capacidad:</span>
+              <span
+                class="text-xs font-medium text-gray-500 dark:text-gray-400"
+                >Capacidad:</span
+              >
               <span class="text-xs text-gray-900 dark:text-white">
                 {{ property.guests }} huéspedes
               </span>
             </div>
             <div class="flex justify-between items-center">
-              <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Estado:</span>
+              <span
+                class="text-xs font-medium text-gray-500 dark:text-gray-400"
+                >Estado:</span
+              >
               <span :class="getStatusBadge(property.status)">
                 {{ getStatusLabel(property.status) }}
               </span>
@@ -843,20 +967,7 @@
 <script setup lang="ts">
 /**
  * HostPropertyManagementView.vue
- * --------------------------------
- * Property management interface for hosts - same design as admin but limited to host's own properties
- *
- * Features:
- * - Responsive design with mobile-first approach
- * - Native HTML inputs with Tailwind styling  
- * - Comprehensive amenities management
- * - Image upload with previews and reordering
- * - Advanced filtering capabilities
- * - Accessibility compliance (WCAG 2.1 AA)
- * - Dark mode support
- * - Clean, minimal code structure
- * - Automatic host assignment (no host selector needed)
- * - Export functionality for host's properties
+ * Host-only property management screen with filters, CRUD and export.
  */
 
 import { ref, computed, onMounted } from "vue";
@@ -871,7 +982,6 @@ import {
   type PropertyStatus,
 } from "@/services/propertyService";
 
-// Import icons from Lucide Vue Next
 import {
   ArrowLeft as ArrowLeftIcon,
   Plus as PlusIcon,
@@ -911,20 +1021,14 @@ import {
   Accessibility,
 } from "lucide-vue-next";
 
-// ===== TYPES AND INTERFACES =====
-
-/**
- * Interface for amenity configuration
- */
+/** Amenity configuration used in the form and list */
 interface Amenity {
   id: string;
   label: string;
   icon: any;
 }
 
-/**
- * Form data structure for host properties
- */
+/** Reactive form model for creating/updating a property */
 interface PropertyForm {
   title: string;
   description: string;
@@ -936,51 +1040,40 @@ interface PropertyForm {
   amenities: string[];
 }
 
-// ===== ROUTER AND NAVIGATION =====
-
 const router = useRouter();
 
-/**
- * Navigate back to host dashboard
- */
+/** Navigate back to host dashboard */
 const goBack = (): void => {
   router.push("/host/dashboard");
 };
 
-// ===== REACTIVE STATE =====
-
-/** UI state management */
+/** UI state */
 const editId = ref<string | null>(null);
-const isLoading = ref<boolean>(false);
-const isSubmitting = ref<boolean>(false);
+const isLoading = ref(false);
+const isSubmitting = ref(false);
 
-/** Search and filter state */
-const statusFilter = ref<string>("");
+/** Filter state */
+const statusFilter = ref<PropertyStatus | "">("");
 const cityFilter = ref<string>("");
-const priceRange = ref<{
-  min: number | null;
-  max: number | null;
-}>({
+const priceRange = ref<{ min: number | null; max: number | null }>({
   min: null,
   max: null,
 });
 
-/** Properties data */
+/** Properties loaded from API */
 const allProperties = ref<Property[]>([]);
 
-/** Image handling state */
+/** Image upload state */
 const selectedImages = ref<File[]>([]);
 const imagePreviews = ref<string[]>([]);
 
 /** Form validation errors */
 const formErrors = ref<Record<string, string | boolean>>({});
 
-/** Current user information */
+/** Current logged user (host) */
 const user = JSON.parse(localStorage.getItem("user") || "{}");
 
-/** 
- * Property form data structure for hosts
- */
+/** Main form model */
 const form = ref<PropertyForm>({
   title: "",
   description: "",
@@ -988,14 +1081,11 @@ const form = ref<PropertyForm>({
   city: "",
   pricePerNight: "",
   maxGuests: "",
-  status: "available" as PropertyStatus,
+  status: "available",
   amenities: [],
 });
-// ===== AMENITIES CONFIGURATION =====
 
-/**
- * Available amenities with icons and labels
- */
+/** Static amenity list displayed as checkboxes */
 const availableAmenities = ref<Amenity[]>([
   { id: "wifi", label: "WiFi", icon: Wifi },
   { id: "parking", label: "Estacionamiento", icon: Car },
@@ -1016,31 +1106,30 @@ const availableAmenities = ref<Amenity[]>([
   { id: "accessible", label: "Accesible", icon: Accessibility },
 ]);
 
-// ===== COMPUTED PROPERTIES =====
-
-/**
- * Check if form is in editing mode
- */
+/** True when editing an existing property */
 const isEditing = computed(() => !!editId.value);
 
 /**
- * Filter properties to show only host's own properties
+ * Host properties (host-only view)
+ * ---------------------------------------------------------
+ * For this HostPropertyManagementView the backend already
+ * returns only the properties that belong to the logged host.
+ * So we simply expose allProperties as hostProperties.
  */
 const hostProperties = computed<Property[]>(() => {
-  return allProperties.value.filter((property) => {
-    const propertyHostId =
-      typeof property.host === "string" ? property.host : property.host?._id;
-    return propertyHostId === user._id;
-  });
+  return allProperties.value;
 });
 
 /**
- * Apply advanced filtering to host's properties
+ * Final list of properties after applying UI filters
+ * ---------------------------------------------------------
+ * Filters: city, status (case-insensitive), price min/max.
+ * All filters operate on top of hostProperties.
  */
 const filteredProperties = computed<Property[]>(() => {
   let filtered = hostProperties.value;
 
-  // City filter
+  /** City filter (case-insensitive comparison) */
   if (cityFilter.value) {
     filtered = filtered.filter(
       (property) =>
@@ -1048,19 +1137,27 @@ const filteredProperties = computed<Property[]>(() => {
     );
   }
 
-  // Status filter
+  /**
+   * Status filter
+   * -----------------------------------------------------
+   * We normalize both values to lowercase to avoid issues
+   * if the backend ever changes the case of the status.
+   */
   if (statusFilter.value) {
     filtered = filtered.filter(
-      (property) => property.status === statusFilter.value
+      (property) =>
+        property.status?.toLowerCase() === statusFilter.value.toLowerCase()
     );
   }
 
-  // Price range filter
+  /** Minimum price filter */
   if (priceRange.value.min !== null && priceRange.value.min > 0) {
     filtered = filtered.filter(
       (property) => property.pricePerNight >= priceRange.value.min!
     );
   }
+
+  /** Maximum price filter */
   if (priceRange.value.max !== null && priceRange.value.max > 0) {
     filtered = filtered.filter(
       (property) => property.pricePerNight <= priceRange.value.max!
@@ -1070,17 +1167,14 @@ const filteredProperties = computed<Property[]>(() => {
   return filtered;
 });
 
-/**
- * Get unique cities from host's properties for filter dropdown
- */
+
+/** Unique list of cities for the filter dropdown */
 const availableCities = computed<string[]>(() => {
   const cities = hostProperties.value.map((property) => property.city);
   return [...new Set(cities)].sort();
 });
 
-/**
- * Check if any filters are currently active
- */
+/** True when any filter is active */
 const hasActiveFilters = computed<boolean>(() => {
   return !!(
     statusFilter.value ||
@@ -1090,20 +1184,12 @@ const hasActiveFilters = computed<boolean>(() => {
   );
 });
 
-// ===== LIFECYCLE HOOKS =====
-
-/**
- * Initialize component on mount
- */
-onMounted(async (): Promise<void> => {
+/** Load properties on mount */
+onMounted(async () => {
   await loadProperties();
 });
 
-// ===== DATA LOADING =====
-
-/**
- * Load all properties from the backend (will be filtered to host's properties)
- */
+/** Fetch all properties for this user (admin or host) */
 const loadProperties = async (): Promise<void> => {
   try {
     isLoading.value = true;
@@ -1121,24 +1207,14 @@ const loadProperties = async (): Promise<void> => {
   }
 };
 
-// ===== FILTER MANAGEMENT =====
-
-/**
- * Clear all active filters and reset to default state
- */
+/** Reset all filters */
 const clearAllFilters = (): void => {
   statusFilter.value = "";
   cityFilter.value = "";
-  priceRange.value = {
-    min: null,
-    max: null,
-  };
+  priceRange.value = { min: null, max: null };
 };
-// ===== FORM MANAGEMENT =====
 
-/**
- * Reset form to initial state
- */
+/** Reset the form and image state */
 const resetForm = (): void => {
   form.value = {
     title: "",
@@ -1147,7 +1223,7 @@ const resetForm = (): void => {
     city: "",
     pricePerNight: "",
     maxGuests: "",
-    status: "available" as PropertyStatus,
+    status: "available",
     amenities: [],
   };
   selectedImages.value = [];
@@ -1156,14 +1232,11 @@ const resetForm = (): void => {
   formErrors.value = {};
 };
 
-/**
- * Validate form fields before submission
- */
+/** Validate all form fields before submit */
 const validateForm = (): boolean => {
   const errors: Record<string, string | boolean> = {};
   let isValid = true;
 
-  // Validate required text fields
   if (!form.value.title?.trim()) {
     errors.title = "El título es obligatorio";
     isValid = false;
@@ -1187,24 +1260,22 @@ const validateForm = (): boolean => {
     isValid = false;
   }
 
-  // Validate price
   const price = parseFloat(form.value.pricePerNight);
   if (isNaN(price) || price <= 0) {
     errors.pricePerNight = "El precio debe ser mayor que cero";
     isValid = false;
   }
 
-  // Validate max guests
   const guests = parseInt(form.value.maxGuests);
   if (isNaN(guests) || guests <= 0 || guests > 20) {
     errors.maxGuests = "El número de huéspedes debe estar entre 1 y 20";
     isValid = false;
   }
 
-  // Image validation
   if (!isEditing.value) {
     if (!selectedImages.value || selectedImages.value.length === 0) {
-      errors.images = "Se requiere al menos una imagen para crear una nueva propiedad";
+      errors.images =
+        "Se requiere al menos una imagen para crear una nueva propiedad";
       isValid = false;
     }
   } else {
@@ -1212,10 +1283,12 @@ const validateForm = (): boolean => {
       errors.images = "Máximo 10 imágenes permitidas";
       isValid = false;
     }
-    
-    const hasExistingImages = imagePreviews.value && imagePreviews.value.length > 0;
-    const hasNewImages = selectedImages.value && selectedImages.value.length > 0;
-    
+
+    const hasExistingImages =
+      imagePreviews.value && imagePreviews.value.length > 0;
+    const hasNewImages =
+      selectedImages.value && selectedImages.value.length > 0;
+
     if (!hasExistingImages && !hasNewImages) {
       errors.images = "La propiedad debe tener al menos una imagen";
       isValid = false;
@@ -1223,21 +1296,12 @@ const validateForm = (): boolean => {
   }
 
   formErrors.value = errors;
-  
-  console.log('🔍 Form validation:', isValid ? 'PASSED' : 'FAILED', errors);
-  
   return isValid;
 };
 
-/**
- * Handle form submission (create or update)
- */
+/** Create or update a property using the form data */
 const handleSubmit = async (): Promise<void> => {
-  console.log('🚀 Starting form submission...');
-  console.log('🔍 Edit mode:', isEditing.value, 'Edit ID:', editId.value);
-  
   if (!validateForm()) {
-    console.log('❌ Validation failed');
     Swal.fire(
       "Error",
       "Por favor, complete todos los campos requeridos correctamente.",
@@ -1248,39 +1312,36 @@ const handleSubmit = async (): Promise<void> => {
 
   try {
     isSubmitting.value = true;
-    
+
     const formData = new FormData();
-    
-    // Add required fields
-    formData.append('title', form.value.title.trim());
-    formData.append('description', form.value.description.trim());
-    formData.append('address', form.value.address.trim());
-    formData.append('city', form.value.city.trim());
-    formData.append('pricePerNight', form.value.pricePerNight.toString());
-    formData.append('guests', form.value.maxGuests.toString());
-    formData.append('status', form.value.status);
-    
-    // Amenities as JSON string
-    formData.append('amenities', JSON.stringify(form.value.amenities || []));
-    
-    // Images (for hosts, no need to append host - it's handled by the backend middleware)
+    formData.append("title", form.value.title.trim());
+    formData.append("description", form.value.description.trim());
+    formData.append("address", form.value.address.trim());
+    formData.append("city", form.value.city.trim());
+    formData.append("pricePerNight", form.value.pricePerNight.toString());
+    formData.append("guests", form.value.maxGuests.toString());
+    formData.append("status", form.value.status);
+    formData.append(
+      "amenities",
+      JSON.stringify(form.value.amenities || [])
+    );
+
     if (selectedImages.value && selectedImages.value.length > 0) {
-      console.log(`📸 Adding ${selectedImages.value.length} new images`);
       selectedImages.value.forEach((file) => {
-        formData.append('images', file);
+        formData.append("images", file);
       });
     } else if (!isEditing.value) {
-      console.log('❌ No images selected for new property');
-      Swal.fire("Error", "Se requiere al menos una imagen para crear una nueva propiedad.", "warning");
+      Swal.fire(
+        "Error",
+        "Se requiere al menos una imagen para crear una nueva propiedad.",
+        "warning"
+      );
       return;
-    } else {
-      console.log('📝 Updating property without new images');
     }
 
     let response;
-    
+
     if (isEditing.value && editId.value) {
-      console.log('🔄 UPDATING property with ID:', editId.value);
       response = await updateProperty(editId.value, formData);
       await Swal.fire(
         "Éxito",
@@ -1288,29 +1349,25 @@ const handleSubmit = async (): Promise<void> => {
         "success"
       );
     } else {
-      console.log('➕ CREATING new property');
       response = await createProperty(formData);
       await Swal.fire("Éxito", "Propiedad creada correctamente.", "success");
     }
 
-    console.log('✅ Property saved successfully:', response);
-    
+    console.log("Property saved:", response);
     resetForm();
     await loadProperties();
-    
-  } catch (error) {
-    console.error("❌ Error saving property:", error);
+  } catch (error: any) {
+    console.error("Error saving property:", error);
 
     let errorMessage = "No se pudo guardar la propiedad.";
-    
+
     if (error instanceof Error) {
       errorMessage = error.message;
-    } else if (error && typeof error === 'object' && 'response' in error) {
+    } else if (error && typeof error === "object" && "response" in error) {
       const response = (error as any).response;
       if (response?.data?.message) {
         errorMessage = response.data.message;
       }
-      console.error('📋 Server error details:', response?.data);
     }
 
     Swal.fire({
@@ -1323,12 +1380,9 @@ const handleSubmit = async (): Promise<void> => {
     isSubmitting.value = false;
   }
 };
-/**
- * Edit existing property
- */
-const editProperty = (property: Property): void => {
-  console.log('🔄 Editing property:', property.title);
 
+/** Fill the form with an existing property to edit */
+const editProperty = (property: Property): void => {
   form.value = {
     title: property.title,
     description: property.description || "",
@@ -1339,25 +1393,24 @@ const editProperty = (property: Property): void => {
     status: property.status,
     amenities: property.amenities || [],
   };
-  
+
   editId.value = property._id || null;
   imagePreviews.value = property.imageUrls || [];
   selectedImages.value = [];
   formErrors.value = {};
 
-  // Smooth scroll to form
   document.querySelector("form")?.scrollIntoView({ behavior: "smooth" });
 };
 
-/**
- * Confirm and delete property
- */
+/** Ask confirmation and delete a property */
 const handleDeleteProperty = async (propertyId: string): Promise<void> => {
-  const property = hostProperties.value.find(p => p._id === propertyId);
-  
+  const property = hostProperties.value.find((p) => p._id === propertyId);
+
   const result = await Swal.fire({
     title: "¿Eliminar Propiedad?",
-    html: `¿Estás seguro de que deseas eliminar <strong>"${property?.title}"</strong>?<br><small class="text-gray-500">Esta acción no se puede deshacer. La propiedad será eliminada permanentemente.</small>`,
+    html: `¿Estás seguro de que deseas eliminar <strong>"${
+      property?.title
+    }"</strong>?<br><small class="text-gray-500">Esta acción no se puede deshacer.</small>`,
     icon: "warning",
     showCancelButton: true,
     confirmButtonColor: "#dc2626",
@@ -1382,18 +1435,13 @@ const handleDeleteProperty = async (propertyId: string): Promise<void> => {
   }
 };
 
-// ===== IMAGE MANAGEMENT =====
-
-/**
- * Handle image file selection and generate previews
- */
+/** Handle image input and generate previews */
 const handleImageUpload = (event: Event): void => {
   const files = (event.target as HTMLInputElement).files;
   if (!files) return;
 
   const fileArray = Array.from(files);
 
-  // Validate file count (max 10 images)
   if (fileArray.length > 10) {
     Swal.fire({
       icon: "warning",
@@ -1404,7 +1452,6 @@ const handleImageUpload = (event: Event): void => {
     return;
   }
 
-  // Validate file sizes (max 5MB per image)
   const oversizedFiles = fileArray.filter(
     (file) => file.size > 5 * 1024 * 1024
   );
@@ -1421,7 +1468,6 @@ const handleImageUpload = (event: Event): void => {
   selectedImages.value = fileArray;
   imagePreviews.value = [];
 
-  // Generate preview URLs
   fileArray.forEach((file) => {
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -1431,82 +1477,56 @@ const handleImageUpload = (event: Event): void => {
     };
     reader.readAsDataURL(file);
   });
-  
-  // Clear image validation error if files are selected
+
   if (formErrors.value.images) {
     delete formErrors.value.images;
   }
 };
 
-/**
- * Remove image from preview list
- */
+/** Remove one preview image */
 const removeImagePreview = (index: number): void => {
   imagePreviews.value.splice(index, 1);
   selectedImages.value.splice(index, 1);
-  
-  console.log('🗑️ Image removed from index:', index);
 };
 
-/**
- * Move image to first position (make it main image)
- */
+/** Move image to first position (main) */
 const moveToFirst = (index: number): void => {
   if (index === 0) return;
-  
-  // Move preview URL
+
   const preview = imagePreviews.value.splice(index, 1)[0];
   imagePreviews.value.unshift(preview);
-  
-  // Move file object
+
   const file = selectedImages.value.splice(index, 1)[0];
   selectedImages.value.unshift(file);
-  
-  console.log('⭐ Image moved to main position');
 };
 
-/**
- * Move image one position to the left
- */
+/** Move image one position to the left */
 const moveLeft = (index: number): void => {
   if (index === 0) return;
-  
-  // Swap preview URLs
-  const temp = imagePreviews.value[index];
+
+  const tempPreview = imagePreviews.value[index];
   imagePreviews.value[index] = imagePreviews.value[index - 1];
-  imagePreviews.value[index - 1] = temp;
-  
-  // Swap file objects
+  imagePreviews.value[index - 1] = tempPreview;
+
   const tempFile = selectedImages.value[index];
   selectedImages.value[index] = selectedImages.value[index - 1];
   selectedImages.value[index - 1] = tempFile;
-  
-  console.log('⬅️ Image moved left');
 };
 
-/**
- * Move image one position to the right
- */
+/** Move image one position to the right */
 const moveRight = (index: number): void => {
   if (index === imagePreviews.value.length - 1) return;
-  
-  // Swap preview URLs
-  const temp = imagePreviews.value[index];
+
+  const tempPreview = imagePreviews.value[index];
   imagePreviews.value[index] = imagePreviews.value[index + 1];
-  imagePreviews.value[index + 1] = temp;
-  
-  // Swap file objects
+  imagePreviews.value[index + 1] = tempPreview;
+
   const tempFile = selectedImages.value[index];
   selectedImages.value[index] = selectedImages.value[index + 1];
   selectedImages.value[index + 1] = tempFile;
-  
-  console.log('➡️ Image moved right');
 };
-// ===== UTILITY FUNCTIONS =====
 
-/**
- * Get user-friendly status label in Spanish
- */
+/** Map status to Spanish label */
 const getStatusLabel = (status: PropertyStatus): string => {
   const labels: Record<PropertyStatus, string> = {
     available: "Disponible",
@@ -1514,79 +1534,93 @@ const getStatusLabel = (status: PropertyStatus): string => {
     confirmed: "Confirmado",
     cancelled: "Cancelado",
     inactive: "Inactivo",
-  } as any;
-  return labels[status] || status;
+  };
+
+  return labels[status] ?? status;
 };
 
-/**
- * Get CSS classes for status badges
- */
+/** Map status to Tailwind badge classes */
 const getStatusBadge = (status: PropertyStatus): string => {
   const base =
     "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium";
-  const colors: Record<string, string> = {
-    available: "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-200",
-    booked: "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-200",
-    confirmed: "bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-200",
-    cancelled: "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-200",
-    inactive: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200",
+  const colors: Record<PropertyStatus, string> = {
+    available:
+      "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-200",
+    booked:
+      "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-200",
+    confirmed:
+      "bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-200",
+    cancelled:
+      "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-200",
+    inactive:
+      "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200",
   };
-  return `${base} ${colors[status] || colors.available}`;
+
+  return `${base} ${colors[status] ?? colors.available}`;
 };
 
-/**
- * Get amenity label by ID
- */
+/** Resolve amenity label from its ID */
 const getAmenityLabel = (amenityId: string): string => {
   const amenity = availableAmenities.value.find((a) => a.id === amenityId);
   return amenity?.label || amenityId;
 };
 
-// ===== EXPORT FUNCTIONS =====
-
-/**
- * Export filtered properties to CSV format
- */
+/** Export current filtered list as CSV */
 const exportCSV = (): void => {
-  const headers = ['Título', 'Ciudad', 'Dirección', 'Precio', 'Capacidad', 'Estado', 'Fecha Creación'];
+  const headers = [
+    "Título",
+    "Ciudad",
+    "Dirección",
+    "Precio",
+    "Capacidad",
+    "Estado",
+    "Fecha Creación",
+  ];
   const csvContent = [
-    headers.join(','),
-    ...filteredProperties.value.map(property => [
-      `"${property.title}"`,
-      `"${property.city}"`,
-      `"${property.address}"`,
-      property.pricePerNight,
-      property.guests,
-      `"${getStatusLabel(property.status)}"`,
-      property.createdAt ? `"${new Date(property.createdAt).toLocaleDateString()}"` : '""'
-    ].join(','))
-  ].join('\n');
+    headers.join(","),
+    ...filteredProperties.value.map((property) =>
+      [
+        `"${property.title}"`,
+        `"${property.city}"`,
+        `"${property.address}"`,
+        property.pricePerNight,
+        property.guests,
+        `"${getStatusLabel(property.status)}"`,
+        property.createdAt
+          ? `"${new Date(property.createdAt).toLocaleDateString()}"`
+          : '""',
+      ].join(",")
+    ),
+  ].join("\n");
 
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement('a');
+  const blob = new Blob([csvContent], {
+    type: "text/csv;charset=utf-8;",
+  });
+  const link = document.createElement("a");
   const url = URL.createObjectURL(blob);
-  
-  link.setAttribute('href', url);
-  link.setAttribute('download', `mis_propiedades_${new Date().toISOString().split('T')[0]}.csv`);
-  link.style.visibility = 'hidden';
-  
+
+  link.setAttribute("href", url);
+  link.setAttribute(
+    "download",
+    `mis_propiedades_${new Date().toISOString().split("T")[0]}.csv`
+  );
+  link.style.visibility = "hidden";
+
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
 };
 
-/**
- * Export filtered properties to PDF format
- */
+/** Open a printable PDF-like page in a new window */
 const exportPDF = (): void => {
-  const currentDate = new Date().toLocaleDateString('es-ES', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
+  const currentDate = new Date().toLocaleDateString("es-ES", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   });
 
-  const userName = user ? `${user.firstName} ${user.lastName}` : 'Host';
+  const userName = user ? `${user.firstName} ${user.lastName}` : "Host";
 
   const htmlContent = `
     <!DOCTYPE html>
@@ -1596,10 +1630,10 @@ const exportPDF = (): void => {
         <title>Mis Propiedades - ${userName}</title>
         <style>
           * { margin: 0; padding: 0; box-sizing: border-box; }
-          body { 
-            font-family: 'Segoe UI', sans-serif; 
-            line-height: 1.6; 
-            color: #333; 
+          body {
+            font-family: 'Segoe UI', sans-serif;
+            line-height: 1.6;
+            color: #333;
             padding: 40px 20px;
           }
           .header {
@@ -1621,9 +1655,7 @@ const exportPDF = (): void => {
             padding: 20px;
             border-radius: 8px;
           }
-          .stat-item {
-            text-align: center;
-          }
+          .stat-item { text-align: center; }
           .stat-number {
             font-size: 24px;
             font-weight: bold;
@@ -1634,30 +1666,30 @@ const exportPDF = (): void => {
             color: #666;
             text-transform: uppercase;
           }
-          table { 
-            width: 100%; 
-            border-collapse: collapse; 
+          table {
+            width: 100%;
+            border-collapse: collapse;
             margin: 20px 0;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
           }
-          th, td { 
-            border: 1px solid #e5e7eb; 
-            padding: 12px 8px; 
-            text-align: left; 
+          th, td {
+            border: 1px solid #e5e7eb;
+            padding: 12px 8px;
+            text-align: left;
             font-size: 11px;
           }
-          th { 
-            background: #f3f4f6; 
+          th {
+            background: #f3f4f6;
             font-weight: 600;
             color: #374151;
             text-transform: uppercase;
             font-size: 10px;
           }
           tr:nth-child(even) { background: #f9fafb; }
-          .status { 
-            padding: 4px 8px; 
-            border-radius: 12px; 
-            font-size: 10px; 
+          .status {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
             font-weight: 500;
             text-align: center;
           }
@@ -1683,22 +1715,37 @@ const exportPDF = (): void => {
           <p>Anfitrión: ${userName}</p>
           <p>Generado el ${currentDate}</p>
         </div>
-        
+
         <div class="stats">
           <div class="stat-item">
             <div class="stat-number">${filteredProperties.value.length}</div>
             <div class="stat-label">Total Propiedades</div>
           </div>
           <div class="stat-item">
-            <div class="stat-number">${filteredProperties.value.filter(p => p.status === 'available' as PropertyStatus).length}</div>
+            <div class="stat-number">${
+              filteredProperties.value.filter(
+                (p) => p.status === "available"
+              ).length
+            }</div>
             <div class="stat-label">Disponibles</div>
           </div>
           <div class="stat-item">
-            <div class="stat-number">${filteredProperties.value.filter(p => p.status === 'booked' as PropertyStatus || p.status === 'confirmed' as PropertyStatus).length}</div>
+            <div class="stat-number">${
+              filteredProperties.value.filter(
+                (p) => p.status === "booked" || p.status === "confirmed"
+              ).length
+            }</div>
             <div class="stat-label">Reservadas</div>
           </div>
           <div class="stat-item">
-            <div class="stat-number">$${filteredProperties.value.length > 0 ? Math.round(filteredProperties.value.reduce((sum, p) => sum + p.pricePerNight, 0) / filteredProperties.value.length) : 0}</div>
+            <div class="stat-number">$${filteredProperties.value.length > 0
+              ? Math.round(
+                  filteredProperties.value.reduce(
+                    (sum, p) => sum + p.pricePerNight,
+                    0
+                  ) / filteredProperties.value.length
+                )
+              : 0}</div>
             <div class="stat-label">Precio Promedio</div>
           </div>
         </div>
@@ -1716,17 +1763,27 @@ const exportPDF = (): void => {
             </tr>
           </thead>
           <tbody>
-            ${filteredProperties.value.map(property => `
+            ${filteredProperties.value
+              .map(
+                (property) => `
               <tr>
                 <td><strong>${property.title}</strong></td>
                 <td>${property.city}</td>
                 <td>${property.address}</td>
                 <td class="price">$${property.pricePerNight?.toLocaleString()}</td>
                 <td>${property.guests} huéspedes</td>
-                <td><span class="status ${property.status}">${getStatusLabel(property.status)}</span></td>
-                <td>${property.createdAt ? new Date(property.createdAt).toLocaleDateString() : 'N/A'}</td>
+                <td><span class="status ${property.status}">${getStatusLabel(
+                  property.status
+                )}</span></td>
+                <td>${
+                  property.createdAt
+                    ? new Date(property.createdAt).toLocaleDateString()
+                    : "N/A"
+                }</td>
               </tr>
-            `).join('')}
+            `
+              )
+              .join("")}
           </tbody>
         </table>
 
@@ -1738,12 +1795,12 @@ const exportPDF = (): void => {
     </html>
   `;
 
-  const printWindow = window.open('', '_blank');
+  const printWindow = window.open("", "_blank");
   if (printWindow) {
     printWindow.document.write(htmlContent);
     printWindow.document.close();
     printWindow.focus();
-    
+
     setTimeout(() => {
       printWindow.print();
       printWindow.close();
@@ -1753,9 +1810,7 @@ const exportPDF = (): void => {
 </script>
 
 <style scoped>
-/**
- * Scoped styles for host property management
- */
+/* Extra visual feedback for drag-like interactions */
 .cursor-move:hover {
   cursor: move;
 }
@@ -1764,12 +1819,12 @@ const exportPDF = (): void => {
   cursor: grabbing;
 }
 
-/* Smooth transitions for drag & drop */
+/* Generic smooth transition helper */
 .transition-all {
   transition: all 0.2s ease-in-out;
 }
 
-/* Drag feedback styles */
+/* Optional hover effect for draggable items */
 [draggable="true"]:hover {
   transform: scale(1.02);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -1779,4 +1834,3 @@ const exportPDF = (): void => {
   transform: scale(0.98);
 }
 </style>
-        

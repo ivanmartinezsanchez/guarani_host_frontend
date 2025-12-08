@@ -3,11 +3,28 @@ import axios from 'axios'
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
 /**
- * Returns authorization headers using JWT token from localStorage
+ * Returns axios config with Authorization header using JWT token.
+ * The token is looked up first in sessionStorage and then in localStorage
+ * to stay compatible with the current auth strategy.
  */
 const getAuthHeaders = () => {
-  const token = localStorage.getItem('token')
-  if (!token) throw new Error('❌ No token found in localStorage')
+  const tokenFromSession =
+    sessionStorage.getItem('token') ||
+    sessionStorage.getItem('accessToken') ||
+    sessionStorage.getItem('authToken')
+
+  const tokenFromLocal =
+    localStorage.getItem('token') ||
+    localStorage.getItem('accessToken') ||
+    localStorage.getItem('authToken')
+
+  const token = tokenFromSession || tokenFromLocal
+
+  if (!token) {
+    console.warn('⚠️ No authentication token found in sessionStorage/localStorage')
+    return { headers: {} as Record<string, string> }
+  }
+
   return {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -16,12 +33,13 @@ const getAuthHeaders = () => {
 }
 
 /**
- * Booking interface
+ * Booking payload used when creating a new booking.
+ * It supports both property bookings and tour bookings.
  */
 export interface BookingData {
   user: string
-  property?: string      // Para propiedades
-  tourPackage?: string   // Para tours
+  property?: string      // For property bookings
+  tourPackage?: string   // For tour / experience bookings
   checkIn: Date
   checkOut: Date
   guests: number
@@ -31,74 +49,71 @@ export interface BookingData {
 }
 
 /**
- * Create a new booking (requires authentication)
+ * Creates a new booking (requires authentication).
+ * This function is used from both property detail and tour detail views.
  */
 export const createBooking = async (bookingData: BookingData) => {
   try {
-    console.log('📋 Creating booking:', bookingData)
-    
-    // Verificar que el usuario esté autenticado
-    const token = localStorage.getItem('token')
-    if (!token) {
+    // ✅ Use the same auth helper that checks sessionStorage + localStorage
+    const authConfig = getAuthHeaders()
+    const authHeader = (authConfig.headers as any)?.Authorization
+
+    // If there is no Authorization header, the user is not authenticated
+    if (!authHeader) {
       throw new Error('Usuario no autenticado')
     }
-    
-    // Convertir dates a strings para envío
+
+    // Convert Date objects to ISO strings before sending them to the backend
     const dataToSend = {
       ...bookingData,
       checkIn: bookingData.checkIn.toISOString(),
-      checkOut: bookingData.checkOut.toISOString()
+      checkOut: bookingData.checkOut.toISOString(),
     }
-    
-    console.log('📤 Sending booking data:', dataToSend)
-    
-    // Usar el endpoint correcto después de corregir el backend
+
     const endpoint = `${API_BASE_URL}/bookings`
     console.log(`🔄 Creating booking at: ${endpoint}`)
-    
-    const res = await axios.post(endpoint, dataToSend, getAuthHeaders())
-    
-    console.log('✅ Booking created successfully:', res.data)
+
+    const res = await axios.post(endpoint, dataToSend, authConfig)
+
+    // Normalize possible response shapes
     return res.data.booking || res.data
-    
   } catch (error) {
-    console.error('❌ Booking error:', error)
-    
     if (axios.isAxiosError(error)) {
       const status = error.response?.status
-      const message = error.response?.data?.message || 'Error al crear la reserva'
-      
-      // Logs detallados para debug
-      console.error('❌ Status:', status)
-      console.error('❌ Response data:', error.response?.data)
-      console.error('❌ Request URL:', error.config?.url)
-      
+      const message =
+        error.response?.data?.message || 'Error al crear la reserva'
+
       if (status === 404) {
-        throw new Error('Endpoint de reservas no encontrado. Verifica las rutas del backend.')
+        throw new Error(
+          'Endpoint de reservas no encontrado. Verifica las rutas del backend.'
+        )
       } else if (status === 401) {
         throw new Error('No autorizado. Verifica tu token de autenticación.')
       } else if (status === 400) {
         throw new Error(`Datos inválidos: ${message}`)
       }
-      
+
       throw new Error(message)
     }
-    
+
     throw error
   }
 }
 
 /**
- * Get user's bookings
+ * Fetches bookings that belong to the currently authenticated user.
  */
 export const getUserBookings = async () => {
   try {
-    const res = await axios.get(`${API_BASE_URL}/user/bookings`, getAuthHeaders())
+    const res = await axios.get(
+      `${API_BASE_URL}/user/bookings`,
+      getAuthHeaders()
+    )
     return res.data.bookings || []
   } catch (error) {
-    console.error('❌ Error fetching user bookings:', error)
     if (axios.isAxiosError(error)) {
-      const message = error.response?.data?.message || 'Error al cargar las reservas'
+      const message =
+        error.response?.data?.message || 'Error al cargar las reservas'
       throw new Error(message)
     }
     throw error
@@ -106,7 +121,8 @@ export const getUserBookings = async () => {
 }
 
 /**
- * Cancel a booking
+ * Cancels a booking that belongs to the current user.
+ * Only the booking status is updated to "cancelled".
  */
 export const cancelBooking = async (bookingId: string) => {
   try {
@@ -117,9 +133,9 @@ export const cancelBooking = async (bookingId: string) => {
     )
     return res.data.booking || res.data
   } catch (error) {
-    console.error('❌ Error cancelling booking:', error)
     if (axios.isAxiosError(error)) {
-      const message = error.response?.data?.message || 'Error al cancelar la reserva'
+      const message =
+        error.response?.data?.message || 'Error al cancelar la reserva'
       throw new Error(message)
     }
     throw error

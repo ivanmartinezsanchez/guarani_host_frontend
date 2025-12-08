@@ -5,7 +5,7 @@
     aria-label="Main navigation"
   >
     <div class="max-w-7xl mx-auto flex items-center justify-between">
-      <!-- Logo -->
+      <!-- Logo / Brand -->
       <RouterLink 
         to="/" 
         class="flex items-center space-x-2 text-primary font-bold text-xl"
@@ -17,7 +17,7 @@
 
       <!-- Desktop Navigation -->
       <div class="hidden md:flex items-center space-x-8">
-        <!-- Public Links -->
+        <!-- Shared public links (visible for all users) -->
         <RouterLink
           to="/"
           class="text-darkText dark:text-white hover:text-primary dark:hover:text-primary transition-colors font-medium"
@@ -26,9 +26,21 @@
           Inicio
         </RouterLink>
 
+        <!-- Public tours listing (Experiencias locales) -->
+        <RouterLink
+          to="/tours"
+          class="text-darkText dark:text-white hover:text-primary dark:hover:text-primary transition-colors font-medium"
+          :class="{
+            'text-primary':
+              route.path.startsWith('/tours') || route.path.startsWith('/tour')
+          }"
+        >
+          Tours
+        </RouterLink>
+
         <!-- Role-based Links -->
         <template v-if="!user">
-          <!-- Guest links -->
+          <!-- Guest-only links -->
           <RouterLink
             to="/about"
             class="text-darkText dark:text-white hover:text-primary dark:hover:text-primary transition-colors font-medium"
@@ -39,42 +51,32 @@
         </template>
 
         <template v-else>
-          <!-- User-specific links -->
-          <RouterLink
-            v-if="user.role === 'user'"
-            to="/tours"
-            class="text-darkText dark:text-white hover:text-primary dark:hover:text-primary transition-colors font-medium"
-            :class="{ 'text-primary': route.path.includes('/tour') }"
-          >
-            Tours
-          </RouterLink>
-
-          <!-- Admin links -->
+          <!-- Admin dashboard shortcut -->
           <RouterLink
             v-if="user.role === 'admin'"
             to="/admin/dashboard"
             class="text-darkText dark:text-white hover:text-primary dark:hover:text-primary transition-colors font-medium"
-            :class="{ 'text-primary': route.path.includes('/admin') }"
+            :class="{ 'text-primary': route.path.startsWith('/admin') }"
           >
             Admin Panel
           </RouterLink>
 
-          <!-- Host links -->
+          <!-- Host dashboard shortcut -->
           <RouterLink
             v-if="user.role === 'host'"
             to="/host/dashboard"
             class="text-darkText dark:text-white hover:text-primary dark:hover:text-primary transition-colors font-medium"
-            :class="{ 'text-primary': route.path.includes('/host') }"
+            :class="{ 'text-primary': route.path.startsWith('/host') }"
           >
             Panel Host
           </RouterLink>
 
-          <!-- User dashboard -->
+          <!-- User dashboard shortcut -->
           <RouterLink
             v-if="user.role === 'user'"
             to="/user/dashboard"
             class="text-darkText dark:text-white hover:text-primary dark:hover:text-primary transition-colors font-medium"
-            :class="{ 'text-primary': route.path.includes('/user') }"
+            :class="{ 'text-primary': route.path.startsWith('/user') }"
           >
             Mi Cuenta
           </RouterLink>
@@ -94,7 +96,7 @@
           <MoonIcon v-else class="w-5 h-5 text-gray-600 dark:text-gray-400" />
         </button>
 
-        <!-- User Menu / Auth Buttons -->
+        <!-- Auth Buttons (Desktop) -->
         <div v-if="!user" class="hidden md:flex items-center space-x-3">
           <RouterLink
             to="/login"
@@ -110,7 +112,7 @@
           </RouterLink>
         </div>
 
-        <!-- User Dropdown -->
+        <!-- User Dropdown (Desktop) -->
         <div v-else class="relative" data-user-menu>
           <button
             @click.stop="toggleUserMenu"
@@ -141,11 +143,17 @@
               class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50"
               @click.stop
             >
+              <!-- User summary -->
               <div class="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
-                <p class="font-semibold text-darkText dark:text-white">{{ getUserFullName() }}</p>
-                <p class="text-sm text-lightText dark:text-gray-400">{{ user.email }}</p>
+                <p class="font-semibold text-darkText dark:text-white">
+                  {{ getUserFullName() }}
+                </p>
+                <p class="text-sm text-lightText dark:text-gray-400">
+                  {{ user.email }}
+                </p>
               </div>
               
+              <!-- Profile link -->
               <RouterLink
                 to="/profile"
                 class="flex items-center px-4 py-2 text-darkText dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
@@ -155,6 +163,7 @@
                 Mi Perfil
               </RouterLink>
               
+              <!-- Admin dashboard shortcut -->
               <RouterLink
                 v-if="user.role === 'admin'"
                 to="/admin/dashboard"
@@ -165,6 +174,7 @@
                 Dashboard Admin
               </RouterLink>
               
+              <!-- Host dashboard shortcut -->
               <RouterLink
                 v-if="user.role === 'host'"
                 to="/host/dashboard"
@@ -177,6 +187,7 @@
               
               <hr class="my-1 border-gray-200 dark:border-gray-600">
               
+              <!-- Logout action -->
               <button
                 @click="handleLogout"
                 class="flex items-center w-full text-left px-4 py-2 text-red-600 dark:text-red-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
@@ -217,7 +228,7 @@
         data-mobile-menu
       >
         <div class="space-y-3">
-          <!-- Public Links -->
+          <!-- Shared public links (mobile) -->
           <RouterLink
             to="/"
             class="block text-darkText dark:text-white hover:text-primary transition-colors font-medium"
@@ -227,7 +238,19 @@
             Inicio
           </RouterLink>
 
-          <!-- Auth/Role-based Links -->
+          <RouterLink
+            to="/tours"
+            class="block text-darkText dark:text-white hover:text-primary transition-colors font-medium"
+            :class="{
+              'text-primary':
+                route.path.startsWith('/tours') || route.path.startsWith('/tour')
+            }"
+            @click="closeMobileMenu"
+          >
+            Tours
+          </RouterLink>
+
+          <!-- Guest-only links -->
           <template v-if="!user">
             <RouterLink
               to="/about"
@@ -252,23 +275,19 @@
             </RouterLink>
           </template>
 
+          <!-- Authenticated mobile menu -->
           <template v-else>
-            <!-- User Info -->
+            <!-- User summary -->
             <div class="px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
-              <p class="font-semibold text-darkText dark:text-white">{{ getUserFullName() }}</p>
-              <p class="text-sm text-lightText dark:text-gray-400 capitalize">{{ user.role }}</p>
+              <p class="font-semibold text-darkText dark:text-white">
+                {{ getUserFullName() }}
+              </p>
+              <p class="text-sm text-lightText dark:text-gray-400 capitalize">
+                {{ user.role }}
+              </p>
             </div>
 
-            <!-- Role-specific Links -->
-            <RouterLink
-              v-if="user.role === 'user'"
-              to="/tours"
-              class="block text-darkText dark:text-white hover:text-primary transition-colors font-medium"
-              @click="closeMobileMenu"
-            >
-              Tours
-            </RouterLink>
-
+            <!-- Role-specific quick links -->
             <RouterLink
               v-if="user.role === 'admin'"
               to="/admin/dashboard"
@@ -285,6 +304,15 @@
               @click="closeMobileMenu"
             >
               Panel Host
+            </RouterLink>
+
+            <RouterLink
+              v-if="user.role === 'user'"
+              to="/user/dashboard"
+              class="block text-darkText dark:text-white hover:text-primary transition-colors font-medium"
+              @click="closeMobileMenu"
+            >
+              Mi Cuenta
             </RouterLink>
 
             <RouterLink
@@ -327,76 +355,59 @@ import { useTheme } from '@/composables/useTheme'
 
 /**
  * NavBar Component
- * 
- * Main navigation component providing:
- * - Theme switching using useTheme composable
- * - User authentication state management
- * - Role-based navigation links
- * - Responsive mobile menu
- * - Accessibility features
+ * ----------------
+ * Provides:
+ * - Global navigation (desktop & mobile)
+ * - Theme toggle (light/dark) via useTheme composable
+ * - Role-based links for admin/host/user
+ * - User dropdown with profile and logout actions
  */
 
-// ===== COMPOSITION API IMPORTS =====
 const route = useRoute()
 const router = useRouter()
 const { user, logout } = useAuth()
 
-// ===== THEME MANAGEMENT =====
-// Use the theme composable instead of local state
-const { isDark, toggleTheme, themeIcon, themeLabel } = useTheme()
+// Theme management (delegated to useTheme composable)
+const { toggleTheme, themeIcon, themeLabel } = useTheme()
 
-// ===== LOCAL UI STATE =====
-/** UI state for mobile menu visibility */
+// Local UI state
 const mobileMenuOpen = ref(false)
-
-/** UI state for user dropdown menu visibility */
 const userMenuOpen = ref(false)
 
-// ===== MENU CONTROL METHODS =====
-
 /**
- * Toggle user dropdown menu visibility
- * Closes mobile menu if user menu is opened
+ * Toggle user dropdown menu.
+ * Also ensures mobile menu is closed to avoid overlapping menus.
  */
 const toggleUserMenu = () => {
   userMenuOpen.value = !userMenuOpen.value
-  // Close mobile menu if opening user menu
   if (userMenuOpen.value) {
     mobileMenuOpen.value = false
   }
 }
 
-/**
- * Close user dropdown menu
- */
+/** Close user dropdown menu */
 const closeUserMenu = () => {
   userMenuOpen.value = false
 }
 
 /**
- * Toggle mobile navigation menu visibility
- * Closes user menu if mobile menu is opened
+ * Toggle mobile navigation menu.
+ * Also ensures user menu is closed when opening mobile menu.
  */
 const toggleMobileMenu = () => {
   mobileMenuOpen.value = !mobileMenuOpen.value
-  // Close user menu if opening mobile menu
   if (mobileMenuOpen.value) {
     userMenuOpen.value = false
   }
 }
 
-/**
- * Close mobile navigation menu
- */
+/** Close mobile navigation menu */
 const closeMobileMenu = () => {
   mobileMenuOpen.value = false
 }
 
-// ===== USER UTILITY METHODS =====
-
 /**
- * Get user's full name for display
- * @returns Formatted full name string or empty string if no user
+ * Get user's full name (for headers / summaries)
  */
 const getUserFullName = (): string => {
   if (!user.value) return ''
@@ -404,8 +415,8 @@ const getUserFullName = (): string => {
 }
 
 /**
- * Get user's initials for avatar display
- * @returns User initials in uppercase or empty string if no user
+ * Get user's initials for avatar circle.
+ * Falls back to empty string if no user is present.
  */
 const getUserInitials = (): string => {
   if (!user.value) return ''
@@ -414,11 +425,11 @@ const getUserInitials = (): string => {
   return (first + last).toUpperCase()
 }
 
-// ===== AUTHENTICATION METHODS =====
-
 /**
- * Handle user logout process
- * Closes all menus and redirects to login page
+ * Logout handler:
+ * - calls logout composable
+ * - closes menus
+ * - redirects to login page
  */
 const handleLogout = async () => {
   try {
@@ -431,31 +442,25 @@ const handleLogout = async () => {
   }
 }
 
-// ===== EVENT HANDLERS =====
-
 /**
- * Handle clicks outside of menus to close them
- * Improves user experience by closing menus when clicking elsewhere
- * @param event - Click event from document
+ * Close open menus when clicking outside of them.
+ * Improves UX by auto-closing when user clicks elsewhere on the page.
  */
 const handleOutsideClick = (event: Event) => {
   const target = event.target as HTMLElement
   
-  // Close user menu if clicking outside of it
   if (userMenuOpen.value && !target.closest('[data-user-menu]')) {
     userMenuOpen.value = false
   }
   
-  // Close mobile menu if clicking outside of it
   if (mobileMenuOpen.value && !target.closest('[data-mobile-menu]')) {
     mobileMenuOpen.value = false
   }
 }
 
 /**
- * Handle escape key press to close all open menus
- * Provides keyboard accessibility for menu dismissal
- * @param event - Keyboard event
+ * Close open menus when pressing Escape key.
+ * Provides keyboard accessibility for dismissing menus.
  */
 const handleEscapeKey = (event: KeyboardEvent) => {
   if (event.key === 'Escape') {
@@ -464,23 +469,11 @@ const handleEscapeKey = (event: KeyboardEvent) => {
   }
 }
 
-// ===== LIFECYCLE HOOKS =====
-
-/**
- * Initialize component on mount
- * Sets up event listeners for menu management
- * Theme is handled by the useTheme composable
- */
 onMounted(() => {
-  // Add global event listeners for menu management
   document.addEventListener('click', handleOutsideClick)
   document.addEventListener('keydown', handleEscapeKey)
 })
 
-/**
- * Cleanup on component unmount
- * Removes event listeners to prevent memory leaks
- */
 onUnmounted(() => {
   document.removeEventListener('click', handleOutsideClick)
   document.removeEventListener('keydown', handleEscapeKey)
@@ -488,22 +481,15 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/**
- * Component-specific styles
- * 
- * Note: Most styling is handled by Tailwind CSS classes in the template.
- * This section is available for any component-specific custom styles.
- */
-
-/* Smooth transitions for theme changes */
+/* Smooth transitions for navbar background and borders */
 nav {
   transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
-/* Enhanced focus styles for better accessibility */
+/* Accessible focus states for keyboard navigation */
 button:focus,
 a:focus {
-  outline: 2px solid theme('colors.primary');
+  outline: 2px solid #3F51B5;
   outline-offset: 2px;
 }
 </style>

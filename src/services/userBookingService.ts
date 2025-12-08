@@ -9,14 +9,29 @@ import axios from 'axios'
 const API_URL = import.meta.env.VITE_API_BASE_URL
 
 /**
- * Get authorization headers with JWT token from localStorage
- * @returns Headers object with Authorization bearer token
+ * Returns axios config with Authorization header using JWT from storage.
+ * Priority: sessionStorage (current auth strategy), then localStorage (fallback).
  */
 const getAuthHeaders = () => {
-  const token = localStorage.getItem('token')
+  // Try sessionStorage first (this is where useAuth/login saves the token)
+  const tokenFromSession =
+    sessionStorage.getItem('token') ||
+    sessionStorage.getItem('accessToken') ||
+    sessionStorage.getItem('authToken')
+
+  // Fallback to localStorage for backward compatibility
+  const tokenFromLocal =
+    localStorage.getItem('token') ||
+    localStorage.getItem('accessToken') ||
+    localStorage.getItem('authToken')
+
+  const token = tokenFromSession || tokenFromLocal
+
   if (!token) {
-    console.warn('⚠️ No authentication token found')
+    console.warn('⚠️ No authentication token found in sessionStorage/localStorage')
+    return { headers: {} }
   }
+
   return {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -25,7 +40,7 @@ const getAuthHeaders = () => {
 }
 
 /**
- * Booking interface for user operations - CORREGIDA para coincidir con tu componente
+ * Booking interface for user operations
  */
 export interface Booking {
   _id?: string
@@ -209,7 +224,7 @@ export const createUserBooking = async (
  */
 export const updateUserBooking = async (
   id: string,
-  bookingData: Partial<CreateBookingData>, // ✅ Ahora incluye removedPaymentImages
+  bookingData: Partial<CreateBookingData>, 
   paymentImages: File[] = [],
   removedImages: string[] = []
 ): Promise<Booking> => {

@@ -39,12 +39,22 @@ interface UserResponse {
 }
 
 /**
- * Returns auth headers using the JWT stored in localStorage.
- * Throws an error if no token is found.
+ * Returns auth headers using the JWT stored in sessionStorage (primary)
+ * or localStorage (fallback). This is aligned with useAuth, which stores
+ * the token under `sessionStorage.setItem('token', token)`.
  */
 const authHeaders = () => {
-  const token = localStorage.getItem('token')
-  if (!token) throw new Error('❌ No token found in localStorage')
+  // Try sessionStorage first (used by useAuth)
+  const tokenFromSession = sessionStorage.getItem('token')
+
+  // Fallback to localStorage just in case (optional)
+  const token = tokenFromSession || localStorage.getItem('token')
+
+  if (!token) {
+    console.warn('⚠️ No auth token found in storage')
+    return {}
+  }
+
   return { Authorization: `Bearer ${token}` }
 }
 
@@ -54,8 +64,15 @@ const authHeaders = () => {
  */
 export const getAllUsers = async (): Promise<User[]> => {
   try {
+    const headers = authHeaders()
+
+    // If no Authorization header, the session is likely expired
+    if (!('Authorization' in headers)) {
+      throw new Error('Your session has expired. Please log in again.')
+    }
+
     const response = await axios.get<UsersResponse>(API_URL, { 
-      headers: authHeaders() 
+      headers 
     })
     
     console.log('getAllUsers response:', response.data)

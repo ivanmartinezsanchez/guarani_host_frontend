@@ -1,18 +1,19 @@
 import axios from 'axios'
 
-const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/auth` 
+const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/auth`
 
 /**
- * Authorization headers with JWT token from localStorage
+ * Returns the Authorization headers using JWT from sessionStorage.
+ * sessionStorage clears automatically when browser tab closes.
  */
 const authHeaders = () => {
-  const token = localStorage.getItem('token')
-  if (!token) throw new Error('❌ No token found in localStorage')
+  const token = sessionStorage.getItem('token')
+  if (!token) throw new Error('❌ No token found in sessionStorage')
   return { Authorization: `Bearer ${token}` }
 }
 
 /**
- * User interface aligned with backend
+ * User interface aligned with backend response.
  */
 export type User = {
   _id: string
@@ -25,6 +26,10 @@ export type User = {
   accountStatus?: 'active' | 'suspended' | 'deleted' | 'pending_verification'
 }
 
+/**
+ * Login user and store token in sessionStorage.
+ * sessionStorage ensures the session expires upon closing the browser.
+ */
 export async function loginUser(credentials: {
   email: string
   password: string
@@ -39,8 +44,11 @@ export async function loginUser(credentials: {
     })
 
     const { token, user } = response.data
-    localStorage.setItem('token', token)
-    localStorage.setItem('user', JSON.stringify(user))
+
+    // Save to sessionStorage (NOT localStorage)
+    sessionStorage.setItem('token', token)
+    sessionStorage.setItem('user', JSON.stringify(user))
+
     return { token, user }
   } catch (error: any) {
     const message =
@@ -51,6 +59,9 @@ export async function loginUser(credentials: {
   }
 }
 
+/**
+ * Register a new user and store session token.
+ */
 export async function registerUser(userData: {
   firstName: string
   lastName: string
@@ -63,12 +74,16 @@ export async function registerUser(userData: {
   const response = await axios.post(`${API_URL}/register`, userData)
   const { token, user } = response.data
 
-  localStorage.setItem('token', token)
-  localStorage.setItem('user', JSON.stringify(user))
+  sessionStorage.setItem('token', token)
+  sessionStorage.setItem('user', JSON.stringify(user))
 
   return { token, user }
 }
 
+/**
+ * Fetch logged user's profile.
+ * Automatically attaches session token.
+ */
 export async function getUserProfile(): Promise<User> {
   const response = await axios.get(`${API_URL}/profile`, {
     headers: authHeaders(),
@@ -76,6 +91,9 @@ export async function getUserProfile(): Promise<User> {
   return response.data
 }
 
+/**
+ * Update logged user's profile.
+ */
 export async function updateUserProfile(updatedData: {
   firstName?: string
   lastName?: string
@@ -87,3 +105,27 @@ export async function updateUserProfile(updatedData: {
   })
   return response.data
 }
+
+
+/**
+ * 🔥 AXIOS INTERCEPTOR
+ * Automatically logs out user when token expires.
+ */
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const code = error?.response?.data?.code
+
+    if (code === 'TOKEN_EXPIRED') {
+      console.warn('⏰ Session expired. Logging out...')
+
+      // Clear session
+      sessionStorage.clear()
+
+      // Redirect user to login
+      window.location.href = '/login'
+    }
+
+    return Promise.reject(error)
+  }
+)

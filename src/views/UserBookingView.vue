@@ -378,23 +378,45 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * UserBookingsView.vue
+ * ----------------------------------
+ * User-facing bookings management screen.
+ * Allows the user to:
+ * - View all their property and tour bookings
+ * - Filter and search bookings
+ * - Edit booking details (dates, guests, payment details)
+ * - Cancel (delete) their own bookings
+ */
+
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
-import { 
-  getUserBookings, 
-  updateUserBooking, 
-  cancelUserBooking, 
-  type Booking 
+import {
+  getUserBookings,
+  updateUserBooking,
+  cancelUserBooking,
+  type Booking
 } from '@/services/userBookingService'
 
-// Icons
+// Lucide icons
 import {
-  ArrowLeft, Search, RefreshCw, Calendar, Eye, Edit2, Trash2, 
-  Plus, MapPin, AlertCircle, X
+  ArrowLeft,
+  Search,
+  RefreshCw,
+  Calendar,
+  Eye,
+  Edit2,
+  Trash2,
+  Plus,
+  MapPin,
+  AlertCircle,
+  X
 } from 'lucide-vue-next'
 
-// Types
+/**
+ * Property information (partial) used in populated bookings
+ */
 interface PropertyInfo {
   _id?: string
   title: string
@@ -402,30 +424,83 @@ interface PropertyInfo {
   imageUrls?: string[]
 }
 
+/**
+ * Tour information (partial) used in populated bookings
+ */
 interface TourInfo {
   _id?: string
   title: string
   imageUrls?: string[]
 }
 
-// Router
+/* -------------------------------------------------------------------------- */
+/*  Router                                                                    */
+/* -------------------------------------------------------------------------- */
+
 const router = useRouter()
-const goBack = () => router.push('/dashboard')
+
+/**
+ * Navigate back to the main user dashboard.
+ */
+const goBack = () => router.push('/user/dashboard')
+
+/**
+ * Navigate to the home page to explore destinations.
+ */
 const goHome = () => router.push('/')
 
-// State
+/* -------------------------------------------------------------------------- */
+/*  Reactive state                                                            */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * List of bookings belonging to the logged-in user.
+ */
 const bookings = ref<Booking[]>([])
+
+/**
+ * Loading state for async operations.
+ */
 const loading = ref(false)
+
+/**
+ * Error message for UI display (if any).
+ */
 const error = ref<string | null>(null)
+
+/**
+ * Text used to filter bookings by title or location.
+ */
 const searchQuery = ref('')
+
+/**
+ * Status filter (pending, confirmed, cancelled, completed).
+ */
 const statusFilter = ref('')
+
+/**
+ * Currently expanded booking ID (for details section).
+ */
 const expandedBooking = ref<string | null>(null)
+
+/**
+ * Currently viewed image URL in the modal.
+ */
 const viewingImage = ref<string | null>(null)
 
-// Computed
+/* -------------------------------------------------------------------------- */
+/*  Computed values                                                            */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Returns bookings filtered by search query and status.
+ * - Search matches booking title and location
+ * - Status filter limits by booking.status
+ */
 const filteredBookings = computed(() => {
   let filtered = bookings.value
 
+  // Filter by search query (title or location)
   if (searchQuery.value.trim()) {
     const query = searchQuery.value.toLowerCase()
     filtered = filtered.filter(booking => {
@@ -435,6 +510,7 @@ const filteredBookings = computed(() => {
     })
   }
 
+  // Filter by booking status
   if (statusFilter.value) {
     filtered = filtered.filter(b => b.status === statusFilter.value)
   }
@@ -442,19 +518,31 @@ const filteredBookings = computed(() => {
   return filtered
 })
 
-// Functions
+/* -------------------------------------------------------------------------- */
+/*  Data fetching and filters                                                 */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Fetches the current user's bookings from the API.
+ * Uses the userBookingService and handles loading/error states.
+ */
 const fetchBookings = async () => {
   try {
     loading.value = true
     error.value = null
     console.log('🔍 Fetching bookings...')
-    
+
     const result = await getUserBookings()
     bookings.value = result
     console.log('✅ Loaded', result.length, 'bookings')
   } catch (err: any) {
     console.error('❌ Error loading bookings:', err)
-    error.value = err.response?.data?.message || 'Error al cargar las reservas'
+
+    error.value =
+      err?.response?.data?.message ||
+      err?.message ||
+      'Error al cargar las reservas'
+
     await Swal.fire({
       icon: 'error',
       title: 'Error',
@@ -465,47 +553,107 @@ const fetchBookings = async () => {
   }
 }
 
+/**
+ * Clears search and status filters, showing all bookings.
+ */
 const clearFilters = () => {
   searchQuery.value = ''
   statusFilter.value = ''
 }
 
+/* -------------------------------------------------------------------------- */
+/*  UI helpers / permissions                                                  */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Toggles the expanded state of a booking row to show/hide details.
+ */
 const toggleDetails = (id: string) => {
   expandedBooking.value = expandedBooking.value === id ? null : id
 }
 
+/**
+ * Determines if the user is allowed to edit a booking.
+ * For now, only 'pending' and 'confirmed' bookings are editable.
+ */
 const canEditBooking = (booking: Booking): boolean => {
   return ['pending', 'confirmed'].includes(booking.status)
 }
 
+/**
+ * Determines if the user is allowed to cancel/delete a booking.
+ * For now, only 'pending' and 'confirmed' bookings are cancellable.
+ */
 const canDeleteBooking = (booking: Booking): boolean => {
   return ['pending', 'confirmed'].includes(booking.status)
 }
 
+/* -------------------------------------------------------------------------- */
+/*  Edit booking flow                                                         */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Opens a SweetAlert2 modal to edit a booking.
+ * Allows the user to update:
+ * - check-in / check-out dates
+ * - number of guests
+ * - payment details
+ *
+ * After confirmation, it calls the API via updateUserBooking
+ * and then refreshes the bookings list.
+ */
 const handleEditBooking = async (booking: Booking) => {
+  // Open SweetAlert2 with custom form
   const { value: formValues } = await Swal.fire({
     title: 'Editar Reserva',
     html: `
       <div class="space-y-4 text-left">
+        <!-- Date fields (check-in / check-out) -->
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Check-in</label>
-            <input id="checkIn" type="date" value="${new Date(booking.checkIn).toISOString().split('T')[0]}" class="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+            <input 
+              id="checkIn" 
+              type="date" 
+              value="${new Date(booking.checkIn).toISOString().split('T')[0]}" 
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg" 
+            />
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Check-out</label>
-            <input id="checkOut" type="date" value="${new Date(booking.checkOut).toISOString().split('T')[0]}" class="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+            <input 
+              id="checkOut" 
+              type="date" 
+              value="${new Date(booking.checkOut).toISOString().split('T')[0]}" 
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg" 
+            />
           </div>
         </div>
+
+        <!-- Guests selector -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Huéspedes</label>
           <select id="guests" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
-            ${Array.from({length: 20}, (_, i) => `<option value="${i+1}" ${booking.guests === i+1 ? 'selected' : ''}>${i+1} ${i === 0 ? 'huésped' : 'huéspedes'}</option>`).join('')}
+            ${Array.from({ length: 20 }, (_, i) => `
+              <option 
+                value="${i + 1}" 
+                ${booking.guests === i + 1 ? 'selected' : ''}
+              >
+                ${i + 1} ${i === 0 ? 'huésped' : 'huéspedes'}
+              </option>
+            `).join('')}
           </select>
         </div>
+
+        <!-- Payment details textarea -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Detalles de Pago</label>
-          <textarea id="paymentDetails" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="Información adicional sobre el pago...">${booking.paymentDetails || ''}</textarea>
+          <textarea 
+            id="paymentDetails" 
+            rows="3" 
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg" 
+            placeholder="Información adicional sobre el pago..."
+          >${booking.paymentDetails || ''}</textarea>
         </div>
       </div>
     `,
@@ -515,10 +663,16 @@ const handleEditBooking = async (booking: Booking) => {
     cancelButtonText: 'Cancelar',
     confirmButtonColor: '#3b82f6',
     cancelButtonColor: '#6b7280',
+    /**
+     * Validates the modal form before closing.
+     * Returns the form data (checkIn, checkOut, guests, paymentDetails).
+     */
     preConfirm: () => {
       const checkIn = (document.getElementById('checkIn') as HTMLInputElement).value
       const checkOut = (document.getElementById('checkOut') as HTMLInputElement).value
-      const guests = parseInt((document.getElementById('guests') as HTMLSelectElement).value)
+      const guests = parseInt(
+        (document.getElementById('guests') as HTMLSelectElement).value
+      )
       const paymentDetails = (document.getElementById('paymentDetails') as HTMLTextAreaElement).value
 
       if (!checkIn || !checkOut || guests < 1) {
@@ -535,11 +689,27 @@ const handleEditBooking = async (booking: Booking) => {
     }
   })
 
+  // If user confirmed and we have a valid booking ID
   if (formValues && booking._id) {
     try {
-      console.log('📝 Updating booking:', booking._id, formValues)
-      await updateUserBooking(booking._id, formValues, [])
-      
+      // Build payload for the update user booking service
+      const payload = {
+        checkIn: formValues.checkIn,
+        checkOut: formValues.checkOut,
+        guests: formValues.guests,
+        paymentDetails: formValues.paymentDetails || ''
+      }
+
+      console.log('📝 Updating booking with payload:', payload)
+
+      /**
+       * Call the API:
+       * - PATCH /api/bookings/:id
+       * - Backend validates and updates allowed fields
+       */
+      await updateUserBooking(booking._id, payload, [], [])
+
+      // Show success feedback to the user
       await Swal.fire({
         icon: 'success',
         title: '¡Éxito!',
@@ -547,24 +717,38 @@ const handleEditBooking = async (booking: Booking) => {
         timer: 2000,
         showConfirmButton: false
       })
-      
-      // Reload bookings
+
+      // Refresh bookings list to reflect changes
       await fetchBookings()
     } catch (error: any) {
       console.error('❌ Error updating booking:', error)
+
       await Swal.fire({
         icon: 'error',
         title: 'Error',
-        text: error.response?.data?.message || 'Error al actualizar la reserva'
+        text:
+          error?.response?.data?.message ||
+          error?.message ||
+          'Error al actualizar la reserva'
       })
     }
   }
 }
 
+/* -------------------------------------------------------------------------- */
+/*  Delete / cancel booking flow                                              */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Handles booking cancellation (from the user's perspective).
+ * Shows a confirmation modal, then calls cancelUserBooking service.
+ */
 const handleDeleteBooking = async (booking: Booking) => {
   const result = await Swal.fire({
     title: '¿Eliminar Reserva?',
-    html: `¿Estás seguro de que deseas eliminar la reserva para <strong>"${getBookingTitle(booking)}"</strong>?<br><br><small class="text-gray-500">Esta acción no se puede deshacer.</small>`,
+    html: `¿Estás seguro de que deseas eliminar la reserva para <strong>"${getBookingTitle(
+      booking
+    )}"</strong>?<br><br><small class="text-gray-500">Esta acción no se puede deshacer.</small>`,
     icon: 'warning',
     showCancelButton: true,
     confirmButtonColor: '#dc2626',
@@ -577,7 +761,7 @@ const handleDeleteBooking = async (booking: Booking) => {
     try {
       console.log('🗑️ Deleting booking:', booking._id)
       await cancelUserBooking(booking._id)
-      
+
       await Swal.fire({
         icon: 'success',
         title: '¡Eliminada!',
@@ -585,25 +769,45 @@ const handleDeleteBooking = async (booking: Booking) => {
         timer: 2000,
         showConfirmButton: false
       })
-      
-      // Reload bookings
+
+      // Refresh bookings list
       await fetchBookings()
     } catch (error: any) {
       console.error('❌ Error deleting booking:', error)
+
       await Swal.fire({
         icon: 'error',
         title: 'Error',
-        text: error.response?.data?.message || 'Error al eliminar la reserva'
+        text:
+          error?.response?.data?.message ||
+          error?.message ||
+          'Error al eliminar la reserva'
       })
     }
   }
 }
 
+/* -------------------------------------------------------------------------- */
+/*  Image viewer                                                              */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Opens the payment image viewer modal with the selected image.
+ */
 const viewImage = (imageSrc: string) => {
   viewingImage.value = imageSrc
 }
 
-// Utility functions
+/* -------------------------------------------------------------------------- */
+/*  Utility functions                                                         */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Returns a human-readable booking title:
+ * - Property title if booking.property is populated
+ * - Tour title if booking.tourPackage is populated
+ * - Fallback to "Reserva" otherwise
+ */
 const getBookingTitle = (booking: Booking): string => {
   try {
     if (booking.property && typeof booking.property === 'object') {
@@ -619,6 +823,9 @@ const getBookingTitle = (booking: Booking): string => {
   }
 }
 
+/**
+ * Returns the booking location (city) if property info is available.
+ */
 const getBookingLocation = (booking: Booking): string => {
   try {
     if (booking.property && typeof booking.property === 'object') {
@@ -631,15 +838,24 @@ const getBookingLocation = (booking: Booking): string => {
   }
 }
 
+/**
+ * Returns a primary image for the booking:
+ * - First image from property.imageUrls or tour.imageUrls
+ * - undefined if no images are available
+ */
 const getBookingImage = (booking: Booking): string | undefined => {
   try {
     if (booking.property && typeof booking.property === 'object') {
       const property = booking.property as PropertyInfo
-      return property.imageUrls && property.imageUrls.length > 0 ? property.imageUrls[0] : undefined
+      return property.imageUrls && property.imageUrls.length > 0
+        ? property.imageUrls[0]
+        : undefined
     }
     if (booking.tourPackage && typeof booking.tourPackage === 'object') {
       const tour = booking.tourPackage as TourInfo
-      return tour.imageUrls && tour.imageUrls.length > 0 ? tour.imageUrls[0] : undefined
+      return tour.imageUrls && tour.imageUrls.length > 0
+        ? tour.imageUrls[0]
+        : undefined
     }
     return undefined
   } catch (error) {
@@ -648,6 +864,9 @@ const getBookingImage = (booking: Booking): string | undefined => {
   }
 }
 
+/**
+ * Calculates the number of nights between check-in and check-out.
+ */
 const calculateNights = (checkIn: string | Date, checkOut: string | Date): number => {
   try {
     const start = new Date(checkIn)
@@ -660,6 +879,9 @@ const calculateNights = (checkIn: string | Date, checkOut: string | Date): numbe
   }
 }
 
+/**
+ * Formats a date into a human-readable string in Spanish locale.
+ */
 const formatDate = (date: Date | string | undefined): string => {
   try {
     if (!date) return 'N/A'
@@ -674,6 +896,9 @@ const formatDate = (date: Date | string | undefined): string => {
   }
 }
 
+/**
+ * Returns a user-friendly label for the booking status.
+ */
 const getStatusLabel = (status: string): string => {
   const labels = {
     pending: 'Pendiente',
@@ -684,17 +909,30 @@ const getStatusLabel = (status: string): string => {
   return labels[status as keyof typeof labels] || status
 }
 
+/**
+ * Returns Tailwind utility classes for the status badge.
+ */
 const getStatusBadge = (status: string): string => {
-  const base = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+  const base =
+    'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium'
   const colors = {
-    pending: "bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-200",
-    confirmed: "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-200",
-    cancelled: "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-200",
-    completed: "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-200"
+    pending:
+      'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-200',
+    confirmed:
+      'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-200',
+    cancelled:
+      'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-200',
+    completed:
+      'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-200'
   }
-  return `${base} ${colors[status as keyof typeof colors] || colors.pending}`
+  return `${base} ${
+    colors[status as keyof typeof colors] || colors.pending
+  }`
 }
 
+/**
+ * Returns a user-friendly label for the payment status.
+ */
 const getPaymentStatusLabel = (status: string): string => {
   const labels = {
     pending: 'Pendiente',
@@ -705,18 +943,34 @@ const getPaymentStatusLabel = (status: string): string => {
   return labels[status as keyof typeof labels] || status
 }
 
+/**
+ * Returns Tailwind utility classes for the payment status badge.
+ */
 const getPaymentStatusBadge = (status: string): string => {
-  const base = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+  const base =
+    'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium'
   const colors = {
-    pending: "bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-200",
-    paid: "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-200",
-    failed: "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-200",
-    refunded: "bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-200"
+    pending:
+      'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-200',
+    paid:
+      'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-200',
+    failed:
+      'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-200',
+    refunded:
+      'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-200'
   }
-  return `${base} ${colors[status as keyof typeof colors] || colors.pending}`
+  return `${base} ${
+    colors[status as keyof typeof colors] || colors.pending
+  }`
 }
 
-// Initialize on mount
+/* -------------------------------------------------------------------------- */
+/*  Lifecycle                                                                 */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Initial data load when the component is mounted.
+ */
 onMounted(async () => {
   console.log('🚀 UserBookingView mounted')
   await fetchBookings()
@@ -724,13 +978,20 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+/**
+ * Smooth color transition for hover states on rows, buttons, etc.
+ */
 .transition-colors {
   transition-property: color, background-color, border-color;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
 }
 
-/* SweetAlert2 custom styles */
+/**
+ * SweetAlert2 custom styles:
+ * - Allow HTML content to be fully visible
+ * - Set a consistent width and responsive behavior
+ */
 :global(.swal2-html-container) {
   overflow: visible !important;
 }

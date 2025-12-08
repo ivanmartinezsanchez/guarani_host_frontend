@@ -214,7 +214,7 @@
             
             <!-- Price -->
             <p class="text-darkText dark:text-white font-semibold text-sm sm:text-base transition-colors duration-300">
-              {{ formatPrice(property.pricePerNight) }} 
+              {{ getPropertyPrice(property) }} 
               <span class="font-normal text-lightText dark:text-gray-400">por noche</span>
             </p>
             
@@ -265,11 +265,11 @@
         <header class="mb-8 sm:mb-12">
           <h2 
             id="tours-title"
-            class="text-2xl sm:text-3xl font-semibold text-white mb-2 transition-colors duration-300"
+            class="text-2xl sm:text-3xl font-semibold text-gray-900 dark:text-white mb-2 transition-colors duration-300"
           >
             Experiencias locales
           </h2>
-          <p class="text-white/80 transition-colors duration-300">
+          <p class="text-gray-700 dark:text-gray-300 transition-colors duration-300">
             Tours y actividades con guías especializados
           </p>
         </header>
@@ -337,19 +337,21 @@
             
             <!-- Tour Details -->
             <div class="space-y-1">
-              <h3 class="font-semibold text-darkText dark:text-white text-sm sm:text-base transition-colors duration-300">
+              <!-- Title -->
+              <h3 class="font-semibold text-gray-900 dark:text-white text-sm sm:text-base transition-colors duration-300">
                 {{ tour.title }}
               </h3>
               
-              <p class="text-lightText dark:text-gray-400 text-xs sm:text-sm line-clamp-2 transition-colors duration-300">
+              <!-- Description -->
+              <p class="text-gray-700 dark:text-gray-300 text-xs sm:text-sm line-clamp-2 transition-colors duration-300">
                 {{ tour.description }}
               </p>
               
               <!-- Price and Rating -->
               <div class="flex items-center justify-between gap-2">
-                <p class="text-darkText dark:text-white font-semibold text-sm sm:text-base transition-colors duration-300">
-                  {{ formatPrice(tour.price) }}
-                  <span class="font-normal text-lightText dark:text-gray-400">por persona</span>
+                <p class="font-semibold text-gray-900 dark:text-white text-sm sm:text-base transition-colors duration-300">
+                  {{ getTourPrice(tour) }}
+                  <span class="font-normal text-gray-600 dark:text-gray-300">por persona</span>
                 </p>
                 
                 <div 
@@ -365,8 +367,10 @@
               </div>
               
               <!-- Host Information -->
-              <div class="flex items-center text-xs text-gray-500 dark:text-gray-400 mt-2 transition-colors duration-300">
-                <span>Por {{ tour.host.firstName }} {{ tour.host.lastName }}</span>
+              <div class="flex items-center text-xs mt-2 transition-colors duration-300">
+                <span class="text-gray-700 dark:text-gray-300">
+                  Por {{ getHostName(tour) }}
+                </span>
               </div>
             </div>
           </article>
@@ -463,7 +467,7 @@
             </RouterLink>
             <RouterLink
               to="/login"
-              class="block w-full border border-gray-300 dark:border-gray-600 text-darkText dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold py-3 px-6 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-4 focus:ring-primary/30"
+              class="block w-full border border-gray-300 dark:border-gray-600 text-darkText dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold py-3 px-6 rounded-lg transition-colors duración-200 focus:outline-none focus:ring-4 focus:ring-primary/30"
               @click="closeLoginModal"
               aria-label="Ir a la página de inicio de sesión"
             >
@@ -490,70 +494,64 @@ import { useAuth } from '@/composables/useAuth'
 import { getFeaturedProperties, type PublicProperty } from '@/services/publicPropertyService'
 import { getFeaturedTours, type PublicTour } from '@/services/publicTourService'
 
-// TypeScript interfaces for better type safety
+/**
+ * Simple type that describes the search form fields.
+ */
 interface SearchFilters {
   checkIn: string
   checkOut: string
   guests: number
 }
 
-// Reactive references for component state
 const router = useRouter()
 const { user } = useAuth()
 
-// Data storage for properties and tours
+// Core reactive collections for homepage content
 const properties = ref<PublicProperty[]>([])
 const tours = ref<PublicTour[]>([])
 const loadingProperties = ref<boolean>(false)
 const loadingTours = ref<boolean>(false)
 
-// UI state management
+// UI state flags
 const showAllProperties = ref<boolean>(false)
 const showAllTours = ref<boolean>(false)
 const showLoginModal = ref<boolean>(false)
 const isSearching = ref<boolean>(false)
 
-// Fallback images for error handling
+// Fallback images for broken URLs
 const fallbackImage: string = 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=800&q=80'
 const fallbackTour: string = 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=800&q=80'
 
-// Search form filters with default values
+// Search filters default values
 const filters = ref<SearchFilters>({
   checkIn: '',
   checkOut: '',
   guests: 1,
 })
 
-// Computed properties for reactive data processing
-
 /**
- * Get today's date in YYYY-MM-DD format for date input minimum
+ * Gets today's date in YYYY-MM-DD format, used as min value for date inputs.
  */
 const today = computed<string>(() => {
   return new Date().toISOString().split('T')[0]
 })
 
 /**
- * Get displayed properties based on show all state
- * Limits to 8 properties initially for performance
+ * Limits the initial number of displayed properties to improve performance.
  */
 const displayedProperties = computed<PublicProperty[]>(() => {
   return showAllProperties.value ? properties.value : properties.value.slice(0, 8)
 })
 
 /**
- * Get displayed tours based on show all state
- * Limits to 6 tours initially for performance
+ * Limits the initial number of displayed tours to improve performance.
  */
 const displayedTours = computed<PublicTour[]>(() => {
   return showAllTours.value ? tours.value : tours.value.slice(0, 6)
 })
 
-// Core functionality methods
-
 /**
- * Load featured properties from the API
- * Handles loading state and error gracefully
+ * Loads featured properties from the public API.
  */
 const loadFeaturedProperties = async (): Promise<void> => {
   try {
@@ -562,15 +560,13 @@ const loadFeaturedProperties = async (): Promise<void> => {
     console.log('✅ Properties loaded:', properties.value.length)
   } catch (error) {
     console.error('❌ Error loading featured properties:', error)
-    // Graceful degradation - keep empty array
   } finally {
     loadingProperties.value = false
   }
 }
 
 /**
- * Load featured tours from the API
- * Handles loading state and error gracefully
+ * Loads featured tours from the public API.
  */
 const loadFeaturedTours = async (): Promise<void> => {
   try {
@@ -579,21 +575,19 @@ const loadFeaturedTours = async (): Promise<void> => {
     console.log('✅ Tours loaded:', tours.value.length)
   } catch (error) {
     console.error('❌ Error loading featured tours:', error)
-    // Graceful degradation - keep empty array
   } finally {
     loadingTours.value = false
   }
 }
 
 /**
- * Handle search form submission
- * Validates dates and navigates to search results page
+ * Handles the search form submission and redirects to the search page.
+ * Includes basic client-side validation for date ranges.
  */
 const handleSearch = async (): Promise<void> => {
   try {
     isSearching.value = true
     
-    // Basic date validation if both dates are provided
     if (filters.value.checkIn && filters.value.checkOut) {
       const checkInDate = new Date(filters.value.checkIn)
       const checkOutDate = new Date(filters.value.checkOut)
@@ -606,19 +600,17 @@ const handleSearch = async (): Promise<void> => {
         return
       }
       
-      // Ensure check-out is after check-in
+      // Ensure check-out date is strictly after check-in date
       if (checkOutDate <= checkInDate) {
         alert('La fecha de salida debe ser después de la fecha de llegada')
         return
       }
     }
     
-    // Build search parameters for URL query
     const searchParams: Record<string, string | number> = {
       guests: filters.value.guests
     }
     
-    // Add optional date parameters
     if (filters.value.checkIn) {
       searchParams.checkIn = filters.value.checkIn
     }
@@ -627,7 +619,6 @@ const handleSearch = async (): Promise<void> => {
       searchParams.checkOut = filters.value.checkOut
     }
     
-    // Navigate to search results page
     await router.push({
       path: '/search',
       query: searchParams
@@ -642,22 +633,22 @@ const handleSearch = async (): Promise<void> => {
 }
 
 /**
- * Navigate to property detail page
+ * Redirects the user to a property detail page.
  */
 const viewProperty = (id: string): void => {
   router.push(`/property/${id}`)
 }
 
 /**
- * Navigate to tour detail page
+ * Redirects the user to a tour detail page.
  */
 const viewTour = (id: string): void => {
   router.push(`/tour/${id}`)
 }
 
 /**
- * Handle favorite toggle action
- * Shows login modal if user is not authenticated
+ * Handles the favorite button.
+ * If the user is not authenticated, it shows the login/register modal.
  */
 const toggleFavorite = (id: string): void => {
   if (!user.value) {
@@ -666,45 +657,80 @@ const toggleFavorite = (id: string): void => {
   }
   
   console.log('Toggle favorite for property:', id)
-  // TODO: Implement favorites API integration
+  // TODO: connect with favorites API when available
 }
 
 /**
- * Toggle display of all properties vs limited view
+ * Toggles between initial and full list of properties.
  */
 const toggleShowAllProperties = (): void => {
   showAllProperties.value = !showAllProperties.value
 }
 
 /**
- * Toggle display of all tours vs limited view
+ * Toggles between initial and full list of tours.
  */
 const toggleShowAllTours = (): void => {
   showAllTours.value = !showAllTours.value
 }
 
 /**
- * Close the login modal
+ * Closes the login/register modal.
  */
 const closeLoginModal = (): void => {
   showLoginModal.value = false
 }
 
-// Utility functions for data formatting
-
 /**
- * Format price in US Dollars with simple formatting
- * @param price - Price in USD
- * @returns Formatted price string with currency symbol
+ * Helper to format a raw numeric price in USD (used across the view).
  */
 const formatPrice = (price: number): string => {
-  return `${price.toLocaleString('en-US')}`
+  const numericPrice =
+    typeof price === 'number' ? price : Number(price)
+
+  if (!Number.isFinite(numericPrice)) {
+    // Fallback when data is corrupted or missing
+    return 'Consultar'
+  }
+
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(numericPrice)
 }
 
 /**
- * Get localized status label for tour status
- * @param status - Tour status enum value
- * @returns Localized status text
+ * Returns a safe label for a property price.
+ * - If price is valid → formatted USD value.
+ * - If price is invalid / missing → "Consultar".
+ */
+const getPropertyPrice = (property: PublicProperty): string => {
+  const raw = (property as any)?.pricePerNight
+  const n = typeof raw === 'number' ? raw : Number(raw)
+  if (!Number.isFinite(n) || n <= 0) {
+    return 'Consultar'
+  }
+  return formatPrice(n)
+}
+
+/**
+ * Returns a safe label for a tour price.
+ * - If price is valid → formatted USD value.
+ * - If price is invalid / missing → "Consultar".
+ */
+const getTourPrice = (tour: PublicTour): string => {
+  const raw = (tour as any)?.price
+  const n = typeof raw === 'number' ? raw : Number(raw)
+  if (!Number.isFinite(n) || n <= 0) {
+    return 'Consultar'
+  }
+  return formatPrice(n)
+}
+
+/**
+ * Returns a localized Spanish label for a given tour status code.
  */
 const getStatusLabel = (status: string): string => {
   const statusMap: Record<string, string> = {
@@ -717,8 +743,19 @@ const getStatusLabel = (status: string): string => {
 }
 
 /**
- * Handle image loading errors by setting fallback image
- * @param event - Image error event
+ * Returns a safe, user-friendly host name for a tour.
+ * - If firstName/lastName exist, it returns the full name.
+ * - If not, it falls back to "guía local" so the UI is never empty.
+ */
+const getHostName = (tour: PublicTour): string => {
+  const first = tour.host?.firstName?.trim() || ''
+  const last = tour.host?.lastName?.trim() || ''
+  const fullName = [first, last].filter(Boolean).join(' ')
+  return fullName || 'guía local'
+}
+
+/**
+ * Replaces broken images with generic fallback photos for a better UX.
  */
 const handleImageError = (event: Event): void => {
   const target = event.target as HTMLImageElement
@@ -730,19 +767,26 @@ const handleImageError = (event: Event): void => {
 }
 
 /**
- * Initialize component by loading featured content
- * Runs when component is mounted to the DOM
+ * Initial data load for homepage.
+ * Properties and tours are fetched in parallel for better performance.
  */
 onMounted(async (): Promise<void> => {
   console.log('🚀 Loading homepage data...')
   
-  // Load properties and tours in parallel for better performance
   await Promise.all([
     loadFeaturedProperties(),
     loadFeaturedTours()
   ])
   
   console.log('✅ Homepage data loaded successfully')
+  console.log(
+    '💰 Tours price debug:',
+    tours.value.map(t => ({
+      title: t.title,
+      price: t.price,
+      host: t.host
+    }))
+  )
 })
 </script>
 
@@ -796,10 +840,9 @@ onMounted(async (): Promise<void> => {
 }
 
 /* Dark mode color adjustments */
-@media (prefers-color-scheme: dark) {
-  .bg-background {
-    background-color: #1f2937;
-  }
+
+.bg-background {
+  background-color: #F5F5F5;
 }
 
 /* Screen reader only content for accessibility */
