@@ -3,6 +3,7 @@ import { bookingToFormData } from '@/utils/formDataHelpers'
 
 const API_URL = import.meta.env.VITE_API_BASE_URL
 
+// Build auth header from session/local storage tokens
 const getAuthHeaders = () => {
   const tokenFromSession =
     sessionStorage.getItem('token') ||
@@ -28,221 +29,286 @@ const getAuthHeaders = () => {
   }
 }
 
+// ===== TYPES (aligned with backend IBooking) =====
 
-// ===== INTERFACES CORREGIDAS SEGÚN EL BACKEND =====
-
-/**
- * Booking interface for host operations
- * Basada en el modelo IBooking del backend
- */
+// Booking shape used in host flows
 export interface Booking {
-  _id?: string;
-  user: string | { 
-    _id?: string;
-    firstName?: string;
-    lastName?: string;
-    email: string;
-    phone?: string;
-  };
-  property?: string | { 
-    _id?: string;
-    title: string; 
-    host?: string;
-    city?: string;
-    location?: string;
-    images?: string[];
-    pricePerNight?: number;
-  };
-  tourPackage?: string | { 
-    _id?: string;
-    title: string; 
-    host?: string;
-    duration?: number; // ✅ Esta propiedad existe en el backend
-    price?: number;
-  };
-  checkIn: Date | string;
-  checkOut: Date | string;
-  guests: number;
-  status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
-  totalPrice: number; // ✅ Backend usa totalPrice, no totalAmount
-  paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded';
-  paymentDetails?: string;
-  paymentImages?: string[];
-  cancellationReason?: string;
-  cancelledAt?: Date | string;
-  createdAt?: Date | string; // ✅ Existe por timestamps: true
-  updatedAt?: Date | string; // ✅ Existe por timestamps: true
-  // Virtual properties del backend
-  nights?: number;
-  pricePerNight?: number;
+  _id?: string
+  user:
+    | string
+    | {
+        _id?: string
+        firstName?: string
+        lastName?: string
+        email: string
+        phone?: string
+      }
+  property?:
+    | string
+    | {
+        _id?: string
+        title: string
+        host?: string
+        city?: string
+        location?: string
+        images?: string[]
+        pricePerNight?: number
+      }
+  tourPackage?:
+    | string
+    | {
+        _id?: string
+        title: string
+        host?: string
+        duration?: number
+        price?: number
+      }
+  checkIn: Date | string
+  checkOut: Date | string
+  guests: number
+  status: 'pending' | 'confirmed' | 'cancelled' | 'completed'
+  totalPrice: number
+  paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded'
+  paymentDetails?: string
+  paymentImages?: string[]
+  cancellationReason?: string
+  cancelledAt?: Date | string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  // Virtual fields
+  nights?: number
+  pricePerNight?: number
 }
 
-// ===== FUNCIONES PRINCIPALES =====
-
-/**
- * Get bookings for properties and tours owned by the authenticated host
- * @returns Array of bookings for host's properties and tours
- */
-export const getHostBookings = async (): Promise<Booking[]> => {
-  try {
-    const res = await axios.get(`${API_URL}/host/bookings`, getAuthHeaders())
-    return res.data.bookings || []
-  } catch (error) {
-    console.error('Error fetching host bookings:', error)
-    throw error
+// Shape of /host/bookings API response
+interface HostBookingsResponse {
+  success: boolean
+  message: string
+  data: {
+    bookings: Booking[]
+    pagination: {
+      current: number
+      total: number
+      totalCount: number
+      hasNext: boolean
+      hasPrev: boolean
+    }
   }
 }
 
+// Shape of /host/bookings/filter response
+interface FilteredBookingsResponse {
+  success: boolean
+  message: string
+  data: {
+    bookings: Booking[]
+    pagination: any
+    filters: Record<string, unknown>
+  }
+}
+
+// Shape of single booking response
+interface SingleBookingResponse {
+  success: boolean
+  message: string
+  data: {
+    booking: Booking
+  }
+}
+
+// ===== MAIN API FUNCTIONS =====
+
 /**
- * Get single booking by ID (must belong to host's property/tour)
- * @param id - Booking ID
- * @returns Single booking object
+ * Get all bookings for the authenticated host
+ */
+export const getHostBookings = async (): Promise<Booking[]> => {
+  const res = await axios.get<HostBookingsResponse>(
+    `${API_URL}/host/bookings`,
+    getAuthHeaders()
+  )
+
+  console.log('RAW RESPONSE /host/bookings:', res.data)
+
+  return res.data?.data?.bookings ?? []
+}
+
+/**
+ * Get single booking by ID (must belong to host)
  */
 export const getHostBookingById = async (id: string): Promise<Booking> => {
   try {
-    const res = await axios.get(`${API_URL}/host/bookings/${id}`, getAuthHeaders())
-    return res.data.booking
+    const res = await axios.get<SingleBookingResponse>(
+      `${API_URL}/host/bookings/${id}`,
+      getAuthHeaders()
+    )
+    return res.data?.data?.booking
   } catch (error) {
-    console.error('Error fetching host booking by ID:', error)
+    if (axios.isAxiosError(error)) {
+      console.error(
+        'Error fetching host booking by ID:',
+        error.response?.status,
+        error.response?.data
+      )
+    } else {
+      console.error('Error fetching host booking by ID:', error)
+    }
     throw error
   }
 }
 
 /**
- * Update booking status
- * ✅ FUNCIÓN QUE FALTABA - Corregida según el backend
- * @param bookingId - ID of booking to update
- * @param status - New status value
- * @param reason - Optional reason for status change
- * @returns Updated booking object
+ * Update booking status (pending/confirmed/cancelled/completed)
  */
 export const updateHostBookingStatus = async (
-  bookingId: string, 
+  bookingId: string,
   status: string,
   reason?: string
 ): Promise<Booking> => {
   try {
     const updateData: any = { status }
     if (reason) {
-      updateData.reason = reason // Backend espera 'reason', no 'statusReason'
+      // Backend expects "reason" field
+      updateData.reason = reason
     }
 
-    const response = await axios.patch(
-      `${API_URL}/host/bookings/${bookingId}/status`, 
-      updateData, 
+    const response = await axios.patch<SingleBookingResponse>(
+      `${API_URL}/host/bookings/${bookingId}/status`,
+      updateData,
       getAuthHeaders()
     )
-    return response.data.booking
-  } catch (error) {
-    console.error('Error updating host booking status:', error)
+
+    return response.data?.data?.booking
+  } catch (error: any) {
+    if (axios.isAxiosError(error)) {
+      console.error(
+        'Error updating booking status:',
+        error.response?.status,
+        error.response?.data
+      )
+    } else {
+      console.error('Error updating booking status:', error)
+    }
     throw error
   }
 }
 
 /**
- * Update payment status
- * ✅ FUNCIÓN QUE FALTABA - Según el backend
- * @param bookingId - ID of booking to update
- * @param paymentStatus - New payment status
- * @returns Updated booking object
+ * Update booking payment status (pending/paid/failed/refunded)
  */
 export const updateHostBookingPaymentStatus = async (
-  bookingId: string, 
+  bookingId: string,
   paymentStatus: string
 ): Promise<Booking> => {
   try {
-    const response = await axios.patch(
-      `${API_URL}/host/bookings/${bookingId}/payment-status`, 
-      { paymentStatus }, 
+    const response = await axios.patch<SingleBookingResponse>(
+      `${API_URL}/host/bookings/${bookingId}/payment-status`,
+      { paymentStatus },
       getAuthHeaders()
     )
-    return response.data.booking
-  } catch (error) {
-    console.error('Error updating host booking payment status:', error)
+
+    return response.data?.data?.booking
+  } catch (error: any) {
+    if (axios.isAxiosError(error)) {
+      console.error(
+        'Error updating host booking payment status:',
+        error.response?.status,
+        error.response?.data
+      )
+    } else {
+      console.error('Error updating host booking payment status:', error)
+    }
     throw error
   }
 }
 
 /**
- * Filter host bookings by various criteria
- * @param filters - Filter options
- * @returns Filtered bookings array
+ * Filter host bookings by status, dates, and type
  */
-export const filterHostBookings = async (filters: {
-  paymentStatus?: string;
-  bookingStatus?: string;
-  from?: string;
-  to?: string;
-  propertyType?: 'property' | 'tour';
-  page?: number;
-  limit?: number;
-} = {}): Promise<{ bookings: Booking[]; pagination: any }> => {
+export const filterHostBookings = async (
+  filters: {
+    paymentStatus?: string
+    bookingStatus?: string
+    from?: string
+    to?: string
+    propertyType?: 'property' | 'tour'
+    page?: number
+    limit?: number
+  } = {}
+): Promise<{ bookings: Booking[]; pagination: any }> => {
   try {
     const params = new URLSearchParams()
-    
+
+    // Append only non-empty filters
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== '') {
         params.append(key, String(value))
       }
     })
 
-    const res = await axios.get(
-      `${API_URL}/host/bookings/filter?${params.toString()}`, 
+    const res = await axios.get<FilteredBookingsResponse>(
+      `${API_URL}/host/bookings/filter?${params.toString()}`,
       getAuthHeaders()
     )
-    
+
+    const apiData = res.data?.data
+
     return {
-      bookings: res.data.bookings || [],
-      pagination: res.data.pagination || {}
+      bookings: apiData?.bookings || [],
+      pagination: apiData?.pagination || {},
     }
   } catch (error) {
-    console.error('Error filtering host bookings:', error)
+    if (axios.isAxiosError(error)) {
+      console.error(
+        'Error filtering host bookings:',
+        error.response?.status,
+        error.response?.data
+      )
+    } else {
+      console.error('Error filtering host bookings:', error)
+    }
     throw error
   }
 }
 
 /**
- * Export host bookings to PDF with optional filters
- * ✅ CORREGIDA según el endpoint del backend
- * @param filters - Optional filters for export
+ * Export host bookings to PDF (with optional filters)
  */
-export const exportHostBookingsToPDF = async (filters: { 
-  paymentStatus?: string;
-  bookingStatus?: string; // Corregido: backend usa 'bookingStatus'
-  from?: string;
-  to?: string;
+export const exportHostBookingsToPDF = async (filters: {
+  paymentStatus?: string
+  bookingStatus?: string // Backend expects "bookingStatus"
+  from?: string
+  to?: string
 } = {}) => {
   try {
-    // Clean up filters - remove empty values
+    // Remove empty values from filters
     const cleanFilters = Object.fromEntries(
-      Object.entries(filters).filter(([_, value]) => value && value.trim() !== '')
+      Object.entries(filters).filter(
+        ([_, value]) => typeof value === 'string' && value.trim() !== ''
+      )
     )
-    
-    const params = new URLSearchParams(cleanFilters).toString()
+
+    const params = new URLSearchParams(cleanFilters as Record<string, string>).toString()
     const url = `${API_URL}/host/bookings/export/pdf${params ? `?${params}` : ''}`
-    
+
     const res = await axios.get(url, {
       ...getAuthHeaders(),
       responseType: 'blob',
     })
 
-    // Create download link
+    // Build a Blob and trigger download
     const blob = new Blob([res.data], { type: 'application/pdf' })
     const downloadUrl = window.URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = downloadUrl
-    
-    // Generate filename with current date
+
     const now = new Date()
     const dateStr = now.toISOString().split('T')[0]
     link.setAttribute('download', `host-bookings-${dateStr}.pdf`)
-    
-    // Trigger download
+
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
-    
-    // Clean up URL object
+
     window.URL.revokeObjectURL(downloadUrl)
   } catch (error) {
     console.error('Error exporting host bookings to PDF:', error)
@@ -251,37 +317,35 @@ export const exportHostBookingsToPDF = async (filters: {
 }
 
 /**
- * Get host booking summary/statistics
- * @param period - Time period for summary
- * @returns Statistics object with booking metrics
+ * Get host booking statistics (or calculate fallback)
  */
 export const getHostBookingStats = async (period: string = 'all') => {
   try {
-    const res = await axios.get(
-      `${API_URL}/host/bookings/summary?period=${period}`, 
-      getAuthHeaders()
-    )
-    return res.data.summary
+    const res = await axios.get(`${API_URL}/host/bookings/summary?period=${period}`, getAuthHeaders())
+
+    // If backend wraps summary in data, use it
+    const summary = res.data?.data?.summary ?? res.data?.summary
+    return summary
   } catch (error) {
     console.error('Error fetching host booking stats:', error)
-    
-    // Fallback: calculate from all bookings if stats endpoint fails
+
+    // Fallback: compute stats from raw bookings
     try {
       const bookings = await getHostBookings()
-      
+
       return {
         totalBookings: bookings.length,
         status: {
           pending: bookings.filter(b => b.status === 'pending').length,
           confirmed: bookings.filter(b => b.status === 'confirmed').length,
           cancelled: bookings.filter(b => b.status === 'cancelled').length,
-          completed: bookings.filter(b => b.status === 'completed').length
+          completed: bookings.filter(b => b.status === 'completed').length,
         },
         payments: {
           pending: bookings.filter(b => b.paymentStatus === 'pending').length,
           paid: bookings.filter(b => b.paymentStatus === 'paid').length,
           refunded: bookings.filter(b => b.paymentStatus === 'refunded').length,
-          failed: bookings.filter(b => b.paymentStatus === 'failed').length
+          failed: bookings.filter(b => b.paymentStatus === 'failed').length,
         },
         revenue: {
           total: bookings.reduce((sum, b) => sum + (b.totalPrice || 0), 0),
@@ -290,33 +354,34 @@ export const getHostBookingStats = async (period: string = 'all') => {
             .reduce((sum, b) => sum + (b.totalPrice || 0), 0),
           pending: bookings
             .filter(b => b.paymentStatus === 'pending')
-            .reduce((sum, b) => sum + (b.totalPrice || 0), 0)
+            .reduce((sum, b) => sum + (b.totalPrice || 0), 0),
         },
         types: {
           properties: bookings.filter(b => b.property).length,
-          tours: bookings.filter(b => b.tourPackage).length
+          tours: bookings.filter(b => b.tourPackage).length,
         },
         thisMonth: bookings.filter(b => {
           const created = new Date(b.createdAt || 0)
           const now = new Date()
-          return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear()
+          return (
+            created.getMonth() === now.getMonth() &&
+            created.getFullYear() === now.getFullYear()
+          )
         }).length,
         period,
-        generatedAt: new Date()
+        generatedAt: new Date(),
       }
     } catch (fallbackError) {
       console.error('Error in fallback stats calculation:', fallbackError)
-      throw error // Throw original error if fallback fails
+      throw error // Re-throw original error if fallback also fails
     }
   }
 }
 
-// ===== UTILITY FUNCTIONS =====
+// ===== UTILITY HELPERS =====
 
 /**
- * Get booking service title (property or tour title)
- * @param booking - Booking object
- * @returns Service title or fallback text
+ * Get service title (property or tour)
  */
 export const getBookingServiceTitle = (booking: Booking): string => {
   if (booking.tourPackage) {
@@ -325,21 +390,19 @@ export const getBookingServiceTitle = (booking: Booking): string => {
     }
     return `Tour ID: ${booking.tourPackage}`
   }
-  
+
   if (booking.property) {
     if (typeof booking.property === 'object') {
       return booking.property.title || 'Propiedad sin título'
     }
     return `Propiedad ID: ${booking.property}`
   }
-  
+
   return 'Servicio no especificado'
 }
 
 /**
- * Get booking service type
- * @param booking - Booking object
- * @returns 'property', 'tour', or 'unknown'
+ * Get service type: property / tour / unknown
  */
 export const getBookingServiceType = (booking: Booking): 'property' | 'tour' | 'unknown' => {
   if (booking.tourPackage) return 'tour'
@@ -348,18 +411,18 @@ export const getBookingServiceType = (booking: Booking): 'property' | 'tour' | '
 }
 
 /**
- * Calculate booking duration in days/nights
- * @param booking - Booking object
- * @returns Object with days and nights count
+ * Calculate booking duration (days & nights)
  */
-export const calculateBookingDuration = (booking: Booking): { days: number; nights: number } => {
+export const calculateBookingDuration = (
+  booking: Booking
+): { days: number; nights: number } => {
   try {
     const checkIn = new Date(booking.checkIn)
     const checkOut = new Date(booking.checkOut)
     const diffTime = Math.abs(checkOut.getTime() - checkIn.getTime())
     const days = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    const nights = Math.max(0, days - 1) // nights is always days - 1
-    
+    const nights = Math.max(0, days - 1) // nights = days - 1
+
     return { days, nights }
   } catch (error) {
     console.error('Error calculating booking duration:', error)
@@ -368,21 +431,17 @@ export const calculateBookingDuration = (booking: Booking): { days: number; nigh
 }
 
 /**
- * Check if booking can be modified by host
- * @param booking - Booking object
- * @returns Boolean indicating if booking can be modified
+ * Check if host can modify booking (status-based)
  */
 export const canModifyBooking = (booking: Booking): boolean => {
-  // Hosts can typically modify bookings that aren't completed or cancelled
+  // Host cannot modify completed/cancelled bookings
   return !['completed', 'cancelled'].includes(booking.status)
 }
 
 /**
- * Check if booking payment status can be updated by host
- * @param booking - Booking object
- * @returns Boolean indicating if payment status can be updated
+ * Check if host can update payment status
  */
 export const canUpdatePaymentStatus = (booking: Booking): boolean => {
-  // Hosts can update payment status for non-refunded bookings
+  // Payment cannot be changed once refunded
   return booking.paymentStatus !== 'refunded'
 }

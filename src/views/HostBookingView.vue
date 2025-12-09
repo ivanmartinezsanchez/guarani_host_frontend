@@ -766,6 +766,9 @@ const loadBookings = async (): Promise<void> => {
   try {
     isLoading.value = true
     const bookings = await getHostBookings()
+    console.log('📦 Host bookings recibidas en loadBookings:', bookings)
+    console.log('📊 Cantidad de bookings:', bookings?.length)
+
     allBookings.value = bookings
   } catch (error) {
     console.error('Error loading bookings:', error)

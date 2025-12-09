@@ -102,6 +102,8 @@ const loadBookings = async () => {
     try {
         isLoading.value = true;
         const bookings = await getHostBookings();
+        console.log('📦 Host bookings recibidas en loadBookings:', bookings);
+        console.log('📊 Cantidad de bookings:', bookings?.length);
         allBookings.value = bookings;
     }
     catch (error) {
