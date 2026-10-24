@@ -24,3 +24,5 @@ dist-ssr
 *.sw?
 tsconfig.tsbuildinfo
 .firebase/
+.env
+.env.production
